@@ -88,6 +88,8 @@ export function MapPicker({ initial, onConfirm }: Props) {
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [reverseData, setReverseData] = React.useState<ReverseAddress | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [locating, setLocating] = React.useState(false);
+  const [permissionDenied, setPermissionDenied] = React.useState(false);
 
   React.useEffect(() => {
     const ctrl = new AbortController();
@@ -123,12 +125,37 @@ export function MapPicker({ initial, onConfirm }: Props) {
   }, [center[0], center[1]]);
 
   const locate = () => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      toast.error("Geolocalização indisponível", {
+        description: "Seu navegador não suporta localização. Busque pelo endereço acima.",
+      });
+      return;
+    }
+    setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => setCenter([pos.coords.latitude, pos.coords.longitude]),
-      () => {},
+      (pos) => {
+        setCenter([pos.coords.latitude, pos.coords.longitude]);
+        setPermissionDenied(false);
+        setLocating(false);
+      },
+      (err) => {
+        setLocating(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setPermissionDenied(true);
+          toast.error("Permissão de localização negada", {
+            description:
+              "Habilite a localização nas configurações do navegador ou digite o endereço no campo acima.",
+          });
+        } else {
+          toast.error("Não foi possível obter sua localização", {
+            description: "Tente novamente ou busque pelo endereço.",
+          });
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
     );
   };
+
 
   return (
     <div className="relative flex h-full w-full flex-col">
