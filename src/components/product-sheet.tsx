@@ -1,5 +1,5 @@
 import * as React from "react";
-import { X } from "lucide-react";
+import { X, Check } from "lucide-react";
 import type { CartCustomization, CartItem, Product } from "@/types";
 import { brl } from "@/lib/format";
 import { QuantityStepper } from "@/components/quantity-stepper";
@@ -7,6 +7,7 @@ import { AdaptiveSheet } from "@/components/adaptive-sheet";
 import { useCart } from "@/store/cart";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ProductBadgePill } from "@/components/product-badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -25,6 +26,8 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
   const [quantity, setQuantity] = React.useState(1);
   const [note, setNote] = React.useState("");
   const [triedSubmit, setTriedSubmit] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if (!product) return;
@@ -42,6 +45,7 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
       setNote("");
     }
     setTriedSubmit(false);
+    setScrolled(false);
   }, [product, editingItem]);
 
   if (!product) return null;
@@ -73,11 +77,7 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
     if (!allValid) return;
     const cs = flat;
     if (editingItem) {
-      updateItem(editingItem.id, {
-        customizations: cs,
-        quantity,
-        note,
-      });
+      updateItem(editingItem.id, { customizations: cs, quantity, note });
       toast.success("Item atualizado");
     } else {
       addItem({
@@ -113,29 +113,35 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
         )}
         <button
           onClick={onClose}
-          className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-background/95 text-foreground shadow-md hover:bg-background"
+          className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-background/95 text-foreground shadow-[var(--shadow-elevated)] backdrop-blur transition-transform hover:scale-105"
           aria-label="Fechar"
         >
           <X className="h-5 w-5" />
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-        <h2 className="text-xl font-bold text-foreground">{product.name}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{product.description}</p>
-        <div className="mt-2 text-lg font-bold text-foreground tabular-nums">
+      <div
+        ref={scrollRef}
+        onScroll={(e) => setScrolled((e.currentTarget as HTMLDivElement).scrollTop > 4)}
+        className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-7"
+      >
+        <h2 className="text-2xl font-bold leading-tight text-foreground">{product.name}</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {product.description}
+        </p>
+        <div className="mt-3 text-xl font-bold tabular-nums text-foreground">
           {brl(product.price)}
         </div>
 
-        {groups.map((g) => {
+        {groups.map((g, gi) => {
           const selected = selections[g.id] ?? [];
           const showError = triedSubmit && !isGroupValid(g);
           return (
-            <section key={g.id} className="mt-6">
-              <header className="flex items-center justify-between rounded-lg bg-surface px-3 py-2">
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground">{g.name}</h3>
-                  <p className="text-xs text-muted-foreground">
+            <section key={g.id} className={cn("pt-6", gi > 0 && "mt-6 border-t border-border")}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-[15px] font-semibold text-foreground">{g.name}</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     {g.min === g.max
                       ? g.min === 1
                         ? "Escolha 1 opção"
@@ -145,58 +151,74 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
                         : `De ${g.min} a ${g.max}`}
                   </p>
                 </div>
-                {g.required ? (
-                  <span className="rounded-full bg-foreground/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-background">
-                    Obrigatório
-                  </span>
-                ) : null}
-              </header>
-              <div className="mt-2 space-y-1">
+                <ProductBadgePill kind={g.required ? "required" : "optional"} />
+              </div>
+              <div className="mt-3 space-y-2">
                 {g.options.map((opt) => {
                   const active = selected.some((c) => c.optionId === opt.id);
+                  const isRadio = g.max === 1;
                   return (
-                    <label
+                    <button
                       key={opt.id}
+                      type="button"
+                      onClick={() =>
+                        toggleOption(
+                          g.id,
+                          {
+                            groupId: g.id,
+                            groupName: g.name,
+                            optionId: opt.id,
+                            optionName: opt.name,
+                            priceDelta: opt.priceDelta,
+                          },
+                          g.max,
+                        )
+                      }
                       className={cn(
-                        "flex cursor-pointer items-center justify-between rounded-lg border px-3 py-2.5 transition-colors",
+                        "flex w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-all",
                         active
                           ? "border-primary bg-primary-soft"
-                          : "border-transparent hover:bg-surface",
+                          : "border-border bg-card hover:border-primary/40 hover:bg-surface",
                       )}
                     >
-                      <div className="flex items-center gap-3">
-                        <input
-                          type={g.max === 1 ? "radio" : "checkbox"}
-                          name={g.id}
-                          checked={active}
-                          onChange={() =>
-                            toggleOption(
-                              g.id,
-                              {
-                                groupId: g.id,
-                                groupName: g.name,
-                                optionId: opt.id,
-                                optionName: opt.name,
-                                priceDelta: opt.priceDelta,
-                              },
-                              g.max,
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span
+                          className={cn(
+                            "grid h-5 w-5 shrink-0 place-items-center border-2 transition-colors",
+                            isRadio ? "rounded-full" : "rounded-md",
+                            active
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-background",
+                          )}
+                        >
+                          {active ? (
+                            isRadio ? (
+                              <span className="h-2 w-2 rounded-full bg-primary-foreground" />
+                            ) : (
+                              <Check className="h-3 w-3" strokeWidth={3} />
                             )
-                          }
-                          className="h-4 w-4 accent-[color:var(--primary)]"
-                        />
-                        <span className="text-sm text-foreground">{opt.name}</span>
+                          ) : null}
+                        </span>
+                        <span
+                          className={cn(
+                            "truncate text-sm",
+                            active ? "font-semibold text-foreground" : "text-foreground",
+                          )}
+                        >
+                          {opt.name}
+                        </span>
                       </div>
                       {opt.priceDelta > 0 ? (
-                        <span className="text-sm font-medium text-primary tabular-nums">
+                        <span className="shrink-0 text-sm font-semibold tabular-nums text-primary">
                           + {brl(opt.priceDelta)}
                         </span>
                       ) : null}
-                    </label>
+                    </button>
                   );
                 })}
               </div>
               {showError ? (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-2 text-xs font-medium text-destructive">
                   {g.min === g.max
                     ? `Selecione ${g.min} opção${g.min > 1 ? "es" : ""}.`
                     : `Selecione entre ${g.min} e ${g.max} opções.`}
@@ -206,21 +228,26 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
           );
         })}
 
-        <section className="mt-6">
-          <label className="text-sm font-semibold text-foreground">Alguma observação?</label>
-          <p className="text-xs text-muted-foreground">Ex: sem cebola, ponto da carne…</p>
+        <section className={cn("pt-6", groups.length > 0 && "mt-6 border-t border-border")}>
+          <label className="text-[15px] font-semibold text-foreground">Alguma observação?</label>
+          <p className="mt-0.5 text-xs text-muted-foreground">Ex: sem cebola, ponto da carne…</p>
           <Textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             maxLength={200}
             placeholder="Escreva aqui…"
-            className="mt-2 resize-none"
+            className="mt-3 resize-none"
             rows={3}
           />
         </section>
       </div>
 
-      <div className="shrink-0 border-t border-border bg-background px-5 py-3">
+      <div
+        className={cn(
+          "shrink-0 border-t border-border bg-background px-6 py-4 transition-shadow sm:px-7",
+          scrolled ? "shadow-[0_-8px_24px_-12px_rgba(15,23,42,0.18)]" : "",
+        )}
+      >
         <div className="flex items-center justify-between gap-4">
           <QuantityStepper value={quantity} onChange={setQuantity} min={1} />
           <Button
