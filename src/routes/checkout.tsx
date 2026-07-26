@@ -5,9 +5,11 @@ import {
   Bike,
   Building2,
   Check,
+  Clock,
   CreditCard,
   Home,
   MapPin,
+  Package,
   Plus,
   QrCode,
   Wallet,
@@ -43,6 +45,7 @@ type Step = "delivery" | "payment" | "review";
 function CheckoutPage() {
   const user = useAuth((s) => s.user);
   const items = useCart((s) => s.items);
+  const itemCount = useCart((s) => s.itemCount());
   const subtotal = useCart((s) => s.subtotal());
   const discount = useCart((s) => s.discount());
   const coupon = useCart((s) => s.coupon);
@@ -65,7 +68,12 @@ function CheckoutPage() {
 
   const fee = pickup ? 0 : restaurant.deliveryFee;
   const total = Math.max(0, subtotal - discount) + fee;
-  const selectedAddress = addresses.find((a) => a.id === selectedId) ?? addresses.find((a) => a.isDefault) ?? addresses[0];
+  const selectedAddress =
+    addresses.find((a) => a.id === selectedId) ??
+    addresses.find((a) => a.isDefault) ??
+    addresses[0];
+  const etaMax = pickup ? 20 : restaurant.deliveryMinutes[1];
+  const etaMin = pickup ? 15 : restaurant.deliveryMinutes[0];
 
   React.useEffect(() => {
     if (items.length === 0) nav({ to: "/" });
@@ -88,14 +96,23 @@ function CheckoutPage() {
       address: pickup ? undefined : selectedAddress,
       pickup,
       payment,
-      etaMinutes: restaurant.deliveryMinutes[1],
+      etaMinutes: etaMax,
     });
     clear();
     nav({ to: "/pedido/$id", params: { id: order.id } });
   };
 
+  const primaryLabel =
+    step === "review" ? (placing ? "Confirmando…" : "Confirmar pedido") : "Continuar";
+  const primaryAction = step === "review" ? placeOrder : () =>
+    setStep(step === "delivery" ? "payment" : "review");
+  const primaryDisabled = step === "review" ? placing : !canAdvance;
+
   return (
-    <div className="min-h-screen bg-background">
+    <div
+      className="min-h-screen bg-background"
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 6.5rem)" }}
+    >
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 sm:px-6">
           <Link
@@ -105,7 +122,12 @@ function CheckoutPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="text-lg font-bold">Finalizar pedido</h1>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-lg font-bold">Finalizar pedido</h1>
+            <p className="truncate text-[11px] text-foreground/55">
+              {itemCount} {itemCount === 1 ? "item" : "itens"} · previsão {etaMin}–{etaMax} min
+            </p>
+          </div>
         </div>
         <Stepper step={step} />
       </header>
@@ -127,53 +149,30 @@ function CheckoutPage() {
               pickup={pickup}
               address={selectedAddress}
               payment={payment}
+              etaMin={etaMin}
+              etaMax={etaMax}
+              itemCount={itemCount}
+              items={items}
             />
           )}
-
-          <div className="mt-6 flex justify-between gap-3">
-            {step !== "delivery" ? (
-              <Button
-                variant="outline"
-                className="h-12 rounded-full px-6"
-                onClick={() => setStep(step === "payment" ? "delivery" : "payment")}
-              >
-                Voltar
-              </Button>
-            ) : (
-              <span />
-            )}
-            {step !== "review" ? (
-              <Button
-                size="lg"
-                className="h-12 rounded-full px-8 text-base font-semibold"
-                disabled={!canAdvance}
-                onClick={() => setStep(step === "delivery" ? "payment" : "review")}
-              >
-                Continuar
-              </Button>
-            ) : (
-              <Button
-                size="lg"
-                className="h-12 rounded-full px-8 text-base font-semibold"
-                onClick={placeOrder}
-                disabled={placing}
-              >
-                {placing ? "Confirmando…" : "Confirmar pedido"}
-              </Button>
-            )}
-          </div>
         </section>
 
         <aside>
           <div className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] lg:sticky lg:top-[130px]">
-            <h3 className="mb-3 text-base font-bold">Resumo</h3>
-            <ul className="mb-3 space-y-1.5 text-sm">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-bold">Resumo</h3>
+              <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary tabular-nums">
+                {itemCount} {itemCount === 1 ? "item" : "itens"}
+              </span>
+            </div>
+            <ul className="mb-3 max-h-56 space-y-1.5 overflow-y-auto pr-1 text-sm">
               {items.map((it) => (
                 <li key={it.id} className="flex justify-between gap-3">
-                  <span className="line-clamp-1">
-                    <span className="tabular-nums">{it.quantity}×</span> {it.name}
+                  <span className="line-clamp-1 text-foreground/80">
+                    <span className="tabular-nums text-foreground/55">{it.quantity}×</span>{" "}
+                    {it.name}
                   </span>
-                  <span className="shrink-0 tabular-nums">
+                  <span className="shrink-0 tabular-nums text-foreground">
                     {brl(it.unitPrice * it.quantity)}
                   </span>
                 </li>
@@ -191,10 +190,47 @@ function CheckoutPage() {
               <div className="border-t border-border pt-2">
                 <Row bold label="Total" value={brl(total)} />
               </div>
+              <div className="flex items-center gap-1.5 pt-1 text-[11px] text-foreground/55">
+                <Clock className="h-3 w-3" /> Previsão de {etaMin}–{etaMax} min
+              </div>
             </div>
           </div>
         </aside>
       </main>
+
+      {/* Fixed bottom action bar */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <div className="min-w-0">
+            <div className="text-[11px] uppercase tracking-wide text-foreground/55">Total</div>
+            <div className="truncate text-lg font-bold tabular-nums text-foreground">
+              {brl(total)}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {step !== "delivery" ? (
+              <Button
+                variant="outline"
+                className="h-12 rounded-full px-5 text-sm font-semibold"
+                onClick={() => setStep(step === "payment" ? "delivery" : "payment")}
+              >
+                Voltar
+              </Button>
+            ) : null}
+            <Button
+              size="lg"
+              className="h-12 min-w-[10rem] rounded-full px-6 text-base font-semibold"
+              disabled={primaryDisabled}
+              onClick={primaryAction}
+            >
+              {primaryLabel}
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <AuthGate
         open={authOpen}
@@ -221,13 +257,13 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className={bold ? "font-semibold text-foreground" : "text-muted-foreground"}>
+      <span className={bold ? "font-semibold text-foreground" : "text-foreground/60"}>
         {label}
       </span>
       <span
         className={
           "tabular-nums " +
-          (bold ? "text-base font-bold text-foreground " : "") +
+          (bold ? "text-base font-bold text-foreground " : "text-foreground ") +
           (tone === "success" ? "text-success" : "")
         }
       >
@@ -254,25 +290,31 @@ function Stepper({ step }: { step: Step }) {
             <li key={s.id} className="flex flex-1 items-center gap-2">
               <span
                 className={cn(
-                  "grid h-6 w-6 place-items-center rounded-full text-[11px]",
+                  "grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] transition-colors",
                   done
-                    ? "bg-success text-success-foreground"
+                    ? "bg-primary text-primary-foreground"
                     : active
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground",
+                      ? "bg-primary text-primary-foreground ring-4 ring-primary-soft"
+                      : "bg-surface text-foreground/50",
                 )}
               >
                 {done ? <Check className="h-3.5 w-3.5" /> : i + 1}
               </span>
               <span
-                className={
-                  active ? "text-foreground" : done ? "text-foreground" : "text-muted-foreground"
-                }
+                className={cn(
+                  "hidden sm:inline",
+                  active || done ? "text-foreground" : "text-foreground/50",
+                )}
               >
                 {s.label}
               </span>
               {i < steps.length - 1 ? (
-                <span className={cn("h-px flex-1", done ? "bg-success" : "bg-border")} />
+                <span
+                  className={cn(
+                    "h-px flex-1 transition-colors",
+                    done ? "bg-primary" : "bg-border",
+                  )}
+                />
               ) : null}
             </li>
           );
@@ -297,47 +339,55 @@ function DeliveryStep({
 }) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
           onClick={() => setPickup(false)}
           className={cn(
-            "flex flex-col items-start gap-1 rounded-xl border p-4 text-left transition-colors",
-            !pickup ? "border-primary bg-primary-soft" : "border-border hover:bg-surface",
+            "flex flex-col items-start gap-1 rounded-2xl border p-4 text-left transition-all",
+            !pickup
+              ? "border-primary bg-primary-soft shadow-[var(--shadow-card)]"
+              : "border-border bg-card hover:border-primary/30 hover:bg-surface",
           )}
         >
           <Bike className="h-5 w-5 text-primary" />
           <span className="text-sm font-semibold">Entrega</span>
-          <span className="text-xs text-muted-foreground">
-            {restaurant.deliveryMinutes[0]}–{restaurant.deliveryMinutes[1]} min · {brl(restaurant.deliveryFee)}
+          <span className="text-xs text-foreground/55">
+            {restaurant.deliveryMinutes[0]}–{restaurant.deliveryMinutes[1]} min ·{" "}
+            {brl(restaurant.deliveryFee)}
           </span>
         </button>
         <button
           type="button"
           onClick={() => setPickup(true)}
           className={cn(
-            "flex flex-col items-start gap-1 rounded-xl border p-4 text-left transition-colors",
-            pickup ? "border-primary bg-primary-soft" : "border-border hover:bg-surface",
+            "flex flex-col items-start gap-1 rounded-2xl border p-4 text-left transition-all",
+            pickup
+              ? "border-primary bg-primary-soft shadow-[var(--shadow-card)]"
+              : "border-border bg-card hover:border-primary/30 hover:bg-surface",
           )}
         >
           <Building2 className="h-5 w-5 text-primary" />
           <span className="text-sm font-semibold">Retirar no local</span>
-          <span className="text-xs text-muted-foreground">Pronto em ~20 min · sem taxa</span>
+          <span className="text-xs text-foreground/55">Pronto em ~20 min · sem taxa</span>
         </button>
       </div>
 
       {!pickup ? (
         <div className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
-          <div className="mb-2 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold">Endereço de entrega</h3>
-            <Link to="/enderecos/novo" className="text-xs font-semibold text-primary hover:underline">
-              <Plus className="mr-0.5 inline h-3.5 w-3.5" /> Novo
+            <Link
+              to="/enderecos/novo"
+              className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary-soft"
+            >
+              <Plus className="h-3.5 w-3.5" /> Novo
             </Link>
           </div>
           {addresses.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+            <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-foreground/60">
               Nenhum endereço cadastrado.
-              <div className="mt-2">
+              <div className="mt-3">
                 <Link
                   to="/enderecos/novo"
                   className="inline-flex h-10 items-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground"
@@ -357,20 +407,25 @@ function DeliveryStep({
                       type="button"
                       onClick={() => onSelect(a.id)}
                       className={cn(
-                        "flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-colors",
+                        "flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-all",
                         active
                           ? "border-primary bg-primary-soft"
-                          : "border-border hover:bg-surface",
+                          : "border-border bg-background hover:border-primary/30 hover:bg-surface",
                       )}
                     >
-                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-background text-primary">
+                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-background text-primary ring-1 ring-border">
                         <Icon className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1 text-sm">
                         <div className="font-semibold">
-                          {a.label || (a.kind === "home" ? "Casa" : a.kind === "work" ? "Trabalho" : "Outro")}
+                          {a.label ||
+                            (a.kind === "home"
+                              ? "Casa"
+                              : a.kind === "work"
+                                ? "Trabalho"
+                                : "Outro")}
                         </div>
-                        <div className="text-muted-foreground">
+                        <div className="text-foreground/60">
                           {a.street}, {a.number} — {a.neighborhood}
                         </div>
                       </div>
@@ -451,7 +506,7 @@ function PaymentStep({
             <div className="grid h-24 w-24 shrink-0 place-items-center rounded-lg bg-foreground text-background">
               <QrCode className="h-14 w-14" />
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-foreground/60">
               O QR Code será gerado ao confirmar o pedido.
               <div className="mt-1 font-mono text-[11px] text-foreground">
                 chave-pix-simulada@bistroazul.com
@@ -477,10 +532,10 @@ function PaymentStep({
                   type="button"
                   onClick={() => setCard(m)}
                   className={cn(
-                    "rounded-full border px-3 py-1 font-semibold",
+                    "rounded-full border px-3 py-1 font-semibold transition-colors",
                     cardMode === m
                       ? "border-primary bg-primary-soft text-primary"
-                      : "border-border text-muted-foreground",
+                      : "border-border text-foreground/60 hover:bg-surface",
                   )}
                 >
                   {m === "credit" ? "Crédito" : "Débito"}
@@ -528,7 +583,7 @@ function PaymentStep({
       >
         {payment.kind === "cash" ? (
           <div className="mt-3 space-y-2">
-            <label className="text-xs text-muted-foreground">Troco para (opcional)</label>
+            <label className="text-xs text-foreground/60">Troco para (opcional)</label>
             <Input
               inputMode="decimal"
               placeholder="R$ 50,00"
@@ -564,8 +619,8 @@ function PayOption({
   return (
     <div
       className={cn(
-        "rounded-2xl border bg-card p-4 shadow-[var(--shadow-card)] transition-colors",
-        active ? "border-primary" : "border-border",
+        "rounded-2xl border bg-card p-4 shadow-[var(--shadow-card)] transition-all",
+        active ? "border-primary ring-2 ring-primary-soft" : "border-border hover:border-primary/30",
       )}
     >
       <button type="button" onClick={onClick} className="flex w-full items-center gap-3 text-left">
@@ -574,14 +629,16 @@ function PayOption({
         </div>
         <div className="flex-1">
           <div className="text-sm font-semibold">{title}</div>
-          <div className="text-xs text-muted-foreground">{subtitle}</div>
+          <div className="text-xs text-foreground/55">{subtitle}</div>
         </div>
         <div
           className={cn(
-            "h-5 w-5 rounded-full border-2",
+            "grid h-5 w-5 place-items-center rounded-full border-2 transition-colors",
             active ? "border-primary bg-primary" : "border-border",
           )}
-        />
+        >
+          {active ? <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} /> : null}
+        </div>
       </button>
       {children}
     </div>
@@ -592,10 +649,18 @@ function ReviewStep({
   pickup,
   address,
   payment,
+  etaMin,
+  etaMax,
+  itemCount,
+  items,
 }: {
   pickup: boolean;
   address?: Address;
   payment: PaymentMethod;
+  etaMin: number;
+  etaMax: number;
+  itemCount: number;
+  items: ReturnType<typeof useCart.getState>["items"];
 }) {
   const payLabel =
     payment.kind === "pix"
@@ -603,22 +668,45 @@ function ReviewStep({
       : payment.kind === "cash"
         ? `Dinheiro${payment.change ? ` (troco para ${brl(payment.change)})` : ""}`
         : `${payment.kind === "credit" ? "Crédito" : "Débito"} · ${payment.brand} •••• ${payment.last4}`;
+
   return (
     <div className="space-y-3">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
+        <div className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-primary">
+            <Clock className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wide text-foreground/55">
+              {pickup ? "Retirada em" : "Chega em"}
+            </div>
+            <div className="text-lg font-bold tabular-nums text-foreground">
+              {etaMin}–{etaMax} min
+            </div>
+          </div>
+          <div className="ml-auto flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-foreground/70">
+            <Package className="h-3.5 w-3.5" />
+            {itemCount} {itemCount === 1 ? "item" : "itens"}
+          </div>
+        </div>
+      </div>
+
       <div className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
         <h3 className="mb-2 text-sm font-semibold">
           {pickup ? "Retirada no local" : "Endereço de entrega"}
         </h3>
         {pickup ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground/70">
             Retire seu pedido no balcão do restaurante em ~20 min.
           </p>
         ) : address ? (
-          <p className="text-sm">
-            {address.street}, {address.number}
+          <p className="text-sm text-foreground/80">
+            <span className="font-medium text-foreground">
+              {address.street}, {address.number}
+            </span>
             {address.complement ? ` — ${address.complement}` : ""}
             <br />
-            <span className="text-muted-foreground">
+            <span className="text-foreground/55">
               {address.neighborhood} · {address.city}/{address.state}
             </span>
           </p>
@@ -626,12 +714,30 @@ function ReviewStep({
           <p className="text-sm text-destructive">Nenhum endereço selecionado.</p>
         )}
       </div>
+
       <div className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
         <h3 className="mb-2 text-sm font-semibold">Forma de pagamento</h3>
-        <p className="text-sm">{payLabel}</p>
+        <p className="text-sm text-foreground/80">{payLabel}</p>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Ao confirmar, seu pedido será enviado ao restaurante e você poderá acompanhá-lo em tempo real.
+
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
+        <h3 className="mb-3 text-sm font-semibold">Seus itens</h3>
+        <ul className="space-y-2 text-sm">
+          {items.map((it) => (
+            <li key={it.id} className="flex justify-between gap-3">
+              <span className="line-clamp-1 text-foreground/80">
+                <span className="tabular-nums text-foreground/55">{it.quantity}×</span> {it.name}
+              </span>
+              <span className="shrink-0 tabular-nums text-foreground">
+                {brl(it.unitPrice * it.quantity)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <p className="text-xs text-foreground/55">
+        Ao confirmar, o pedido é enviado ao restaurante e você pode acompanhar em tempo real.
       </p>
     </div>
   );

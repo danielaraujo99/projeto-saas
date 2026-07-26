@@ -82,7 +82,7 @@ function HomePage() {
     .filter((c) => c.items.length > 0);
 
   return (
-    <div className="min-h-screen bg-background pb-28 lg:pb-0">
+    <div className="min-h-screen bg-background pb-[calc(env(safe-area-inset-bottom,0px)+7rem)] lg:pb-0">
       {/* Top nav (desktop) */}
       <div className="sticky top-0 z-30 hidden bg-background/90 shadow-[0_1px_0_var(--color-border)] backdrop-blur lg:block">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
