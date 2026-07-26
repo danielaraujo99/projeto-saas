@@ -284,7 +284,7 @@ function CheckoutPage() {
         onOpenChange={(o) => {
           if (!o) {
             setConfirmLeave(false);
-            reset();
+            reset?.();
           }
         }}
       >
@@ -299,7 +299,7 @@ function CheckoutPage() {
             <AlertDialogCancel
               onClick={() => {
                 setConfirmLeave(false);
-                reset();
+                reset?.();
               }}
             >
               Continuar aqui
@@ -307,7 +307,7 @@ function CheckoutPage() {
             <AlertDialogAction
               onClick={() => {
                 setConfirmLeave(false);
-                proceed();
+                proceed?.();
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
