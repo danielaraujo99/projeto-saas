@@ -1,8 +1,7 @@
 import * as React from "react";
 import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Search, LocateFixed, Loader2 } from "lucide-react";
+import { Search, LocateFixed, Loader2, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -133,7 +132,7 @@ export function MapPicker({ initial, onConfirm }: Props) {
     <div className="relative flex h-full w-full flex-col">
       <div className="relative z-[500] border-b border-border bg-background p-3">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/50" />
           <Input
             value={query}
             onChange={(e) => {
@@ -142,12 +141,12 @@ export function MapPicker({ initial, onConfirm }: Props) {
             }}
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            placeholder="Buscar endereço"
-            className="h-11 rounded-full pl-9 pr-4"
+            placeholder="Buscar endereço, rua ou bairro"
+            className="h-11 rounded-full border-border bg-surface pl-9 pr-4 focus-visible:bg-background"
           />
         </div>
         {showSuggestions && suggestions.length > 0 ? (
-          <ul className="absolute inset-x-3 top-[calc(100%-4px)] z-[600] mt-1 max-h-72 overflow-auto rounded-xl border border-border bg-background shadow-[var(--shadow-elevated)]">
+          <ul className="absolute inset-x-3 top-[calc(100%-4px)] z-[600] mt-1 max-h-72 overflow-auto rounded-2xl border border-border bg-background shadow-[var(--shadow-elevated)]">
             {suggestions.map((s, i) => (
               <li key={i}>
                 <button
@@ -159,7 +158,7 @@ export function MapPicker({ initial, onConfirm }: Props) {
                   }}
                   className="block w-full px-4 py-2.5 text-left text-sm hover:bg-surface"
                 >
-                  <div className="line-clamp-2">{s.display_name}</div>
+                  <div className="line-clamp-2 text-foreground/80">{s.display_name}</div>
                 </button>
               </li>
             ))}
@@ -175,37 +174,52 @@ export function MapPicker({ initial, onConfirm }: Props) {
           className="h-full w-full"
         >
           <TileLayer
-            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; OpenStreetMap'
+            url="https://basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
+            attribution='&copy; OpenStreetMap &copy; CARTO'
+            subdomains={["a", "b", "c", "d"]}
+            maxZoom={19}
+          />
+          <TileLayer
+            url="https://basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
+            subdomains={["a", "b", "c", "d"]}
+            maxZoom={19}
           />
           <MapController center={center} onCenterChange={setCenter} />
         </MapContainer>
 
         {/* Center pin overlay */}
         <div className="pointer-events-none absolute inset-0 z-[400] flex flex-col items-center justify-center">
-          <div className="mb-1 rounded-full bg-foreground/90 px-3 py-1 text-xs font-medium text-background">
+          <div className="mb-2 rounded-full border border-border bg-background/95 px-3 py-1 text-[11px] font-medium text-foreground/80 shadow-[var(--shadow-card)] backdrop-blur">
             Mova o mapa para ajustar
           </div>
-          <div className="relative">
-            <div className="h-8 w-8 rounded-full border-4 border-primary bg-background shadow-[var(--shadow-elevated)]" />
-            <div className="mx-auto -mt-1 h-4 w-1 rounded-b-full bg-primary" />
-            <div className="mx-auto -mt-1 h-2 w-2 rounded-full bg-primary/40 blur-sm" />
+          <div className="relative flex flex-col items-center">
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-elevated)] ring-4 ring-background">
+              <MapPin className="h-5 w-5" strokeWidth={2.5} />
+            </div>
+            <div className="-mt-1 h-2 w-2 rounded-full bg-primary/25 blur-[2px]" />
           </div>
         </div>
 
         <button
           onClick={locate}
-          className="absolute right-3 top-3 z-[500] grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-foreground shadow-[var(--shadow-card)]"
+          className="absolute right-3 top-3 z-[500] grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-foreground shadow-[var(--shadow-card)] transition-transform hover:scale-105"
           aria-label="Usar minha localização"
         >
           <LocateFixed className="h-5 w-5" />
         </button>
       </div>
 
-      <div className="z-[500] border-t border-border bg-background p-4">
-        <div className="mb-3 flex items-start gap-3 rounded-xl bg-surface p-3">
-          <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "📍"}
+      <div
+        className="z-[500] border-t border-border bg-background px-4 pt-4"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
+      >
+        <div className="mb-3 flex items-start gap-3 rounded-2xl border border-border bg-surface p-3">
+          <div className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <MapPin className="h-4 w-4" />
+            )}
           </div>
           <div className="min-w-0 text-sm">
             <div className="font-semibold text-foreground">
@@ -213,7 +227,7 @@ export function MapPicker({ initial, onConfirm }: Props) {
                 ? `${reverseData.street}${reverseData.neighborhood ? `, ${reverseData.neighborhood}` : ""}`
                 : "Endereço aproximado"}
             </div>
-            <div className="line-clamp-1 text-xs text-muted-foreground">
+            <div className="line-clamp-1 text-xs text-foreground/55">
               {reverseData?.displayName ?? "Ajuste o pino no mapa"}
             </div>
           </div>

@@ -34,7 +34,7 @@ export function ProductCard({ product, onClick }: Props) {
         <h3 className="line-clamp-1 text-[15px] font-semibold text-foreground sm:text-base">
           {product.name}
         </h3>
-        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-foreground/55 sm:text-sm">
           {product.description}
         </p>
         <div className="mt-auto flex items-baseline gap-2 pt-2">
