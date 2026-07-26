@@ -278,7 +278,46 @@ function CheckoutPage() {
         }}
         onSuccess={() => setAuthOpen(false)}
       />
+
+      <AlertDialog
+        open={confirmLeave}
+        onOpenChange={(o) => {
+          if (!o) {
+            setConfirmLeave(false);
+            reset();
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sair do checkout?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Seu carrinho será mantido, mas você perderá o progresso desta finalização.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setConfirmLeave(false);
+                reset();
+              }}
+            >
+              Continuar aqui
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirmLeave(false);
+                proceed();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sair
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+
   );
 }
 
