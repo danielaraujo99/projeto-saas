@@ -1,6 +1,6 @@
 import * as React from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Search, ShoppingBag, User2 } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Search, ShoppingBag } from "lucide-react";
 import { categories, products } from "@/data/menu";
 import { RestaurantHeader } from "@/components/restaurant-header";
 import { CategoryTabs } from "@/components/category-tabs";
@@ -12,10 +12,8 @@ import { Input } from "@/components/ui/input";
 import type { Product } from "@/types";
 import { useCart } from "@/store/cart";
 import { CartLines, CouponBox, OrderSummary } from "@/components/cart-parts";
-import { useAuth } from "@/store/auth";
 import { AuthGate } from "@/components/auth-gate";
 import { brl } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
