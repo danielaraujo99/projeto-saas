@@ -66,6 +66,14 @@ function Page() {
             icon={<MapPin className="h-6 w-6" />}
             title="Nenhum endereço salvo"
             description="Cadastre um endereço para agilizar seus pedidos."
+            action={
+              <button
+                onClick={() => nav({ to: "/enderecos/novo" })}
+                className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground hover:opacity-95"
+              >
+                <Plus className="h-4 w-4" /> Adicionar endereço
+              </button>
+            }
           />
         ) : (
           <ul className="space-y-2">

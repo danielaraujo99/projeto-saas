@@ -61,7 +61,7 @@ function Page() {
       lng: confirmed.lng,
     };
     add(addr);
-    toast.success("Endereço adicionado");
+    toast.success("Endereço salvo");
     nav({ to: "/checkout" });
   };
 
