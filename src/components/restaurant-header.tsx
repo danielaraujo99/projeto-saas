@@ -54,7 +54,7 @@ export function RestaurantHeader() {
             <StatCell
               icon={<Star className="h-3.5 w-3.5 fill-warning text-warning" strokeWidth={2} />}
               value={r.rating.toFixed(1)}
-              label={`${r.reviewsCount}+ avaliações`}
+              label="avaliação"
             />
             <StatCell
               icon={<Clock className="h-3.5 w-3.5 text-foreground/55" strokeWidth={2} />}
