@@ -9,13 +9,17 @@ import {
   MapPin,
   PackageCheck,
   Phone,
+  RefreshCw,
   Star,
+  WifiOff,
 } from "lucide-react";
 import { getOrderById } from "@/lib/orders-api";
 import { statusLabel, TIMELINE, type OrderStatus } from "@/lib/order-status";
 import { EmptyState } from "@/components/empty-state";
+import { Button } from "@/components/ui/button";
 import { brl } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/pedido/$id")({
   head: () => ({
@@ -41,10 +45,11 @@ function Page() {
   const { id } = useParams({ from: "/pedido/$id" });
   const nav = useNavigate();
 
-  const { data: order, isLoading } = useQuery({
+  const { data: order, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["order", id],
     queryFn: () => getOrderById(id),
     refetchInterval: 5000,
+    retry: 1,
   });
 
   const [, force] = React.useReducer((x) => x + 1, 0);
@@ -60,6 +65,31 @@ function Page() {
       </div>
     );
   }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6">
+          <EmptyState
+            icon={<WifiOff className="h-6 w-6" />}
+            title="Falha de conexão"
+            description="Não conseguimos carregar seu pedido. Verifique sua internet e tente de novo."
+            action={
+              <Button
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className="h-11 rounded-full px-5 text-sm font-semibold"
+              >
+                <RefreshCw className={cn("mr-2 h-4 w-4", isFetching && "animate-spin")} />
+                Tentar novamente
+              </Button>
+            }
+          />
+        </div>
+      </div>
+    );
+  }
+
 
   if (!order) {
     return (

@@ -1,12 +1,14 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bike, ChefHat, CheckCircle2, PackageCheck, Receipt, Star } from "lucide-react";
+import { Bike, ChefHat, CheckCircle2, PackageCheck, Receipt, RefreshCw, Star, WifiOff } from "lucide-react";
 import { listMyOrders, type OrderRow } from "@/lib/orders-api";
 import { statusLabel, type OrderStatus, ACTIVE_STATUSES } from "@/lib/order-status";
 import { brl } from "@/lib/format";
 import { EmptyState } from "@/components/empty-state";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/pedidos")({
   head: () => ({
@@ -30,11 +32,13 @@ const icons: Record<OrderStatus, React.ComponentType<{ className?: string }>> = 
 
 function Page() {
   const [tab, setTab] = React.useState<"active" | "past">("active");
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["orders"],
     queryFn: listMyOrders,
     refetchInterval: 8000,
+    retry: 1,
   });
+
 
   const orders = data ?? [];
   const active = orders.filter(
@@ -62,7 +66,24 @@ function Page() {
       <main className="mx-auto max-w-3xl px-4 py-4 sm:px-6">
         {isLoading ? (
           <div className="py-16 text-center text-sm text-foreground/60">Carregando…</div>
+        ) : isError ? (
+          <EmptyState
+            icon={<WifiOff className="h-6 w-6" />}
+            title="Falha de conexão"
+            description="Não conseguimos carregar seus pedidos. Verifique sua internet e tente novamente."
+            action={
+              <Button
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className="h-11 rounded-full px-5 text-sm font-semibold"
+              >
+                <RefreshCw className={cn("mr-2 h-4 w-4", isFetching && "animate-spin")} />
+                Tentar novamente
+              </Button>
+            }
+          />
         ) : list.length === 0 ? (
+
           <EmptyState
             icon={<Receipt className="h-6 w-6" />}
             title={tab === "active" ? "Nenhum pedido em andamento" : "Você ainda não tem histórico"}

@@ -1,10 +1,12 @@
 import * as React from "react";
 import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { Search, LocateFixed, Loader2, MapPin } from "lucide-react";
+import { Search, LocateFixed, Loader2, MapPin, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
 
 export type ReverseAddress = {
   lat: number;
@@ -86,6 +88,8 @@ export function MapPicker({ initial, onConfirm }: Props) {
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [reverseData, setReverseData] = React.useState<ReverseAddress | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [locating, setLocating] = React.useState(false);
+  const [permissionDenied, setPermissionDenied] = React.useState(false);
 
   React.useEffect(() => {
     const ctrl = new AbortController();
@@ -121,12 +125,37 @@ export function MapPicker({ initial, onConfirm }: Props) {
   }, [center[0], center[1]]);
 
   const locate = () => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      toast.error("Geolocalização indisponível", {
+        description: "Seu navegador não suporta localização. Busque pelo endereço acima.",
+      });
+      return;
+    }
+    setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => setCenter([pos.coords.latitude, pos.coords.longitude]),
-      () => {},
+      (pos) => {
+        setCenter([pos.coords.latitude, pos.coords.longitude]);
+        setPermissionDenied(false);
+        setLocating(false);
+      },
+      (err) => {
+        setLocating(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setPermissionDenied(true);
+          toast.error("Permissão de localização negada", {
+            description:
+              "Habilite a localização nas configurações do navegador ou digite o endereço no campo acima.",
+          });
+        } else {
+          toast.error("Não foi possível obter sua localização", {
+            description: "Tente novamente ou busque pelo endereço.",
+          });
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
     );
   };
+
 
   return (
     <div className="relative flex h-full w-full flex-col">
@@ -202,12 +231,30 @@ export function MapPicker({ initial, onConfirm }: Props) {
 
         <button
           onClick={locate}
-          className="absolute right-3 top-3 z-[500] grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-foreground shadow-[var(--shadow-card)] transition-transform hover:scale-105"
+          disabled={locating}
+          className="absolute right-3 top-3 z-[500] grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-foreground shadow-[var(--shadow-card)] transition-transform hover:scale-105 disabled:opacity-70"
           aria-label="Usar minha localização"
         >
-          <LocateFixed className="h-5 w-5" />
+          {locating ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <LocateFixed className="h-5 w-5" />
+          )}
         </button>
+
+        {permissionDenied ? (
+          <div className="absolute inset-x-3 bottom-3 z-[500] flex items-start gap-2 rounded-2xl border border-warning/40 bg-warning/10 px-3 py-2.5 text-xs text-foreground shadow-[var(--shadow-card)]">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+            <div>
+              <div className="font-semibold">Localização bloqueada</div>
+              <div className="text-foreground/70">
+                Habilite a permissão de localização no navegador ou busque o endereço no campo acima.
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
+
 
       <div
         className="z-[500] border-t border-border bg-background px-4 pt-4"

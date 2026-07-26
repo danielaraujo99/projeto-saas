@@ -1,11 +1,22 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, CreditCard, LogOut, MapPin, User2 } from "lucide-react";
+import { ChevronRight, CreditCard, LogOut, MapPin, Trash2, User2 } from "lucide-react";
 import { useAuth } from "@/store/auth";
 import { useAddresses } from "@/store/addresses";
 import { useCards } from "@/store/cards";
 import { AuthGate } from "@/components/auth-gate";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/conta")({
   head: () => ({
@@ -24,12 +35,17 @@ function Page() {
   const logout = useAuth((s) => s.logout);
   const addresses = useAddresses((s) => s.addresses);
   const cards = useCards((s) => s.cards);
+  const removeCard = useCards((s) => s.remove);
   const nav = useNavigate();
   const [authOpen, setAuthOpen] = React.useState(!user);
+  const [pendingRemove, setPendingRemove] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setAuthOpen(!user);
   }, [user]);
+
+  const removingCard = pendingRemove ? cards.find((c) => c.id === pendingRemove) : null;
+
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pt-20">
@@ -82,11 +98,20 @@ function Page() {
                       {c.kind === "credit" ? "Crédito" : "Débito"} · {c.holder}
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setPendingRemove(c.id)}
+                    aria-label={`Remover cartão final ${c.last4}`}
+                    className="grid h-9 w-9 place-items-center rounded-full text-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </li>
               ))}
             </ul>
           )}
         </SectionCard>
+
 
         {user ? (
           <button
@@ -110,7 +135,36 @@ function Page() {
         }}
         onSuccess={() => setAuthOpen(false)}
       />
+
+      <AlertDialog open={!!pendingRemove} onOpenChange={(o) => !o && setPendingRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover cartão?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {removingCard
+                ? `O cartão ${removingCard.brand} final ${removingCard.last4} será removido dos meios salvos.`
+                : "Este cartão será removido dos meios salvos."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingRemove) {
+                  removeCard(pendingRemove);
+                  toast.success("Cartão removido");
+                }
+                setPendingRemove(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+
   );
 }
 
