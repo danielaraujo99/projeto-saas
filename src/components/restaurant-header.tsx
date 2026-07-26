@@ -83,9 +83,9 @@ function StatCell({
     <div className="flex flex-col items-center justify-center gap-0.5 px-2 py-2.5 text-center [&:not(:last-child)]:border-r [&:not(:last-child)]:border-border">
       <div className="flex items-center gap-1 text-sm font-semibold tabular-nums text-foreground">
         {icon}
-        <span>{value}</span>
+        <span className="whitespace-nowrap">{value}</span>
       </div>
-      <span className="text-[10px] font-medium uppercase tracking-wide text-foreground/50">
+      <span className="whitespace-nowrap text-[10px] font-medium uppercase tracking-wide text-foreground/50">
         {label}
       </span>
     </div>
