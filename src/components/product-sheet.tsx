@@ -1,5 +1,5 @@
 import * as React from "react";
-import { X, Check } from "lucide-react";
+import { X, Check, MessageSquareText } from "lucide-react";
 import type { CartCustomization, CartItem, Product } from "@/types";
 import { brl } from "@/lib/format";
 import { QuantityStepper } from "@/components/quantity-stepper";
@@ -123,25 +123,28 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
       <div
         ref={scrollRef}
         onScroll={(e) => setScrolled((e.currentTarget as HTMLDivElement).scrollTop > 4)}
-        className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-7"
+        className="min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-7"
       >
-        <h2 className="text-2xl font-bold leading-tight text-foreground">{product.name}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          {product.description}
-        </p>
-        <div className="mt-3 text-xl font-bold tabular-nums text-foreground">
-          {brl(product.price)}
+        <div className="space-y-2.5">
+          <h2 className="text-2xl font-bold leading-tight text-foreground">{product.name}</h2>
+          <p className="text-sm leading-6 text-muted-foreground">
+            {product.description}
+          </p>
+          <div className="text-xl font-bold tabular-nums text-foreground">
+            {brl(product.price)}
+          </div>
         </div>
 
         {groups.map((g, gi) => {
           const selected = selections[g.id] ?? [];
           const showError = triedSubmit && !isGroupValid(g);
+          const current = selected.length;
           return (
             <section key={g.id} className={cn("pt-6", gi > 0 && "mt-6 border-t border-border")}>
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <h3 className="text-[15px] font-semibold text-foreground">{g.name}</h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
+                  <h3 className="text-base font-bold leading-tight text-foreground">{g.name}</h3>
+                  <p className="mt-1 text-xs font-medium text-muted-foreground">
                     {g.min === g.max
                       ? g.min === 1
                         ? "Escolha 1 opção"
@@ -151,9 +154,14 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
                         : `De ${g.min} a ${g.max}`}
                   </p>
                 </div>
-                <ProductBadgePill kind={g.required ? "required" : "optional"} />
+                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                  <ProductBadgePill kind={g.required ? "required" : "optional"} />
+                  <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">
+                    {current}/{g.max}
+                  </span>
+                </div>
               </div>
-              <div className="mt-3 space-y-2">
+              <div className="mt-4 space-y-2.5">
                 {g.options.map((opt) => {
                   const active = selected.some((c) => c.optionId === opt.id);
                   const isRadio = g.max === 1;
@@ -175,9 +183,9 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
                         )
                       }
                       className={cn(
-                        "flex w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-all",
+                        "flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all",
                         active
-                          ? "border-primary bg-primary-soft"
+                          ? "border-primary bg-primary-soft shadow-[var(--shadow-card)]"
                           : "border-border bg-card hover:border-primary/40 hover:bg-surface",
                       )}
                     >
@@ -201,7 +209,7 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
                         </span>
                         <span
                           className={cn(
-                            "truncate text-sm",
+                            "truncate text-[15px] leading-5",
                             active ? "font-semibold text-foreground" : "text-foreground",
                           )}
                         >
@@ -229,31 +237,47 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
         })}
 
         <section className={cn("pt-6", groups.length > 0 && "mt-6 border-t border-border")}>
-          <label className="text-[15px] font-semibold text-foreground">Alguma observação?</label>
-          <p className="mt-0.5 text-xs text-muted-foreground">Ex: sem cebola, ponto da carne…</p>
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+              <MessageSquareText className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-3">
+                <label className="text-base font-bold leading-tight text-foreground">Detalhes do pedido</label>
+                <ProductBadgePill kind="optional" />
+              </div>
+              <p className="mt-1 text-xs font-medium text-muted-foreground">
+                Informe preferências para a cozinha.
+              </p>
+            </div>
+          </div>
           <Textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             maxLength={200}
-            placeholder="Escreva aqui…"
-            className="mt-3 resize-none"
-            rows={3}
+            placeholder="Ex: sem cebola, molho à parte, ponto da carne..."
+            className="mt-4 min-h-24 resize-none rounded-2xl border-border bg-card text-sm leading-6 shadow-none focus-visible:ring-2 focus-visible:ring-primary/20"
+            rows={4}
           />
+          <div className="mt-2 flex justify-end text-[11px] font-medium tabular-nums text-muted-foreground">
+            {note.length}/200
+          </div>
         </section>
       </div>
 
       <div
         className={cn(
-          "shrink-0 border-t border-border bg-background px-6 py-4 transition-shadow sm:px-7",
+          "shrink-0 border-t border-border bg-background px-5 py-4 transition-shadow sm:px-7",
           scrolled ? "shadow-[0_-8px_24px_-12px_rgba(15,23,42,0.18)]" : "",
         )}
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
       >
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-3">
           <QuantityStepper value={quantity} onChange={setQuantity} min={1} />
           <Button
             onClick={submit}
             size="lg"
-            className="h-12 flex-1 rounded-full text-base font-semibold"
+            className="h-12 min-w-0 flex-1 rounded-full px-5 text-base font-semibold shadow-[var(--shadow-elevated)]"
           >
             <span>{editingItem ? "Atualizar" : "Adicionar"}</span>
             <span className="ml-auto tabular-nums">{brl(total)}</span>

@@ -5,52 +5,33 @@ import { brl } from "@/lib/format";
 export function RestaurantHeader() {
   const r = restaurant;
   return (
-    <header className="relative">
-      <div className="relative h-40 w-full overflow-hidden bg-muted sm:h-56 lg:h-64">
+    <header className="relative pb-2">
+      <div className="relative h-36 w-full overflow-hidden bg-muted sm:h-56 lg:h-64">
         <img src={r.cover} alt="" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/10 to-background" />
       </div>
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="-mt-10 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:-mt-12 sm:p-6">
-          {/* Top row: avatar + identity + status */}
-          <div className="flex items-start gap-4">
-            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border bg-background shadow-[var(--shadow-card)] sm:h-20 sm:w-20">
+        <div className="relative -mt-5 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:-mt-10 sm:p-6">
+          <div className="flex items-center gap-3.5 sm:gap-5">
+            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-border bg-background shadow-[var(--shadow-card)] sm:h-20 sm:w-20 sm:rounded-2xl">
               <img src={r.logo} alt={r.name} className="h-full w-full object-cover" />
             </div>
 
-            <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h1 className="truncate text-xl font-bold leading-tight text-foreground sm:text-2xl">
-                    {r.name}
-                  </h1>
-                  <p className="mt-1 truncate text-sm text-foreground/60">
-                    {r.categoriesLabel}
-                  </p>
-                </div>
-                <span
-                  className={
-                    "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold " +
-                    (r.isOpen
-                      ? "bg-success/12 text-[color:oklch(0.4_0.11_155)]"
-                      : "bg-muted text-muted-foreground")
-                  }
-                >
-                  <span
-                    className={
-                      "h-1.5 w-1.5 rounded-full " +
-                      (r.isOpen ? "bg-success" : "bg-muted-foreground")
-                    }
-                  />
-                  {r.isOpen ? "Aberto" : "Fechado"}
-                </span>
+            <div className="min-w-0 flex-1 py-0.5">
+              <div className="flex min-w-0 items-start justify-between gap-2.5">
+                <h1 className="min-w-0 truncate text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                  {r.name}
+                </h1>
+                <StatusPill open={r.isOpen} />
               </div>
+              <p className="mt-1.5 truncate text-sm font-medium text-muted-foreground">
+                {r.categoriesLabel}
+              </p>
             </div>
           </div>
 
-          {/* Stats row */}
-          <div className="mt-5 grid grid-cols-4 rounded-xl bg-surface/70">
+          <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-border bg-surface p-2 sm:mt-5 sm:grid-cols-4">
             <StatCell
               icon={<Star className="h-3.5 w-3.5 fill-warning text-warning" strokeWidth={2} />}
               value={r.rating.toFixed(1)}
@@ -78,6 +59,20 @@ export function RestaurantHeader() {
   );
 }
 
+function StatusPill({ open }: { open: boolean }) {
+  return (
+    <span
+      className={
+        "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none " +
+        (open ? "bg-success/12 text-success" : "bg-muted text-muted-foreground")
+      }
+    >
+      <span className={(open ? "bg-success" : "bg-muted-foreground") + " h-1.5 w-1.5 rounded-full"} />
+      {open ? "Aberto" : "Fechado"}
+    </span>
+  );
+}
+
 function StatCell({
   icon,
   value,
@@ -88,12 +83,12 @@ function StatCell({
   label: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-1 px-2 py-3.5 text-center [&:not(:last-child)]:border-r [&:not(:last-child)]:border-border/60">
-      <div className="flex items-center gap-1.5 text-[15px] font-bold tabular-nums leading-none text-foreground">
+    <div className="flex min-h-16 items-center gap-3 rounded-xl px-3 py-3 sm:flex-col sm:justify-center sm:gap-1.5 sm:px-2 sm:text-center">
+      <div className="flex items-center gap-1.5 text-[15px] font-bold tabular-nums leading-none text-foreground sm:text-base">
         {icon}
         <span className="whitespace-nowrap">{value}</span>
       </div>
-      <span className="line-clamp-1 text-[11px] font-medium text-foreground/50">
+      <span className="text-xs font-medium leading-none text-muted-foreground sm:text-[11px]">
         {label}
       </span>
     </div>
