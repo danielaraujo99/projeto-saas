@@ -1,11 +1,22 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, CreditCard, LogOut, MapPin, User2 } from "lucide-react";
+import { ChevronRight, CreditCard, LogOut, MapPin, Trash2, User2 } from "lucide-react";
 import { useAuth } from "@/store/auth";
 import { useAddresses } from "@/store/addresses";
 import { useCards } from "@/store/cards";
 import { AuthGate } from "@/components/auth-gate";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/conta")({
   head: () => ({
