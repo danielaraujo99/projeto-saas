@@ -135,7 +135,36 @@ function Page() {
         }}
         onSuccess={() => setAuthOpen(false)}
       />
+
+      <AlertDialog open={!!pendingRemove} onOpenChange={(o) => !o && setPendingRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover cartão?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {removingCard
+                ? `O cartão ${removingCard.brand} final ${removingCard.last4} será removido dos meios salvos.`
+                : "Este cartão será removido dos meios salvos."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingRemove) {
+                  removeCard(pendingRemove);
+                  toast.success("Cartão removido");
+                }
+                setPendingRemove(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+
   );
 }
 
