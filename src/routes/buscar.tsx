@@ -1,8 +1,9 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search as SearchIcon, Star, Clock, MapPin } from "lucide-react";
+import { Search as SearchIcon, SearchX, Star, Clock, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { restaurant } from "@/data/restaurant";
+import { EmptyState } from "@/components/empty-state";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/buscar")({
@@ -87,41 +88,56 @@ function Page() {
           ))}
         </div>
 
-        <h2 className="mt-6 text-sm font-semibold text-foreground/70">
-          {results.length} restaurante{results.length === 1 ? "" : "s"} encontrado
-          {results.length === 1 ? "" : "s"}
-        </h2>
+        {results.length === 0 ? (
+          <EmptyState
+            className="my-8"
+            icon={<SearchX className="h-6 w-6" />}
+            title="Nenhum resultado encontrado"
+            description={
+              q.trim()
+                ? `Não encontramos nada para “${q.trim()}”. Tente outro termo ou uma das sugestões acima.`
+                : "Tente buscar por outro termo ou uma das sugestões acima."
+            }
+          />
+        ) : (
+          <>
+            <h2 className="mt-6 text-sm font-semibold text-foreground/70">
+              {results.length} restaurante{results.length === 1 ? "" : "s"} encontrado
+              {results.length === 1 ? "" : "s"}
+            </h2>
 
-        <ul className="mt-3 space-y-3">
-          {results.map((c) => (
-            <li key={c.id}>
-              <a
-                href="/"
-                className="flex gap-3 overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-elevated)]"
-              >
-                <div
-                  className="h-20 w-20 shrink-0 rounded-xl bg-cover bg-center"
-                  style={{ backgroundImage: `url(${c.cover})` }}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="text-base font-bold text-foreground">{c.name}</div>
-                  <div className="line-clamp-1 text-xs text-foreground/60">{c.tagline}</div>
-                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-foreground/70">
-                    <span className="inline-flex items-center gap-1">
-                      <Star className="h-3 w-3 fill-warning text-warning" /> {c.rating.toFixed(1)}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> {c.minutes[0]}–{c.minutes[1]} min
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin className="h-3 w-3" /> {c.distanceKm.toFixed(1)} km
-                    </span>
-                  </div>
-                </div>
-              </a>
-            </li>
-          ))}
-        </ul>
+            <ul className="mt-3 space-y-3">
+              {results.map((c) => (
+                <li key={c.id}>
+                  <a
+                    href="/"
+                    className="flex gap-3 overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-elevated)]"
+                  >
+                    <div
+                      className="h-20 w-20 shrink-0 rounded-xl bg-cover bg-center"
+                      style={{ backgroundImage: `url(${c.cover})` }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-base font-bold text-foreground">{c.name}</div>
+                      <div className="line-clamp-1 text-xs text-foreground/60">{c.tagline}</div>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-foreground/70">
+                        <span className="inline-flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-warning text-warning" /> {c.rating.toFixed(1)}
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <Clock className="h-3 w-3" /> {c.minutes[0]}–{c.minutes[1]} min
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="h-3 w-3" /> {c.distanceKm.toFixed(1)} km
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </main>
     </div>
   );

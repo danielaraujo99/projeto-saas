@@ -80,11 +80,7 @@ function Page() {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="grid min-h-screen place-items-center bg-background">
-        <div className="text-sm text-foreground/60">Carregando pedido…</div>
-      </div>
-    );
+    return <OrderTrackingSkeleton />;
   }
 
   if (isError) {

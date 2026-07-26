@@ -1,10 +1,12 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, CreditCard, LogOut, MapPin, Trash2, User2 } from "lucide-react";
+import { ChevronRight, CreditCard, LogOut, MapPin, Plus, Trash2, User2 } from "lucide-react";
 import { useAuth } from "@/store/auth";
 import { useAddresses } from "@/store/addresses";
 import { useCards } from "@/store/cards";
 import { AuthGate } from "@/components/auth-gate";
+import { EmptyState } from "@/components/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,10 +41,16 @@ function Page() {
   const nav = useNavigate();
   const [authOpen, setAuthOpen] = React.useState(!user);
   const [pendingRemove, setPendingRemove] = React.useState<string | null>(null);
+  const [hydrated, setHydrated] = React.useState(false);
 
   React.useEffect(() => {
     setAuthOpen(!user);
   }, [user]);
+
+  React.useEffect(() => {
+    const t = window.setTimeout(() => setHydrated(true), 250);
+    return () => window.clearTimeout(t);
+  }, []);
 
   const removingCard = pendingRemove ? cards.find((c) => c.id === pendingRemove) : null;
 
@@ -56,75 +64,93 @@ function Page() {
       </header>
 
       <main className="mx-auto max-w-3xl space-y-4 px-4 py-4 sm:px-6">
-        {/* Profile */}
-        <section className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-          <div className="grid h-14 w-14 place-items-center rounded-full bg-primary-soft text-primary">
-            <User2 className="h-6 w-6" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-base font-bold text-foreground">
-              {user?.name ?? "Entre na sua conta"}
-            </div>
-            <div className="truncate text-xs text-foreground/60">
-              {user?.email ?? user?.phone ?? "Acesse para salvar endereços e pedidos"}
-            </div>
-          </div>
-        </section>
+        {!hydrated ? (
+          <ConteudoSkeleton />
+        ) : (
+          <>
+            {/* Profile */}
+            <section className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+              <div className="grid h-14 w-14 place-items-center rounded-full bg-primary-soft text-primary">
+                <User2 className="h-6 w-6" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-base font-bold text-foreground">
+                  {user?.name ?? "Entre na sua conta"}
+                </div>
+                <div className="truncate text-xs text-foreground/60">
+                  {user?.email ?? user?.phone ?? "Acesse para salvar endereços e pedidos"}
+                </div>
+              </div>
+            </section>
 
-        <Row
-          icon={<MapPin className="h-5 w-5" />}
-          title="Endereços salvos"
-          hint={`${addresses.length} ${addresses.length === 1 ? "endereço" : "endereços"}`}
-          to="/enderecos"
-        />
+            <Row
+              icon={<MapPin className="h-5 w-5" />}
+              title="Endereços salvos"
+              hint={`${addresses.length} ${addresses.length === 1 ? "endereço" : "endereços"}`}
+              to="/enderecos"
+            />
 
-        <SectionCard title="Formas de pagamento salvas">
-          {cards.length === 0 ? (
-            <div className="px-5 py-6 text-sm text-foreground/55">
-              Você ainda não tem cartões salvos. Adicione durante o checkout.
-            </div>
-          ) : (
-            <ul className="divide-y divide-border/60">
-              {cards.map((c) => (
-                <li key={c.id} className="flex items-center gap-3 px-5 py-3.5">
-                  <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-primary">
-                    <CreditCard className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-semibold text-foreground">
-                      {c.brand} •••• {c.last4}
-                    </div>
-                    <div className="text-[11px] uppercase text-foreground/50">
-                      {c.kind === "credit" ? "Crédito" : "Débito"} · {c.holder}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setPendingRemove(c.id)}
-                    aria-label={`Remover cartão final ${c.last4}`}
-                    className="grid h-9 w-9 place-items-center rounded-full text-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </SectionCard>
+            <SectionCard title="Formas de pagamento salvas">
+              {cards.length === 0 ? (
+                <div className="px-4 py-4">
+                  <EmptyState
+                    icon={<CreditCard className="h-6 w-6" />}
+                    title="Nenhum cartão salvo"
+                    description="Adicione um cartão durante o checkout para agilizar seus próximos pedidos."
+                    action={
+                      <button
+                        onClick={() => nav({ to: "/checkout" })}
+                        className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground hover:opacity-95"
+                      >
+                        <Plus className="h-4 w-4" /> Adicionar cartão
+                      </button>
+                    }
+                  />
+                </div>
+              ) : (
+                <ul className="divide-y divide-border/60">
+                  {cards.map((c) => (
+                    <li key={c.id} className="flex items-center gap-3 px-5 py-3.5">
+                      <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-primary">
+                        <CreditCard className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-semibold text-foreground">
+                          {c.brand} •••• {c.last4}
+                        </div>
+                        <div className="text-[11px] uppercase text-foreground/50">
+                          {c.kind === "credit" ? "Crédito" : "Débito"} · {c.holder}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setPendingRemove(c.id)}
+                        aria-label={`Remover cartão final ${c.last4}`}
+                        className="grid h-9 w-9 place-items-center rounded-full text-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </SectionCard>
 
 
-        {user ? (
-          <button
-            onClick={() => {
-              logout();
-              toast.success("Sessão encerrada");
-              nav({ to: "/" });
-            }}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-4 text-sm font-semibold text-destructive shadow-[var(--shadow-card)]"
-          >
-            <LogOut className="h-4 w-4" /> Sair da conta
-          </button>
-        ) : null}
+            {user ? (
+              <button
+                onClick={() => {
+                  logout();
+                  toast.success("Sessão encerrada");
+                  nav({ to: "/" });
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-4 text-sm font-semibold text-destructive shadow-[var(--shadow-card)]"
+              >
+                <LogOut className="h-4 w-4" /> Sair da conta
+              </button>
+            ) : null}
+          </>
+        )}
       </main>
 
       <AuthGate
@@ -204,5 +230,35 @@ function Row({
       </div>
       <ChevronRight className="h-4 w-4 text-foreground/40" />
     </Link>
+  );
+}
+
+function ConteudoSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+        <Skeleton className="h-14 w-14 rounded-full" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-3 w-56" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+        <Skeleton className="h-10 w-10 rounded-full" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+      </div>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
+        <div className="border-b border-border px-5 py-3">
+          <Skeleton className="h-4 w-52" />
+        </div>
+        <div className="space-y-3 p-5">
+          <Skeleton className="h-12 w-full rounded-xl" />
+          <Skeleton className="h-12 w-full rounded-xl" />
+        </div>
+      </div>
+    </div>
   );
 }
