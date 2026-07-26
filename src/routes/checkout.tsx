@@ -18,7 +18,8 @@ import {
 import { useCart } from "@/store/cart";
 import { useAddresses } from "@/store/addresses";
 import { useAuth } from "@/store/auth";
-import { useOrders } from "@/store/orders";
+import { createOrder as apiCreateOrder } from "@/lib/orders-api";
+import { restaurant as restaurantMeta } from "@/data/restaurant";
 import { restaurant } from "@/data/restaurant";
 import { brl } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -55,7 +56,7 @@ function CheckoutPage() {
   const addresses = useAddresses((s) => s.addresses);
   const selectedId = useAddresses((s) => s.selectedId);
   const select = useAddresses((s) => s.select);
-  const createOrder = useOrders((s) => s.create);
+  
   const nav = useNavigate();
 
   const [authOpen, setAuthOpen] = React.useState(!user);
@@ -87,21 +88,27 @@ function CheckoutPage() {
   const placeOrder = async () => {
     if (!pickup && !selectedAddress) return toast.error("Escolha um endereço de entrega.");
     setPlacing(true);
-    await new Promise((r) => setTimeout(r, 900));
-    const order = createOrder({
-      items,
-      subtotal,
-      deliveryFee: fee,
-      discount,
-      total,
-      couponCode: coupon?.code,
-      address: pickup ? undefined : selectedAddress,
-      pickup,
-      payment,
-      etaMinutes: etaMax,
-    });
-    clear();
-    nav({ to: "/pedido/$id", params: { id: order.id } });
+    try {
+      const order = await apiCreateOrder({
+        items,
+        subtotal,
+        deliveryFee: fee,
+        discount,
+        total,
+        couponCode: coupon?.code,
+        address: pickup ? undefined : selectedAddress,
+        pickup,
+        payment,
+        etaMinutes: etaMax,
+        restaurantId: restaurantMeta.id,
+      });
+      clear();
+      nav({ to: "/pagamento/$id", params: { id: order.id }, replace: true });
+    } catch (e) {
+      console.error(e);
+      toast.error("Não foi possível criar o pedido. Tente novamente.");
+      setPlacing(false);
+    }
   };
 
   const primaryLabel =
