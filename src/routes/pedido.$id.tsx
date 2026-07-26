@@ -21,6 +21,7 @@ import { getOrderById } from "@/lib/orders-api";
 import { statusLabel, TIMELINE, type OrderStatus } from "@/lib/order-status";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Collapsible,
   CollapsibleContent,
