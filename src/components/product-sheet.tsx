@@ -143,7 +143,7 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
           const showError = triedSubmit && !isGroupValid(g);
           const current = selected.length;
           return (
-            <section key={g.id} className={cn("pt-6", gi > 0 && "mt-6 border-t border-border")}>
+            <section key={g.id} data-group={g.id} className={cn("pt-6", gi > 0 && "mt-6 border-t border-border")}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="text-base font-bold leading-tight text-foreground">{g.name}</h3>
