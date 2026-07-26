@@ -231,12 +231,30 @@ export function MapPicker({ initial, onConfirm }: Props) {
 
         <button
           onClick={locate}
-          className="absolute right-3 top-3 z-[500] grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-foreground shadow-[var(--shadow-card)] transition-transform hover:scale-105"
+          disabled={locating}
+          className="absolute right-3 top-3 z-[500] grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-foreground shadow-[var(--shadow-card)] transition-transform hover:scale-105 disabled:opacity-70"
           aria-label="Usar minha localização"
         >
-          <LocateFixed className="h-5 w-5" />
+          {locating ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <LocateFixed className="h-5 w-5" />
+          )}
         </button>
+
+        {permissionDenied ? (
+          <div className="absolute inset-x-3 bottom-3 z-[500] flex items-start gap-2 rounded-2xl border border-warning/40 bg-warning/10 px-3 py-2.5 text-xs text-foreground shadow-[var(--shadow-card)]">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+            <div>
+              <div className="font-semibold">Localização bloqueada</div>
+              <div className="text-foreground/70">
+                Habilite a permissão de localização no navegador ou busque o endereço no campo acima.
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
+
 
       <div
         className="z-[500] border-t border-border bg-background px-4 pt-4"
