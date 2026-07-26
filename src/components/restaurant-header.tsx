@@ -83,18 +83,14 @@ function StatCell({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted/60">
-        {icon}
+    <div className="flex items-center gap-2 min-w-0">
+      <span className="shrink-0">{icon}</span>
+      <span className="whitespace-nowrap text-[15px] font-bold tabular-nums leading-none text-foreground">
+        {value}
       </span>
-      <div className="flex min-w-0 items-baseline gap-1.5">
-        <span className="whitespace-nowrap text-[15px] font-bold tabular-nums leading-none text-foreground">
-          {value}
-        </span>
-        <span className="truncate text-xs font-medium leading-none text-muted-foreground">
-          {label}
-        </span>
-      </div>
+      <span className="truncate text-xs font-medium leading-none text-muted-foreground">
+        {label}
+      </span>
     </div>
   );
 }
