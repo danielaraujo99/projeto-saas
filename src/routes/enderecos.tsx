@@ -122,6 +122,7 @@ function Page() {
           </ul>
         )}
       </main>
+      <Outlet />
     </div>
   );
 }
