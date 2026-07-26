@@ -9,38 +9,159 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as EnderecosRouteImport } from './routes/enderecos'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as CarrinhoRouteImport } from './routes/carrinho'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PedidoIdRouteImport } from './routes/pedido.$id'
+import { Route as EnderecosNovoRouteImport } from './routes/enderecos.novo'
+import { Route as PedidoIdAvaliarRouteImport } from './routes/pedido.$id.avaliar'
 
+const EnderecosRoute = EnderecosRouteImport.update({
+  id: '/enderecos',
+  path: '/enderecos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarrinhoRoute = CarrinhoRouteImport.update({
+  id: '/carrinho',
+  path: '/carrinho',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PedidoIdRoute = PedidoIdRouteImport.update({
+  id: '/pedido/$id',
+  path: '/pedido/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnderecosNovoRoute = EnderecosNovoRouteImport.update({
+  id: '/novo',
+  path: '/novo',
+  getParentRoute: () => EnderecosRoute,
+} as any)
+const PedidoIdAvaliarRoute = PedidoIdAvaliarRouteImport.update({
+  id: '/avaliar',
+  path: '/avaliar',
+  getParentRoute: () => PedidoIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/carrinho': typeof CarrinhoRoute
+  '/checkout': typeof CheckoutRoute
+  '/enderecos': typeof EnderecosRouteWithChildren
+  '/enderecos/novo': typeof EnderecosNovoRoute
+  '/pedido/$id': typeof PedidoIdRouteWithChildren
+  '/pedido/$id/avaliar': typeof PedidoIdAvaliarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/carrinho': typeof CarrinhoRoute
+  '/checkout': typeof CheckoutRoute
+  '/enderecos': typeof EnderecosRouteWithChildren
+  '/enderecos/novo': typeof EnderecosNovoRoute
+  '/pedido/$id': typeof PedidoIdRouteWithChildren
+  '/pedido/$id/avaliar': typeof PedidoIdAvaliarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/carrinho': typeof CarrinhoRoute
+  '/checkout': typeof CheckoutRoute
+  '/enderecos': typeof EnderecosRouteWithChildren
+  '/enderecos/novo': typeof EnderecosNovoRoute
+  '/pedido/$id': typeof PedidoIdRouteWithChildren
+  '/pedido/$id/avaliar': typeof PedidoIdAvaliarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/carrinho'
+    | '/checkout'
+    | '/enderecos'
+    | '/enderecos/novo'
+    | '/pedido/$id'
+    | '/pedido/$id/avaliar'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/carrinho'
+    | '/checkout'
+    | '/enderecos'
+    | '/enderecos/novo'
+    | '/pedido/$id'
+    | '/pedido/$id/avaliar'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/carrinho'
+    | '/checkout'
+    | '/enderecos'
+    | '/enderecos/novo'
+    | '/pedido/$id'
+    | '/pedido/$id/avaliar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  CarrinhoRoute: typeof CarrinhoRoute
+  CheckoutRoute: typeof CheckoutRoute
+  EnderecosRoute: typeof EnderecosRouteWithChildren
+  PedidoIdRoute: typeof PedidoIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/enderecos': {
+      id: '/enderecos'
+      path: '/enderecos'
+      fullPath: '/enderecos'
+      preLoaderRoute: typeof EnderecosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/carrinho': {
+      id: '/carrinho'
+      path: '/carrinho'
+      fullPath: '/carrinho'
+      preLoaderRoute: typeof CarrinhoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +169,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pedido/$id': {
+      id: '/pedido/$id'
+      path: '/pedido/$id'
+      fullPath: '/pedido/$id'
+      preLoaderRoute: typeof PedidoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/enderecos/novo': {
+      id: '/enderecos/novo'
+      path: '/novo'
+      fullPath: '/enderecos/novo'
+      preLoaderRoute: typeof EnderecosNovoRouteImport
+      parentRoute: typeof EnderecosRoute
+    }
+    '/pedido/$id/avaliar': {
+      id: '/pedido/$id/avaliar'
+      path: '/avaliar'
+      fullPath: '/pedido/$id/avaliar'
+      preLoaderRoute: typeof PedidoIdAvaliarRouteImport
+      parentRoute: typeof PedidoIdRoute
+    }
   }
 }
 
+interface EnderecosRouteChildren {
+  EnderecosNovoRoute: typeof EnderecosNovoRoute
+}
+
+const EnderecosRouteChildren: EnderecosRouteChildren = {
+  EnderecosNovoRoute: EnderecosNovoRoute,
+}
+
+const EnderecosRouteWithChildren = EnderecosRoute._addFileChildren(
+  EnderecosRouteChildren,
+)
+
+interface PedidoIdRouteChildren {
+  PedidoIdAvaliarRoute: typeof PedidoIdAvaliarRoute
+}
+
+const PedidoIdRouteChildren: PedidoIdRouteChildren = {
+  PedidoIdAvaliarRoute: PedidoIdAvaliarRoute,
+}
+
+const PedidoIdRouteWithChildren = PedidoIdRoute._addFileChildren(
+  PedidoIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
+  CarrinhoRoute: CarrinhoRoute,
+  CheckoutRoute: CheckoutRoute,
+  EnderecosRoute: EnderecosRouteWithChildren,
+  PedidoIdRoute: PedidoIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

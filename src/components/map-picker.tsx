@@ -1,0 +1,232 @@
+import * as React from "react";
+import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { Search, LocateFixed, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+export type ReverseAddress = {
+  lat: number;
+  lng: number;
+  street?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  postcode?: string;
+  displayName: string;
+};
+
+type Suggestion = {
+  display_name: string;
+  lat: string;
+  lon: string;
+  address?: Record<string, string>;
+};
+
+const nomBase = "https://nominatim.openstreetmap.org";
+
+async function search(q: string, signal?: AbortSignal): Promise<Suggestion[]> {
+  if (q.trim().length < 3) return [];
+  const url = `${nomBase}/search?format=json&addressdetails=1&countrycodes=br&limit=5&q=${encodeURIComponent(q)}`;
+  const res = await fetch(url, { headers: { "Accept-Language": "pt-BR" }, signal });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+async function reverse(lat: number, lng: number): Promise<ReverseAddress | null> {
+  const url = `${nomBase}/reverse?format=json&addressdetails=1&lat=${lat}&lon=${lng}`;
+  const res = await fetch(url, { headers: { "Accept-Language": "pt-BR" } });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const a = data.address ?? {};
+  return {
+    lat,
+    lng,
+    street: a.road || a.pedestrian || a.footway || a.residential,
+    neighborhood: a.suburb || a.neighbourhood || a.city_district,
+    city: a.city || a.town || a.village || a.municipality,
+    state: a.state,
+    postcode: a.postcode,
+    displayName: data.display_name,
+  };
+}
+
+function MapController({
+  center,
+  onCenterChange,
+}: {
+  center: [number, number];
+  onCenterChange: (c: [number, number]) => void;
+}) {
+  const map = useMap();
+  React.useEffect(() => {
+    map.flyTo(center, Math.max(map.getZoom(), 16), { duration: 0.6 });
+  }, [center[0], center[1]]);
+  useMapEvents({
+    moveend: () => {
+      const c = map.getCenter();
+      onCenterChange([c.lat, c.lng]);
+    },
+  });
+  return null;
+}
+
+type Props = {
+  initial?: [number, number];
+  onConfirm: (addr: ReverseAddress) => void;
+};
+
+export function MapPicker({ initial, onConfirm }: Props) {
+  const [center, setCenter] = React.useState<[number, number]>(
+    initial ?? [-23.5613, -46.6565],
+  );
+  const [query, setQuery] = React.useState("");
+  const [suggestions, setSuggestions] = React.useState<Suggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = React.useState(false);
+  const [reverseData, setReverseData] = React.useState<ReverseAddress | null>(null);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      try {
+        const res = await search(query, ctrl.signal);
+        setSuggestions(res);
+      } catch {
+        /* ignore */
+      }
+    }, 400);
+    return () => {
+      ctrl.abort();
+      clearTimeout(t);
+    };
+  }, [query]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    const t = setTimeout(async () => {
+      const r = await reverse(center[0], center[1]);
+      if (!cancelled) {
+        setReverseData(r);
+        setLoading(false);
+      }
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+      setLoading(false);
+    };
+  }, [center[0], center[1]]);
+
+  const locate = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setCenter([pos.coords.latitude, pos.coords.longitude]),
+      () => {},
+    );
+  };
+
+  return (
+    <div className="relative flex h-full w-full flex-col">
+      <div className="relative z-[500] border-b border-border bg-background p-3">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setShowSuggestions(true);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            placeholder="Buscar endereço"
+            className="h-11 rounded-full pl-9 pr-4"
+          />
+        </div>
+        {showSuggestions && suggestions.length > 0 ? (
+          <ul className="absolute inset-x-3 top-[calc(100%-4px)] z-[600] mt-1 max-h-72 overflow-auto rounded-xl border border-border bg-background shadow-[var(--shadow-elevated)]">
+            {suggestions.map((s, i) => (
+              <li key={i}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCenter([parseFloat(s.lat), parseFloat(s.lon)]);
+                    setQuery(s.display_name.split(",").slice(0, 2).join(","));
+                    setShowSuggestions(false);
+                  }}
+                  className="block w-full px-4 py-2.5 text-left text-sm hover:bg-surface"
+                >
+                  <div className="line-clamp-2">{s.display_name}</div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+
+      <div className="relative min-h-0 flex-1">
+        <MapContainer
+          center={center}
+          zoom={16}
+          zoomControl={false}
+          className="h-full w-full"
+        >
+          <TileLayer
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; OpenStreetMap'
+          />
+          <MapController center={center} onCenterChange={setCenter} />
+        </MapContainer>
+
+        {/* Center pin overlay */}
+        <div className="pointer-events-none absolute inset-0 z-[400] flex flex-col items-center justify-center">
+          <div className="mb-1 rounded-full bg-foreground/90 px-3 py-1 text-xs font-medium text-background">
+            Mova o mapa para ajustar
+          </div>
+          <div className="relative">
+            <div className="h-8 w-8 rounded-full border-4 border-primary bg-background shadow-[var(--shadow-elevated)]" />
+            <div className="mx-auto -mt-1 h-4 w-1 rounded-b-full bg-primary" />
+            <div className="mx-auto -mt-1 h-2 w-2 rounded-full bg-primary/40 blur-sm" />
+          </div>
+        </div>
+
+        <button
+          onClick={locate}
+          className="absolute right-3 top-3 z-[500] grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-foreground shadow-[var(--shadow-card)]"
+          aria-label="Usar minha localização"
+        >
+          <LocateFixed className="h-5 w-5" />
+        </button>
+      </div>
+
+      <div className="z-[500] border-t border-border bg-background p-4">
+        <div className="mb-3 flex items-start gap-3 rounded-xl bg-surface p-3">
+          <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "📍"}
+          </div>
+          <div className="min-w-0 text-sm">
+            <div className="font-semibold text-foreground">
+              {reverseData?.street
+                ? `${reverseData.street}${reverseData.neighborhood ? `, ${reverseData.neighborhood}` : ""}`
+                : "Endereço aproximado"}
+            </div>
+            <div className="line-clamp-1 text-xs text-muted-foreground">
+              {reverseData?.displayName ?? "Ajuste o pino no mapa"}
+            </div>
+          </div>
+        </div>
+        <Button
+          size="lg"
+          className={cn("h-12 w-full rounded-full text-base font-semibold")}
+          disabled={!reverseData}
+          onClick={() => reverseData && onConfirm(reverseData)}
+        >
+          Confirmar localização
+        </Button>
+      </div>
+    </div>
+  );
+}
