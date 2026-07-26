@@ -51,7 +51,7 @@ export function AdaptiveSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className={cn("h-[92vh] rounded-t-2xl p-0 flex flex-col", className)}
+        className={cn("h-[92vh] overflow-hidden rounded-t-2xl p-0 flex flex-col", className)}
       >
         <VisuallyHidden asChild>
           <SheetTitle>{title}</SheetTitle>
