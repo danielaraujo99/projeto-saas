@@ -47,6 +47,14 @@ export type Restaurant = {
   isOpen: boolean;
   categoriesLabel: string;
   distanceKm: number;
+  pickupAddress?: {
+    street: string;
+    number: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+    reference?: string;
+  };
 };
 
 export type CartCustomization = {

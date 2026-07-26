@@ -521,7 +521,83 @@ function DeliveryStep({
             Gerenciar endereços
           </Link>
         </div>
-      ) : null}
+      ) : (
+        <PickupInfo />
+      )}
+    </div>
+  );
+}
+
+function PickupInfo() {
+  const p = restaurant.pickupAddress;
+  const [name, setName] = React.useState("");
+  const eta = React.useMemo(() => {
+    const d = new Date(Date.now() + 20 * 60 * 1000);
+    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  }, []);
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-sm font-semibold">Retirada no restaurante</h3>
+        <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-semibold text-primary">
+          Sem taxa
+        </span>
+      </div>
+
+      <div className="flex items-start gap-3 rounded-xl border border-border bg-background p-3">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-soft text-primary ring-1 ring-border">
+          <MapPin className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1 text-sm">
+          <div className="font-semibold">{restaurant.name}</div>
+          {p ? (
+            <>
+              <div className="text-foreground/70">
+                {p.street}, {p.number} — {p.neighborhood}
+              </div>
+              <div className="text-foreground/55">
+                {p.city} · {p.state}
+              </div>
+              {p.reference ? (
+                <div className="mt-1 text-xs text-foreground/55">Ref.: {p.reference}</div>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-start gap-3 rounded-xl border border-border bg-background p-3">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-soft text-primary ring-1 ring-border">
+          <Clock className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1 text-sm">
+          <div className="font-semibold">Pronto por volta das {eta}</div>
+          <div className="text-foreground/60">
+            Tempo estimado de preparo: 15–20 min após a confirmação
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <label htmlFor="pickup-name" className="mb-1.5 block text-xs font-semibold text-foreground/70">
+          Nome para retirada <span className="font-normal text-foreground/50">(opcional)</span>
+        </label>
+        <Input
+          id="pickup-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ex.: Ana Souza"
+          maxLength={60}
+        />
+      </div>
+
+      <div className="mt-3 flex items-start gap-2 rounded-xl bg-primary-soft/60 px-3 py-2.5 text-xs text-foreground/70">
+        <Package className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+        <p>
+          Ao chegar, apresente o <strong className="font-semibold text-foreground">número do pedido</strong> no
+          balcão para receber sua sacola.
+        </p>
+      </div>
     </div>
   );
 }

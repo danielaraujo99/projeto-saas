@@ -15,4 +15,12 @@ export const restaurant: Restaurant = {
   isOpen: true,
   categoriesLabel: "Hambúrgueres • Lanches",
   distanceKm: 1.4,
+  pickupAddress: {
+    street: "Rua das Palmeiras",
+    number: "245",
+    neighborhood: "Centro",
+    city: "São Paulo",
+    state: "SP",
+    reference: "Em frente à praça, fachada azul",
+  },
 };
