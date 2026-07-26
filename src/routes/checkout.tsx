@@ -205,18 +205,18 @@ function CheckoutPage() {
         className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div className="min-w-0">
+        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 sm:px-6">
+          <div className="min-w-0 flex-1">
             <div className="text-[11px] uppercase tracking-wide text-foreground/55">Total</div>
-            <div className="truncate text-lg font-bold tabular-nums text-foreground">
+            <div className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground">
               {brl(total)}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {step !== "delivery" ? (
               <Button
                 variant="outline"
-                className="h-12 rounded-full px-5 text-sm font-semibold"
+                className="h-12 rounded-full px-4 text-sm font-semibold"
                 onClick={() => setStep(step === "payment" ? "delivery" : "payment")}
               >
                 Voltar
@@ -224,7 +224,7 @@ function CheckoutPage() {
             ) : null}
             <Button
               size="lg"
-              className="h-12 min-w-[10rem] rounded-full px-6 text-base font-semibold"
+              className="h-12 rounded-full px-6 text-base font-semibold"
               disabled={primaryDisabled}
               onClick={primaryAction}
             >
@@ -450,18 +450,6 @@ function DeliveryStep({
   );
 }
 
-const brands = [
-  { name: "Visa", re: /^4/ },
-  { name: "Mastercard", re: /^(5[1-5]|2[2-7])/ },
-  { name: "Amex", re: /^3[47]/ },
-  { name: "Elo", re: /^(4011|4312|4389|4514|4573|5041|5066|5067|509|6277|6362|6363|650|6516|6550)/ },
-];
-
-function detectBrand(num: string) {
-  const clean = num.replace(/\D/g, "");
-  return brands.find((b) => b.re.test(clean))?.name;
-}
-
 function PaymentStep({
   payment,
   setPayment,
@@ -469,126 +457,40 @@ function PaymentStep({
   payment: PaymentMethod;
   setPayment: (p: PaymentMethod) => void;
 }) {
-  const [cardNumber, setCardNumber] = React.useState("");
-  const [cardName, setCardName] = React.useState("");
-  const [cardExpiry, setCardExpiry] = React.useState("");
-  const [cardCvv, setCardCvv] = React.useState("");
-  const [cardMode, setCardMode] = React.useState<"credit" | "debit">("credit");
+  const [sheetOpen, setSheetOpen] = React.useState(false);
   const [changeFor, setChangeFor] = React.useState("");
 
-  const brand = detectBrand(cardNumber);
-
-  const setCard = (mode: "credit" | "debit") => {
-    setCardMode(mode);
-    const last4 = cardNumber.replace(/\D/g, "").slice(-4);
-    setPayment({
-      kind: mode,
-      cardId: cardNumber.replace(/\D/g, "").slice(0, 6) || "new",
-      brand: brand ?? "Cartão",
-      last4: last4 || "----",
-    });
-  };
-
-  React.useEffect(() => {
-    if (payment.kind === "credit" || payment.kind === "debit") setCard(cardMode);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cardNumber, brand]);
+  const summary = paymentSummary(payment);
 
   return (
     <div className="space-y-3">
-      <PayOption
-        active={payment.kind === "pix"}
-        icon={<QrCode className="h-5 w-5" />}
-        title="Pix"
-        subtitle="Aprovação instantânea"
-        onClick={() => setPayment({ kind: "pix" })}
-      >
-        {payment.kind === "pix" ? (
-          <div className="mt-3 flex items-center gap-4 rounded-xl bg-surface p-4">
-            <div className="grid h-24 w-24 shrink-0 place-items-center rounded-lg bg-foreground text-background">
-              <QrCode className="h-14 w-14" />
-            </div>
-            <div className="text-xs text-foreground/60">
-              O QR Code será gerado ao confirmar o pedido.
-              <div className="mt-1 font-mono text-[11px] text-foreground">
-                chave-pix-simulada@bistroazul.com
-              </div>
-            </div>
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
+        <h3 className="mb-3 text-sm font-semibold text-foreground">Forma de pagamento</h3>
+        <button
+          type="button"
+          onClick={() => setSheetOpen(true)}
+          className="flex w-full items-center gap-3 rounded-2xl border-2 border-primary bg-primary-soft px-4 py-3.5 text-left ring-2 ring-primary/20 transition-all hover:brightness-[0.98]"
+        >
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-background text-primary shadow-[var(--shadow-card)]">
+            {summary.icon}
           </div>
-        ) : null}
-      </PayOption>
-
-      <PayOption
-        active={payment.kind === "credit" || payment.kind === "debit"}
-        icon={<CreditCard className="h-5 w-5" />}
-        title="Cartão"
-        subtitle="Crédito ou débito"
-        onClick={() => setCard(cardMode)}
-      >
-        {payment.kind === "credit" || payment.kind === "debit" ? (
-          <div className="mt-3 space-y-3">
-            <div className="flex gap-2 text-xs">
-              {(["credit", "debit"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setCard(m)}
-                  className={cn(
-                    "rounded-full border px-3 py-1 font-semibold transition-colors",
-                    cardMode === m
-                      ? "border-primary bg-primary-soft text-primary"
-                      : "border-border text-foreground/60 hover:bg-surface",
-                  )}
-                >
-                  {m === "credit" ? "Crédito" : "Débito"}
-                </button>
-              ))}
-            </div>
-            <div className="relative">
-              <Input
-                inputMode="numeric"
-                placeholder="Número do cartão"
-                value={cardNumber}
-                onChange={(e) => setCardNumber(e.target.value.replace(/[^\d ]/g, "").slice(0, 19))}
-              />
-              {brand ? (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-primary">
-                  {brand}
-                </span>
-              ) : null}
-            </div>
-            <Input placeholder="Nome no cartão" value={cardName} onChange={(e) => setCardName(e.target.value)} />
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                placeholder="MM/AA"
-                inputMode="numeric"
-                value={cardExpiry}
-                onChange={(e) => setCardExpiry(e.target.value.slice(0, 5))}
-              />
-              <Input
-                placeholder="CVV"
-                inputMode="numeric"
-                value={cardCvv}
-                onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
-              />
-            </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold text-foreground">{summary.title}</div>
+            <div className="truncate text-xs text-foreground/60">{summary.subtitle}</div>
           </div>
-        ) : null}
-      </PayOption>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-semibold text-primary shadow-[var(--shadow-card)]">
+            <Pencil className="h-3.5 w-3.5" /> Alterar
+          </span>
+        </button>
 
-      <PayOption
-        active={payment.kind === "cash"}
-        icon={<Wallet className="h-5 w-5" />}
-        title="Dinheiro"
-        subtitle="Pague na entrega"
-        onClick={() => setPayment({ kind: "cash" })}
-      >
         {payment.kind === "cash" ? (
-          <div className="mt-3 space-y-2">
-            <label className="text-xs text-foreground/60">Troco para (opcional)</label>
+          <div className="mt-4 space-y-2">
+            <label className="text-xs font-semibold text-foreground/70">
+              Troco para (opcional)
+            </label>
             <Input
               inputMode="decimal"
-              placeholder="R$ 50,00"
+              placeholder="Ex: R$ 50,00"
               value={changeFor}
               onChange={(e) => {
                 setChangeFor(e.target.value);
@@ -596,55 +498,49 @@ function PaymentStep({
                 setPayment({ kind: "cash", change: isNaN(n) ? undefined : n });
               }}
             />
+            <p className="text-[11px] text-foreground/55">
+              Deixe em branco se não precisar de troco.
+            </p>
           </div>
         ) : null}
-      </PayOption>
+
+        <p className="mt-3 text-[11px] leading-relaxed text-foreground/55">
+          {payment.kind === "pix"
+            ? "O QR Code e a chave Pix serão exibidos após a confirmação do pedido."
+            : payment.kind === "cash"
+              ? "O pagamento é realizado ao entregador no momento da entrega."
+              : "O valor será cobrado no cartão selecionado após a confirmação."}
+        </p>
+      </div>
+
+      <PaymentPickerSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        value={payment}
+        onChange={setPayment}
+      />
     </div>
   );
 }
 
-function PayOption({
-  active,
-  icon,
-  title,
-  subtitle,
-  onClick,
-  children,
-}: {
-  active: boolean;
+function paymentSummary(p: PaymentMethod): {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
-  onClick: () => void;
-  children?: React.ReactNode;
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-2xl border bg-card p-4 shadow-[var(--shadow-card)] transition-all",
-        active ? "border-primary ring-2 ring-primary-soft" : "border-border hover:border-primary/30",
-      )}
-    >
-      <button type="button" onClick={onClick} className="flex w-full items-center gap-3 text-left">
-        <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-primary">
-          {icon}
-        </div>
-        <div className="flex-1">
-          <div className="text-sm font-semibold">{title}</div>
-          <div className="text-xs text-foreground/55">{subtitle}</div>
-        </div>
-        <div
-          className={cn(
-            "grid h-5 w-5 place-items-center rounded-full border-2 transition-colors",
-            active ? "border-primary bg-primary" : "border-border",
-          )}
-        >
-          {active ? <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} /> : null}
-        </div>
-      </button>
-      {children}
-    </div>
-  );
+} {
+  if (p.kind === "pix")
+    return { icon: <QrCode className="h-5 w-5" />, title: "Pix", subtitle: "Aprovação instantânea" };
+  if (p.kind === "cash")
+    return {
+      icon: <Wallet className="h-5 w-5" />,
+      title: "Dinheiro na entrega",
+      subtitle: p.change ? `Troco para ${brl(p.change)}` : "Sem troco",
+    };
+  return {
+    icon: <CreditCard className="h-5 w-5" />,
+    title: p.kind === "credit" ? "Cartão de crédito" : "Cartão de débito",
+    subtitle: `${p.brand} •••• ${p.last4}`,
+  };
 }
 
 function ReviewStep({
