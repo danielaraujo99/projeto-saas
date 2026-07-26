@@ -31,24 +31,24 @@ export function RestaurantHeader() {
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-border bg-surface p-2 sm:mt-5 sm:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3.5 rounded-2xl border border-border bg-surface px-4 py-3.5 sm:mt-5">
             <StatCell
-              icon={<Star className="h-3.5 w-3.5 fill-warning text-warning" strokeWidth={2} />}
+              icon={<Star className="h-4 w-4 fill-warning text-warning" strokeWidth={2} />}
               value={r.rating.toFixed(1)}
               label="avaliação"
             />
             <StatCell
-              icon={<Clock className="h-3.5 w-3.5 text-foreground/55" strokeWidth={2} />}
+              icon={<Clock className="h-4 w-4 text-foreground/55" strokeWidth={2} />}
               value={`${r.deliveryMinutes[0]}–${r.deliveryMinutes[1]}`}
               label="minutos"
             />
             <StatCell
-              icon={<Bike className="h-3.5 w-3.5 text-foreground/55" strokeWidth={2} />}
+              icon={<Bike className="h-4 w-4 text-foreground/55" strokeWidth={2} />}
               value={brl(r.deliveryFee)}
               label="entrega"
             />
             <StatCell
-              icon={<MapPin className="h-3.5 w-3.5 text-foreground/55" strokeWidth={2} />}
+              icon={<MapPin className="h-4 w-4 text-foreground/55" strokeWidth={2} />}
               value={`${r.distanceKm.toFixed(1)} km`}
               label="distância"
             />
@@ -83,12 +83,12 @@ function StatCell({
   label: string;
 }) {
   return (
-    <div className="flex min-h-16 items-center gap-3 rounded-xl px-3 py-3 sm:flex-col sm:justify-center sm:gap-1.5 sm:px-2 sm:text-center">
-      <div className="flex items-center gap-1.5 text-[15px] font-bold tabular-nums leading-none text-foreground sm:text-base">
-        {icon}
-        <span className="whitespace-nowrap">{value}</span>
-      </div>
-      <span className="text-xs font-medium leading-none text-muted-foreground sm:text-[11px]">
+    <div className="flex items-center gap-2 min-w-0">
+      <span className="shrink-0">{icon}</span>
+      <span className="whitespace-nowrap text-[15px] font-bold tabular-nums leading-none text-foreground">
+        {value}
+      </span>
+      <span className="truncate text-xs font-medium leading-none text-muted-foreground">
         {label}
       </span>
     </div>
