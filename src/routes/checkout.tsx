@@ -10,6 +10,7 @@ import {
   Home,
   MapPin,
   Package,
+  Pencil,
   Plus,
   QrCode,
   Wallet,
@@ -25,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { CouponBox } from "@/components/cart-parts";
 import type { Address, PaymentMethod } from "@/types";
 import { AuthGate } from "@/components/auth-gate";
+import { PaymentPickerSheet } from "@/components/payment-picker-sheet";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
