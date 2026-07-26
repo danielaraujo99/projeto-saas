@@ -1,5 +1,5 @@
 import * as React from "react";
-import { X, Check, MessageSquareText } from "lucide-react";
+import { Check, MessageSquareText } from "lucide-react";
 import type { CartCustomization, CartItem, Product } from "@/types";
 import { brl } from "@/lib/format";
 import { QuantityStepper } from "@/components/quantity-stepper";
@@ -74,7 +74,17 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
 
   const submit = () => {
     setTriedSubmit(true);
-    if (!allValid) return;
+    if (!allValid) {
+      const firstInvalid = groups.find((g) => !isGroupValid(g));
+      toast.error("Selecione as opções obrigatórias", {
+        description: firstInvalid ? `Confira: ${firstInvalid.name}` : undefined,
+      });
+      if (firstInvalid && scrollRef.current) {
+        const el = scrollRef.current.querySelector<HTMLElement>(`[data-group="${firstInvalid.id}"]`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
     const cs = flat;
     if (editingItem) {
       updateItem(editingItem.id, { customizations: cs, quantity, note });
@@ -111,13 +121,6 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
         ) : (
           <div className="aspect-[16/10] w-full bg-muted" />
         )}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-background/95 text-foreground shadow-[var(--shadow-elevated)] backdrop-blur transition-transform hover:scale-105"
-          aria-label="Fechar"
-        >
-          <X className="h-5 w-5" />
-        </button>
       </div>
 
       <div
@@ -140,7 +143,7 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
           const showError = triedSubmit && !isGroupValid(g);
           const current = selected.length;
           return (
-            <section key={g.id} className={cn("pt-6", gi > 0 && "mt-6 border-t border-border")}>
+            <section key={g.id} data-group={g.id} className={cn("pt-6", gi > 0 && "mt-6 border-t border-border")}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="text-base font-bold leading-tight text-foreground">{g.name}</h3>
