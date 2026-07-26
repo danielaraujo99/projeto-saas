@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Home, Briefcase, MapPin, Plus, Star, Trash2 } from "lucide-react";
 import { useAddresses } from "@/store/addresses";
 import { EmptyState } from "@/components/empty-state";
