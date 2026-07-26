@@ -18,7 +18,7 @@ export function CategoryTabs({ activeId, onSelect }: Props) {
   return (
     <div
       ref={scroller}
-      className="scrollbar-none flex gap-2 overflow-x-auto px-4 py-2 sm:px-6"
+      className="scrollbar-none flex gap-2 overflow-x-auto px-4 py-1 sm:px-6"
       style={{ scrollbarWidth: "none" }}
     >
       {categories.map((c) => {
@@ -30,10 +30,10 @@ export function CategoryTabs({ activeId, onSelect }: Props) {
             type="button"
             onClick={() => onSelect(c.id)}
             className={cn(
-              "shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-colors",
+              "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all",
               active
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-background text-foreground hover:bg-surface",
+                ? "bg-primary text-primary-foreground shadow-[var(--shadow-card)]"
+                : "bg-surface text-muted-foreground hover:bg-primary-soft hover:text-primary",
             )}
           >
             {c.name}
