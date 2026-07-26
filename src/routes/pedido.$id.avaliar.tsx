@@ -1,11 +1,12 @@
 import * as React from "react";
 import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-router";
 import { ArrowLeft, Star } from "lucide-react";
-import { useOrders } from "@/store/orders";
+import { rateOrder } from "@/lib/orders-api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/pedido/$id/avaliar")({
   head: () => ({
@@ -21,17 +22,27 @@ export const Route = createFileRoute("/pedido/$id/avaliar")({
 
 function Page() {
   const { id } = useParams({ from: "/pedido/$id/avaliar" });
-  const rate = useOrders((s) => s.rate);
   const nav = useNavigate();
+  const qc = useQueryClient();
   const [food, setFood] = React.useState(0);
   const [delivery, setDelivery] = React.useState(0);
   const [note, setNote] = React.useState("");
+  const [saving, setSaving] = React.useState(false);
 
-  const submit = () => {
+  const submit = async () => {
     if (food === 0) return toast.error("Avalie a comida com pelo menos 1 estrela.");
-    rate(id);
-    toast.success("Obrigado pela sua avaliação!");
-    nav({ to: "/pedido/$id", params: { id } });
+    setSaving(true);
+    try {
+      await rateOrder(id, { food, delivery, comment: note });
+      qc.invalidateQueries({ queryKey: ["order", id] });
+      qc.invalidateQueries({ queryKey: ["orders"] });
+      toast.success("Obrigado pela sua avaliação!");
+      nav({ to: "/pedido/$id", params: { id } });
+    } catch (e) {
+      console.error(e);
+      toast.error("Não foi possível salvar a avaliação.");
+      setSaving(false);
+    }
   };
 
   return (
@@ -82,8 +93,9 @@ function Page() {
           <Button
             className="h-12 flex-1 rounded-full text-base font-semibold"
             onClick={submit}
+            disabled={saving}
           >
-            Enviar avaliação
+            {saving ? "Enviando…" : "Enviar avaliação"}
           </Button>
         </div>
       </main>
