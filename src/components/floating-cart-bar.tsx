@@ -10,7 +10,10 @@ export function FloatingCartBar() {
 
   if (count === 0) return null;
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 lg:hidden">
+    <div
+      className="pointer-events-none fixed inset-x-0 z-40 flex justify-center px-4 lg:hidden"
+      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)" }}
+    >
       <button
         onClick={() => navigate({ to: "/carrinho" })}
         className="pointer-events-auto flex w-full max-w-md items-center justify-between rounded-full bg-primary px-5 py-3.5 text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"

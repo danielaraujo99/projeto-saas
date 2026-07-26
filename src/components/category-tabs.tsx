@@ -18,7 +18,7 @@ export function CategoryTabs({ activeId, onSelect }: Props) {
   return (
     <div
       ref={scroller}
-      className="scrollbar-none flex gap-2 overflow-x-auto px-4 py-1 sm:px-6"
+      className="scrollbar-none relative flex gap-1 overflow-x-auto px-4 py-1 sm:px-6"
       style={{ scrollbarWidth: "none" }}
     >
       {categories.map((c) => {
@@ -30,13 +30,19 @@ export function CategoryTabs({ activeId, onSelect }: Props) {
             type="button"
             onClick={() => onSelect(c.id)}
             className={cn(
-              "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all",
+              "relative shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
               active
-                ? "bg-primary text-primary-foreground shadow-[var(--shadow-card)]"
-                : "bg-surface text-muted-foreground hover:bg-primary-soft hover:text-primary",
+                ? "bg-primary-soft text-primary"
+                : "text-foreground/55 hover:bg-surface hover:text-foreground",
             )}
           >
-            {c.name}
+            <span className="relative z-10">{c.name}</span>
+            {active ? (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-x-3 -bottom-1 h-0.5 rounded-full bg-primary"
+              />
+            ) : null}
           </button>
         );
       })}
