@@ -258,15 +258,6 @@ function CheckoutPage() {
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            {step !== "delivery" ? (
-              <Button
-                variant="outline"
-                className="h-12 rounded-full px-4 text-sm font-semibold"
-                onClick={() => setStep(step === "payment" ? "delivery" : "payment")}
-              >
-                Voltar
-              </Button>
-            ) : null}
             <Button
               size="lg"
               className="h-12 rounded-full px-6 text-base font-semibold"
@@ -276,6 +267,7 @@ function CheckoutPage() {
               {primaryLabel}
             </Button>
           </div>
+
         </div>
       </div>
 
