@@ -12,7 +12,7 @@ export function FloatingCartBar() {
   return (
     <div
       className="pointer-events-none fixed inset-x-0 z-40 flex justify-center px-4 lg:hidden"
-      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)" }}
+      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 4.75rem)" }}
     >
       <button
         onClick={() => navigate({ to: "/carrinho" })}

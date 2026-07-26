@@ -9,18 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as EnderecosRouteImport } from './routes/enderecos'
+import { Route as ContaRouteImport } from './routes/conta'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
+import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PedidoIdRouteImport } from './routes/pedido.$id'
+import { Route as PagamentoIdRouteImport } from './routes/pagamento.$id'
 import { Route as EnderecosNovoRouteImport } from './routes/enderecos.novo'
 import { Route as PedidoIdAvaliarRouteImport } from './routes/pedido.$id.avaliar'
 
+const PedidosRoute = PedidosRouteImport.update({
+  id: '/pedidos',
+  path: '/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EnderecosRoute = EnderecosRouteImport.update({
   id: '/enderecos',
   path: '/enderecos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContaRoute = ContaRouteImport.update({
+  id: '/conta',
+  path: '/conta',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -31,6 +45,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const CarrinhoRoute = CarrinhoRouteImport.update({
   id: '/carrinho',
   path: '/carrinho',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BuscarRoute = BuscarRouteImport.update({
+  id: '/buscar',
+  path: '/buscar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -48,6 +67,11 @@ const PedidoIdRoute = PedidoIdRouteImport.update({
   path: '/pedido/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PagamentoIdRoute = PagamentoIdRouteImport.update({
+  id: '/pagamento/$id',
+  path: '/pagamento/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EnderecosNovoRoute = EnderecosNovoRouteImport.update({
   id: '/novo',
   path: '/novo',
@@ -62,20 +86,28 @@ const PedidoIdAvaliarRoute = PedidoIdAvaliarRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/buscar': typeof BuscarRoute
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
+  '/conta': typeof ContaRoute
   '/enderecos': typeof EnderecosRouteWithChildren
+  '/pedidos': typeof PedidosRoute
   '/enderecos/novo': typeof EnderecosNovoRoute
+  '/pagamento/$id': typeof PagamentoIdRoute
   '/pedido/$id': typeof PedidoIdRouteWithChildren
   '/pedido/$id/avaliar': typeof PedidoIdAvaliarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/buscar': typeof BuscarRoute
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
+  '/conta': typeof ContaRoute
   '/enderecos': typeof EnderecosRouteWithChildren
+  '/pedidos': typeof PedidosRoute
   '/enderecos/novo': typeof EnderecosNovoRoute
+  '/pagamento/$id': typeof PagamentoIdRoute
   '/pedido/$id': typeof PedidoIdRouteWithChildren
   '/pedido/$id/avaliar': typeof PedidoIdAvaliarRoute
 }
@@ -83,10 +115,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/buscar': typeof BuscarRoute
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
+  '/conta': typeof ContaRoute
   '/enderecos': typeof EnderecosRouteWithChildren
+  '/pedidos': typeof PedidosRoute
   '/enderecos/novo': typeof EnderecosNovoRoute
+  '/pagamento/$id': typeof PagamentoIdRoute
   '/pedido/$id': typeof PedidoIdRouteWithChildren
   '/pedido/$id/avaliar': typeof PedidoIdAvaliarRoute
 }
@@ -95,30 +131,42 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/buscar'
     | '/carrinho'
     | '/checkout'
+    | '/conta'
     | '/enderecos'
+    | '/pedidos'
     | '/enderecos/novo'
+    | '/pagamento/$id'
     | '/pedido/$id'
     | '/pedido/$id/avaliar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/buscar'
     | '/carrinho'
     | '/checkout'
+    | '/conta'
     | '/enderecos'
+    | '/pedidos'
     | '/enderecos/novo'
+    | '/pagamento/$id'
     | '/pedido/$id'
     | '/pedido/$id/avaliar'
   id:
     | '__root__'
     | '/'
     | '/auth'
+    | '/buscar'
     | '/carrinho'
     | '/checkout'
+    | '/conta'
     | '/enderecos'
+    | '/pedidos'
     | '/enderecos/novo'
+    | '/pagamento/$id'
     | '/pedido/$id'
     | '/pedido/$id/avaliar'
   fileRoutesById: FileRoutesById
@@ -126,19 +174,37 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  BuscarRoute: typeof BuscarRoute
   CarrinhoRoute: typeof CarrinhoRoute
   CheckoutRoute: typeof CheckoutRoute
+  ContaRoute: typeof ContaRoute
   EnderecosRoute: typeof EnderecosRouteWithChildren
+  PedidosRoute: typeof PedidosRoute
+  PagamentoIdRoute: typeof PagamentoIdRoute
   PedidoIdRoute: typeof PedidoIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pedidos': {
+      id: '/pedidos'
+      path: '/pedidos'
+      fullPath: '/pedidos'
+      preLoaderRoute: typeof PedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/enderecos': {
       id: '/enderecos'
       path: '/enderecos'
       fullPath: '/enderecos'
       preLoaderRoute: typeof EnderecosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conta': {
+      id: '/conta'
+      path: '/conta'
+      fullPath: '/conta'
+      preLoaderRoute: typeof ContaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -153,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: '/carrinho'
       fullPath: '/carrinho'
       preLoaderRoute: typeof CarrinhoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/buscar': {
+      id: '/buscar'
+      path: '/buscar'
+      fullPath: '/buscar'
+      preLoaderRoute: typeof BuscarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -174,6 +247,13 @@ declare module '@tanstack/react-router' {
       path: '/pedido/$id'
       fullPath: '/pedido/$id'
       preLoaderRoute: typeof PedidoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pagamento/$id': {
+      id: '/pagamento/$id'
+      path: '/pagamento/$id'
+      fullPath: '/pagamento/$id'
+      preLoaderRoute: typeof PagamentoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/enderecos/novo': {
@@ -220,9 +300,13 @@ const PedidoIdRouteWithChildren = PedidoIdRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  BuscarRoute: BuscarRoute,
   CarrinhoRoute: CarrinhoRoute,
   CheckoutRoute: CheckoutRoute,
+  ContaRoute: ContaRoute,
   EnderecosRoute: EnderecosRouteWithChildren,
+  PedidosRoute: PedidosRoute,
+  PagamentoIdRoute: PagamentoIdRoute,
   PedidoIdRoute: PedidoIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport

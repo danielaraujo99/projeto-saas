@@ -1,10 +1,20 @@
 import * as React from "react";
 import { createFileRoute, Link, Outlet, useParams, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Bike, ChefHat, CheckCircle2, MapPin, PackageCheck, Phone, Star } from "lucide-react";
-import { STATUS_STEPS, statusLabel, useOrders } from "@/store/orders";
+import { useQuery } from "@tanstack/react-query";
+import {
+  ArrowLeft,
+  Bike,
+  ChefHat,
+  CheckCircle2,
+  MapPin,
+  PackageCheck,
+  Phone,
+  Star,
+} from "lucide-react";
+import { getOrderById } from "@/lib/orders-api";
+import { statusLabel, TIMELINE, type OrderStatus } from "@/lib/order-status";
 import { EmptyState } from "@/components/empty-state";
 import { brl } from "@/lib/format";
-import type { OrderStatus } from "@/types";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/pedido/$id")({
@@ -20,6 +30,7 @@ export const Route = createFileRoute("/pedido/$id")({
 });
 
 const icons: Record<OrderStatus, React.ComponentType<{ className?: string }>> = {
+  pending_payment: CheckCircle2,
   received: CheckCircle2,
   preparing: ChefHat,
   delivering: Bike,
@@ -28,14 +39,27 @@ const icons: Record<OrderStatus, React.ComponentType<{ className?: string }>> = 
 
 function Page() {
   const { id } = useParams({ from: "/pedido/$id" });
-  const order = useOrders((s) => s.orders[id]);
   const nav = useNavigate();
+
+  const { data: order, isLoading } = useQuery({
+    queryKey: ["order", id],
+    queryFn: () => getOrderById(id),
+    refetchInterval: 5000,
+  });
 
   const [, force] = React.useReducer((x) => x + 1, 0);
   React.useEffect(() => {
     const t = setInterval(force, 1000);
     return () => clearInterval(t);
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-background">
+        <div className="text-sm text-foreground/60">Carregando pedido…</div>
+      </div>
+    );
+  }
 
   if (!order) {
     return (
@@ -59,22 +83,25 @@ function Page() {
     );
   }
 
-  const currentIdx = STATUS_STEPS.indexOf(order.status);
-  const elapsedMin = Math.floor((Date.now() - order.createdAt) / 60000);
-  const etaLeft = Math.max(0, order.etaMinutes - elapsedMin);
+  const currentIdx = TIMELINE.indexOf(order.status as OrderStatus);
+  const startAt = order.payment_confirmed_at
+    ? new Date(order.payment_confirmed_at).getTime()
+    : new Date(order.created_at).getTime();
+  const elapsedMin = Math.floor((Date.now() - startAt) / 60000);
+  const etaLeft = Math.max(0, order.eta_minutes - elapsedMin);
 
   return (
     <div className="min-h-screen bg-background pb-16">
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3 sm:px-6">
           <Link
-            to="/"
-            aria-label="Início"
+            to="/pedidos"
+            aria-label="Voltar"
             className="grid h-10 w-10 place-items-center rounded-full hover:bg-surface"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="text-lg font-bold">Pedido {order.id}</h1>
+          <h1 className="text-lg font-bold">Pedido {order.short_id}</h1>
         </div>
       </header>
 
@@ -109,13 +136,13 @@ function Page() {
                 {etaLeft > 0 ? `${etaLeft} min` : "a qualquer momento"}
               </p>
               <p className="mt-1 text-sm font-medium text-primary">
-                {statusLabel[order.status]}
+                {statusLabel[order.status as OrderStatus]}
               </p>
             </>
           )}
 
           <ol className="mt-6 space-y-4">
-            {STATUS_STEPS.map((s, i) => {
+            {TIMELINE.map((s, i) => {
               const Icon = icons[s];
               const active = i === currentIdx;
               const done = i < currentIdx || order.status === "delivered";
@@ -123,11 +150,11 @@ function Page() {
                 <li key={s} className="flex items-center gap-3">
                   <div
                     className={cn(
-                      "grid h-10 w-10 place-items-center rounded-full",
+                      "grid h-10 w-10 place-items-center rounded-full transition-colors",
                       done
                         ? "bg-success text-success-foreground"
                         : active
-                          ? "bg-primary text-primary-foreground"
+                          ? "bg-primary text-primary-foreground animate-pulse"
                           : "bg-muted text-muted-foreground",
                     )}
                   >
@@ -169,9 +196,7 @@ function Page() {
         <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <h3 className="text-sm font-semibold text-foreground">Detalhes do pedido</h3>
-            <span className="text-xs font-medium text-foreground/50">
-              #{order.id}
-            </span>
+            <span className="text-xs font-medium text-foreground/50">#{order.short_id}</span>
           </div>
 
           <ul className="divide-y divide-border/60">
@@ -195,7 +220,10 @@ function Page() {
             {order.discount > 0 ? (
               <Row label="Desconto" value={`- ${brl(order.discount)}`} tone="success" />
             ) : null}
-            <Row label={order.pickup ? "Retirada" : "Taxa de entrega"} value={brl(order.deliveryFee)} />
+            <Row
+              label={order.pickup ? "Retirada" : "Taxa de entrega"}
+              value={brl(order.delivery_fee)}
+            />
             <div className="mt-2 border-t border-border pt-2">
               <Row bold label="Total" value={brl(order.total)} />
             </div>
@@ -225,8 +253,6 @@ function Page() {
     </div>
   );
 }
-// eslint-disable-next-line
-const _outletKeep = true;
 
 function Row({
   label,
