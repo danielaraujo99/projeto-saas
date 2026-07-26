@@ -126,13 +126,18 @@ function CheckoutPage() {
         etaMinutes: etaMax,
         restaurantId: restaurant.id,
       });
+      orderCreatedRef.current = true;
       clear();
       nav({ to: "/pagamento/$id", params: { id: order.id }, replace: true });
     } catch (e) {
       console.error(e);
-      toast.error("Não foi possível criar o pedido. Tente novamente.");
+      toast.error("Falha de conexão", {
+        description: "Não foi possível criar o pedido. Verifique sua internet e tente novamente.",
+        action: { label: "Tentar de novo", onClick: () => placeOrder() },
+      });
       setPlacing(false);
     }
+
   };
 
   const primaryLabel =
