@@ -19,7 +19,6 @@ import { useCart } from "@/store/cart";
 import { useAddresses } from "@/store/addresses";
 import { useAuth } from "@/store/auth";
 import { createOrder as apiCreateOrder } from "@/lib/orders-api";
-import { restaurant as restaurantMeta } from "@/data/restaurant";
 import { restaurant } from "@/data/restaurant";
 import { brl } from "@/lib/format";
 import { Button } from "@/components/ui/button";
