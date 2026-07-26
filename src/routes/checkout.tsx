@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useBlocker } from "@tanstack/react-router";
 import {
   ArrowLeft,
   Bike,
@@ -27,8 +27,19 @@ import { CouponBox } from "@/components/cart-parts";
 import type { Address, PaymentMethod } from "@/types";
 import { AuthGate } from "@/components/auth-gate";
 import { PaymentPickerSheet } from "@/components/payment-picker-sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
