@@ -39,7 +39,6 @@ function HomePage() {
   const [activeCat, setActiveCat] = React.useState(categories[0].id);
   const [selected, setSelected] = React.useState<Product | null>(null);
   const [authOpen, setAuthOpen] = React.useState(false);
-  const user = useAuth((s) => s.user);
   const itemCount = useCart((s) => s.itemCount());
 
   const sectionRefs = React.useRef<Record<string, HTMLElement | null>>({});
