@@ -184,21 +184,33 @@
   outline: none;
 }
 .leaflet-container .leaflet-tile-pane {
-  filter: saturate(0.7) contrast(0.98);
+  /* soften building outlines / dashed strokes baked into CARTO tiles */
+  filter: saturate(0.55) contrast(0.9) brightness(1.04);
+}
+/* Kill any dashed SVG strokes overlaid by Leaflet (rare but possible) */
+.leaflet-overlay-pane svg path {
+  stroke-dasharray: none !important;
 }
 .leaflet-control-attribution {
-  font-size: 10px !important;
-  background: rgba(255, 255, 255, 0.75) !important;
-  color: var(--color-muted-foreground) !important;
-  padding: 2px 6px !important;
+  font-size: 9px !important;
+  line-height: 1 !important;
+  background: rgba(255, 255, 255, 0.55) !important;
+  color: color-mix(in oklab, var(--color-muted-foreground) 65%, transparent) !important;
+  padding: 1px 5px !important;
   border-radius: 6px 0 0 0 !important;
+  opacity: 0.7;
+}
+.leaflet-control-attribution:hover {
+  opacity: 1;
 }
 .leaflet-control-attribution a {
-  color: var(--color-muted-foreground) !important;
+  color: inherit !important;
+  text-decoration: none !important;
 }
 .leaflet-control-zoom a {
   border-radius: 8px !important;
   color: var(--color-foreground) !important;
   border-color: var(--color-border) !important;
 }
+
 

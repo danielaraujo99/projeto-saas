@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShoppingBag, AlertTriangle } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { CartLines, CouponBox, OrderSummary } from "@/components/cart-parts";
 import { EmptyState } from "@/components/empty-state";
@@ -8,6 +8,18 @@ import { ProductSheet } from "@/components/product-sheet";
 import type { Product } from "@/types";
 import { useAuth } from "@/store/auth";
 import { AuthGate } from "@/components/auth-gate";
+import { restaurant } from "@/data/restaurant";
+import { brl } from "@/lib/format";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
@@ -23,15 +35,23 @@ export const Route = createFileRoute("/carrinho")({
 
 function CarrinhoPage() {
   const items = useCart((s) => s.items);
+  const subtotal = useCart((s) => s.subtotal());
+  const discount = useCart((s) => s.discount());
   const [editing, setEditing] = React.useState<Product | null>(null);
   const [authOpen, setAuthOpen] = React.useState(false);
+  const [minOpen, setMinOpen] = React.useState(false);
   const user = useAuth((s) => s.user);
   const navigate = useNavigate();
 
+  const effectiveSubtotal = Math.max(0, subtotal - discount);
+  const missingForMin = Math.max(0, restaurant.minimumOrder - effectiveSubtotal);
+
   const goCheckout = () => {
+    if (missingForMin > 0) return setMinOpen(true);
     if (!user) return setAuthOpen(true);
     navigate({ to: "/checkout" });
   };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -90,6 +110,34 @@ function CarrinhoPage() {
 
       <ProductSheet product={editing} onClose={() => setEditing(null)} />
       <AuthGate open={authOpen} onOpenChange={setAuthOpen} />
+
+      <AlertDialog open={minOpen} onOpenChange={setMinOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-warning/15 text-warning">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <AlertDialogTitle className="text-center">
+              Pedido mínimo não atingido
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Este restaurante exige um pedido mínimo de{" "}
+              <span className="font-semibold text-foreground">
+                {brl(restaurant.minimumOrder)}
+              </span>
+              . Faltam <span className="font-semibold text-foreground">{brl(missingForMin)}</span>{" "}
+              para finalizar.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continuar comprando</AlertDialogCancel>
+            <AlertDialogAction onClick={() => navigate({ to: "/" })}>
+              Ver cardápio
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
