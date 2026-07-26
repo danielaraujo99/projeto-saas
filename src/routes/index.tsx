@@ -136,8 +136,8 @@ function HomePage() {
         </main>
 
         {/* Desktop cart sidebar */}
-        <aside className="hidden self-start lg:sticky lg:top-[88px] lg:block">
-          <div className="flex max-h-[calc(100vh-104px)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
+        <aside className="hidden self-start lg:sticky lg:top-[72px] lg:block">
+          <div className="flex max-h-[calc(100vh-88px)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <h3 className="text-base font-bold">Seu carrinho</h3>
               {itemCount > 0 ? (
