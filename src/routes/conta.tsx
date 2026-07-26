@@ -98,11 +98,20 @@ function Page() {
                       {c.kind === "credit" ? "Crédito" : "Débito"} · {c.holder}
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setPendingRemove(c.id)}
+                    aria-label={`Remover cartão final ${c.last4}`}
+                    className="grid h-9 w-9 place-items-center rounded-full text-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </li>
               ))}
             </ul>
           )}
         </SectionCard>
+
 
         {user ? (
           <button
