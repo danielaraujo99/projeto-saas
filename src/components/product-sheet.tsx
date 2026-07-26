@@ -74,7 +74,17 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
 
   const submit = () => {
     setTriedSubmit(true);
-    if (!allValid) return;
+    if (!allValid) {
+      const firstInvalid = groups.find((g) => !isGroupValid(g));
+      toast.error("Selecione as opções obrigatórias", {
+        description: firstInvalid ? `Confira: ${firstInvalid.name}` : undefined,
+      });
+      if (firstInvalid && scrollRef.current) {
+        const el = scrollRef.current.querySelector<HTMLElement>(`[data-group="${firstInvalid.id}"]`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
     const cs = flat;
     if (editingItem) {
       updateItem(editingItem.id, { customizations: cs, quantity, note });
