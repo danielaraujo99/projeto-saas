@@ -66,7 +66,24 @@ function Page() {
       <main className="mx-auto max-w-3xl px-4 py-4 sm:px-6">
         {isLoading ? (
           <div className="py-16 text-center text-sm text-foreground/60">Carregando…</div>
+        ) : isError ? (
+          <EmptyState
+            icon={<WifiOff className="h-6 w-6" />}
+            title="Falha de conexão"
+            description="Não conseguimos carregar seus pedidos. Verifique sua internet e tente novamente."
+            action={
+              <Button
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className="h-11 rounded-full px-5 text-sm font-semibold"
+              >
+                <RefreshCw className={cn("mr-2 h-4 w-4", isFetching && "animate-spin")} />
+                Tentar novamente
+              </Button>
+            }
+          />
         ) : list.length === 0 ? (
+
           <EmptyState
             icon={<Receipt className="h-6 w-6" />}
             title={tab === "active" ? "Nenhum pedido em andamento" : "Você ainda não tem histórico"}
