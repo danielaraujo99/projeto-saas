@@ -4,6 +4,7 @@ import { brl } from "@/lib/format";
 import { ProductBadgePill } from "@/components/product-badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { restaurant } from "@/data/restaurant";
 
 type Props = {
   product: Product;
@@ -13,6 +14,7 @@ type Props = {
 
 export function ProductCard({ product, onClick }: Props) {
   const disabled = product.available === false;
+  const closed = !restaurant.isOpen;
   return (
     <button
       type="button"
@@ -20,6 +22,12 @@ export function ProductCard({ product, onClick }: Props) {
         if (disabled) {
           toast.error("Item indisponível no momento", {
             description: "Este item voltará em breve. Escolha outra opção enquanto isso.",
+          });
+          return;
+        }
+        if (closed) {
+          toast.error("Restaurante fechado no momento", {
+            description: "Você pode explorar o cardápio, mas o pedido só pode ser feito quando reabrir.",
           });
           return;
         }

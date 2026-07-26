@@ -94,6 +94,15 @@ function CheckoutPage() {
     if (items.length === 0 && !orderCreatedRef.current) nav({ to: "/" });
   }, [items.length]);
 
+  React.useEffect(() => {
+    if (!restaurant.isOpen && items.length > 0 && !orderCreatedRef.current) {
+      toast.error("Restaurante fechado no momento", {
+        description: "Você pode finalizar assim que reabrir.",
+      });
+      nav({ to: "/carrinho" });
+    }
+  }, [items.length, nav]);
+
   // Block navigating away from checkout while the cart still has items (except
   // when we've just placed the order and are heading to /pagamento).
   const { proceed, reset, status } = useBlocker({

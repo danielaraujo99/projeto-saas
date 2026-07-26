@@ -151,6 +151,7 @@ export function CouponBox() {
   const apply = () => {
     const res = applyCoupon(code);
     setMsg({ ok: res.ok, text: res.message });
+    if (res.ok) toast.success("Cupom aplicado com sucesso");
   };
 
   if (coupon) {

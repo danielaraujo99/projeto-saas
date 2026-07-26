@@ -40,6 +40,7 @@ function CarrinhoPage() {
   const [editing, setEditing] = React.useState<Product | null>(null);
   const [authOpen, setAuthOpen] = React.useState(false);
   const [minOpen, setMinOpen] = React.useState(false);
+  const [closedOpen, setClosedOpen] = React.useState(false);
   const user = useAuth((s) => s.user);
   const navigate = useNavigate();
 
@@ -47,10 +48,12 @@ function CarrinhoPage() {
   const missingForMin = Math.max(0, restaurant.minimumOrder - effectiveSubtotal);
 
   const goCheckout = () => {
+    if (!restaurant.isOpen) return setClosedOpen(true);
     if (missingForMin > 0) return setMinOpen(true);
     if (!user) return setAuthOpen(true);
     navigate({ to: "/checkout" });
   };
+
 
 
   return (
@@ -131,6 +134,28 @@ function CarrinhoPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Continuar comprando</AlertDialogCancel>
+            <AlertDialogAction onClick={() => navigate({ to: "/" })}>
+              Ver cardápio
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={closedOpen} onOpenChange={setClosedOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-warning/15 text-warning">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <AlertDialogTitle className="text-center">
+              Restaurante fechado
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              O restaurante não está aceitando pedidos no momento. Seus itens ficam salvos no carrinho e você poderá finalizar assim que reabrir.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Entendi</AlertDialogCancel>
             <AlertDialogAction onClick={() => navigate({ to: "/" })}>
               Ver cardápio
             </AlertDialogAction>
