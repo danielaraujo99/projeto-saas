@@ -99,7 +99,7 @@ function CheckoutPage() {
         pickup,
         payment,
         etaMinutes: etaMax,
-        restaurantId: restaurantMeta.id,
+        restaurantId: restaurant.id,
       });
       clear();
       nav({ to: "/pagamento/$id", params: { id: order.id }, replace: true });
