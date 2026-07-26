@@ -1,12 +1,14 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bike, ChefHat, CheckCircle2, PackageCheck, Receipt, Star } from "lucide-react";
+import { Bike, ChefHat, CheckCircle2, PackageCheck, Receipt, RefreshCw, Star, WifiOff } from "lucide-react";
 import { listMyOrders, type OrderRow } from "@/lib/orders-api";
 import { statusLabel, type OrderStatus, ACTIVE_STATUSES } from "@/lib/order-status";
 import { brl } from "@/lib/format";
 import { EmptyState } from "@/components/empty-state";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/pedidos")({
   head: () => ({
