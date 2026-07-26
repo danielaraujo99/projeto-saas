@@ -82,54 +82,13 @@ function HomePage() {
     .filter((c) => c.items.length > 0);
 
   return (
-    <div className="min-h-screen bg-background pb-[calc(env(safe-area-inset-bottom,0px)+7rem)] lg:pb-0">
-      {/* Top nav (desktop) */}
-      <div className="sticky top-0 z-30 hidden bg-background/90 shadow-[0_1px_0_var(--color-border)] backdrop-blur lg:block">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-          <Link to="/" className="flex items-center gap-2 text-lg font-bold text-primary">
-            <span
-              aria-hidden
-              className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground text-sm font-bold"
-            >
-              BA
-            </span>
-            Bistrô Azul
-          </Link>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => (user ? null : setAuthOpen(true))}
-              className="inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium text-foreground hover:bg-surface"
-            >
-              <User2 className="h-4 w-4" />
-              {user ? user.name : "Entrar"}
-            </button>
-            <Link
-              to="/carrinho"
-              className={cn(
-                "inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors",
-                itemCount > 0
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "border border-border text-foreground hover:bg-surface",
-              )}
-            >
-              <ShoppingBag className="h-4 w-4" />
-              Carrinho
-              {itemCount > 0 ? (
-                <span className="rounded-full bg-primary-foreground/20 px-2 py-0.5 text-xs tabular-nums">
-                  {itemCount}
-                </span>
-              ) : null}
-            </Link>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-background pb-[calc(env(safe-area-inset-bottom,0px)+7rem)] md:pt-14 lg:pb-0">
       <RestaurantHeader />
 
       <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-8">
         <main className="min-w-0">
           <div
-            className="sticky top-0 z-20 -mx-4 bg-background/95 px-4 pb-2 pt-2 backdrop-blur sm:-mx-6 sm:px-6 lg:top-[64px] lg:pt-3"
+            className="sticky top-0 z-20 -mx-4 bg-background/95 px-4 pb-2 pt-2 backdrop-blur sm:-mx-6 sm:px-6 md:top-14 lg:pt-3"
           >
             <div className="relative">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
