@@ -132,17 +132,39 @@ function PulseLoader({ label }: { label: string }) {
   );
 }
 
-function PixWaitingCard({ total, shortId }: { total: number; shortId: string }) {
+function PixWaitingCard({
+  total,
+  shortId,
+  deadline,
+}: {
+  total: number;
+  shortId: string;
+  deadline: number | null;
+}) {
   const pixCode = React.useMemo(
     () =>
       `00020126360014BR.GOV.BCB.PIX0114+55119999999995204000053039865406${total.toFixed(2)}5802BR5913BISTRO AZUL LTDA6009SAO PAULO62070503${shortId}6304ABCD`,
     [total, shortId],
   );
 
+  const [remaining, setRemaining] = React.useState(() =>
+    deadline ? Math.max(0, deadline - Date.now()) : 0,
+  );
+  React.useEffect(() => {
+    if (!deadline) return;
+    const t = window.setInterval(() => {
+      setRemaining(Math.max(0, deadline - Date.now()));
+    }, 1000);
+    return () => window.clearInterval(t);
+  }, [deadline]);
+
   const copy = () => {
     navigator.clipboard?.writeText(pixCode);
     toast.success("Código Pix copiado");
   };
+
+  const mm = String(Math.floor(remaining / 60000)).padStart(2, "0");
+  const ss = String(Math.floor((remaining % 60000) / 1000)).padStart(2, "0");
 
   return (
     <div className="w-full animate-fade-in rounded-3xl border border-border bg-card p-6 text-center shadow-[var(--shadow-elevated)]">
@@ -165,13 +187,46 @@ function PixWaitingCard({ total, shortId }: { total: number; shortId: string }) 
         <Copy className="h-3.5 w-3.5" /> Copiar código Pix
       </button>
 
-      <div className="mt-6 flex items-center justify-center gap-2 text-xs font-medium text-foreground/60">
+      {deadline ? (
+        <div className="mt-4 text-xs font-medium tabular-nums text-foreground/60">
+          Código válido por <span className="font-semibold text-foreground">{mm}:{ss}</span>
+        </div>
+      ) : null}
+
+      <div className="mt-4 flex items-center justify-center gap-2 text-xs font-medium text-foreground/60">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
         </span>
         Aguardando confirmação do banco…
       </div>
+    </div>
+  );
+}
+
+function PixExpiredCard({
+  total,
+  onRegenerate,
+}: {
+  total: number;
+  onRegenerate: () => void;
+}) {
+  return (
+    <div className="w-full animate-fade-in rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-elevated)]">
+      <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-warning/15 text-warning">
+        <TimerOff className="h-7 w-7" />
+      </div>
+      <h1 className="mt-5 text-xl font-bold">Código Pix expirado</h1>
+      <p className="mt-2 text-sm text-foreground/60">
+        Este código não foi pago a tempo. Gere um novo QR code para tentar novamente — nenhum valor foi cobrado.
+      </p>
+      <p className="mt-4 text-2xl font-bold tabular-nums text-foreground">{brl(total)}</p>
+      <button
+        onClick={onRegenerate}
+        className="mx-auto mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.02]"
+      >
+        <RefreshCw className="h-4 w-4" /> Gerar novo código
+      </button>
     </div>
   );
 }
