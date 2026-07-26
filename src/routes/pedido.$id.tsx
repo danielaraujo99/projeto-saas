@@ -540,3 +540,45 @@ function DeliveryProgress() {
     </section>
   );
 }
+
+function OrderTrackingSkeleton() {
+  return (
+    <div className="min-h-screen bg-background pb-16">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3 sm:px-6">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <Skeleton className="h-5 w-40" />
+        </div>
+      </header>
+      <main className="mx-auto max-w-3xl space-y-4 px-4 py-6 sm:px-6">
+        <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
+          <div className="border-b border-border/60 bg-gradient-to-b from-primary-soft/60 to-transparent px-5 py-6 sm:px-6">
+            <Skeleton className="h-3 w-32" />
+            <Skeleton className="mt-2 h-10 w-40" />
+            <Skeleton className="mt-3 h-4 w-48" />
+          </div>
+          <ol className="space-y-6 px-5 py-6 sm:px-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <li key={i} className="flex gap-4">
+                <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+                <div className="flex-1 space-y-2 pt-1.5">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+        <section className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-3 w-64" />
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
