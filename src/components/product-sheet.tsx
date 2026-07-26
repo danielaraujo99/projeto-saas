@@ -121,13 +121,6 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
         ) : (
           <div className="aspect-[16/10] w-full bg-muted" />
         )}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-background/95 text-foreground shadow-[var(--shadow-elevated)] backdrop-blur transition-transform hover:scale-105"
-          aria-label="Fechar"
-        >
-          <X className="h-5 w-5" />
-        </button>
       </div>
 
       <div
