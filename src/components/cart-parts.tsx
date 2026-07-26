@@ -7,6 +7,17 @@ import { brl } from "@/lib/format";
 import type { CartItem, Product } from "@/types";
 import { productById } from "@/data/menu";
 import { restaurant } from "@/data/restaurant";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 type LinesProps = {
   onEdit: (item: CartItem, product: Product | undefined) => void;
@@ -17,79 +28,118 @@ export function CartLines({ onEdit }: LinesProps) {
   const setQuantity = useCart((s) => s.setQuantity);
   const removeItem = useCart((s) => s.removeItem);
   const duplicateItem = useCart((s) => s.duplicateItem);
+  const [confirmRemove, setConfirmRemove] = React.useState<CartItem | null>(null);
+
+  const doRemove = () => {
+    if (!confirmRemove) return;
+    removeItem(confirmRemove.id);
+    toast.success("Item removido do carrinho");
+    setConfirmRemove(null);
+  };
 
   return (
-    <ul className="divide-y divide-border">
-      {items.map((it) => {
-        const product = productById(it.productId);
-        return (
-          <li key={it.id} className="flex gap-3 py-4">
-            {it.image ? (
-              <img
-                src={it.image}
-                alt=""
-                className="h-16 w-16 shrink-0 rounded-lg object-cover"
-              />
-            ) : (
-              <div className="h-16 w-16 shrink-0 rounded-lg bg-muted" />
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-2">
-                <h4 className="line-clamp-1 text-sm font-semibold">{it.name}</h4>
-                <span className="shrink-0 text-sm font-bold tabular-nums">
-                  {brl(it.unitPrice * it.quantity)}
-                </span>
-              </div>
-              {it.customizations.length > 0 ? (
-                <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
-                  {it.customizations.map((c) => c.optionName).join(" · ")}
-                </p>
-              ) : null}
-              {it.note ? (
-                <p className="mt-0.5 line-clamp-1 text-xs italic text-muted-foreground">
-                  Obs: {it.note}
-                </p>
-              ) : null}
-              <div className="mt-2 flex items-center justify-between">
-                <QuantityStepper
-                  value={it.quantity}
-                  onChange={(q) => setQuantity(it.id, q)}
-                  size="sm"
+    <>
+      <ul className="divide-y divide-border">
+        {items.map((it) => {
+          const product = productById(it.productId);
+          return (
+            <li key={it.id} className="flex gap-3 py-4">
+              {it.image ? (
+                <img
+                  src={it.image}
+                  alt=""
+                  className="h-16 w-16 shrink-0 rounded-lg object-cover"
                 />
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <button
-                    onClick={() => onEdit(it, product)}
-                    className="grid h-8 w-8 place-items-center rounded-full hover:bg-surface hover:text-foreground"
-                    aria-label="Editar"
-                    title="Editar"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => duplicateItem(it.id)}
-                    className="grid h-8 w-8 place-items-center rounded-full hover:bg-surface hover:text-foreground"
-                    aria-label="Duplicar"
-                    title="Duplicar"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => removeItem(it.id)}
-                    className="grid h-8 w-8 place-items-center rounded-full hover:bg-surface hover:text-destructive"
-                    aria-label="Remover"
-                    title="Remover"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+              ) : (
+                <div className="h-16 w-16 shrink-0 rounded-lg bg-muted" />
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="line-clamp-1 text-sm font-semibold">{it.name}</h4>
+                  <span className="shrink-0 text-sm font-bold tabular-nums">
+                    {brl(it.unitPrice * it.quantity)}
+                  </span>
+                </div>
+                {it.customizations.length > 0 ? (
+                  <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+                    {it.customizations.map((c) => c.optionName).join(" · ")}
+                  </p>
+                ) : null}
+                {it.note ? (
+                  <p className="mt-0.5 line-clamp-1 text-xs italic text-muted-foreground">
+                    Obs: {it.note}
+                  </p>
+                ) : null}
+                <div className="mt-2 flex items-center justify-between">
+                  <QuantityStepper
+                    value={it.quantity}
+                    onChange={(q) => {
+                      if (q <= 0) return setConfirmRemove(it);
+                      setQuantity(it.id, q);
+                    }}
+                    size="sm"
+                  />
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <button
+                      onClick={() => onEdit(it, product)}
+                      className="grid h-8 w-8 place-items-center rounded-full hover:bg-surface hover:text-foreground"
+                      aria-label="Editar"
+                      title="Editar"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        duplicateItem(it.id);
+                        toast.success("Item duplicado");
+                      }}
+                      className="grid h-8 w-8 place-items-center rounded-full hover:bg-surface hover:text-foreground"
+                      aria-label="Duplicar"
+                      title="Duplicar"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setConfirmRemove(it)}
+                      className="grid h-8 w-8 place-items-center rounded-full hover:bg-surface hover:text-destructive"
+                      aria-label="Remover"
+                      title="Remover"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </li>
-        );
-      })}
-    </ul>
+            </li>
+          );
+        })}
+      </ul>
+
+      <AlertDialog open={!!confirmRemove} onOpenChange={(o) => !o && setConfirmRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover este item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmRemove
+                ? `“${confirmRemove.name}” será removido do carrinho. Você pode adicioná-lo novamente a qualquer momento.`
+                : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Manter</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={doRemove}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
+
 
 export function CouponBox() {
   const coupon = useCart((s) => s.coupon);
