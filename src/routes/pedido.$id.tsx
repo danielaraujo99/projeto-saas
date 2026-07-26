@@ -166,31 +166,56 @@ function Page() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-          <h3 className="mb-3 text-sm font-semibold">Detalhes do pedido</h3>
-          <ul className="space-y-1.5 text-sm">
+        <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <h3 className="text-sm font-semibold text-foreground">Detalhes do pedido</h3>
+            <span className="text-xs font-medium text-foreground/50">
+              #{order.id}
+            </span>
+          </div>
+
+          <ul className="divide-y divide-border/60">
             {order.items.map((it) => (
-              <li key={it.id} className="flex justify-between gap-2">
-                <span className="line-clamp-1">
-                  <span className="tabular-nums">{it.quantity}×</span> {it.name}
+              <li key={it.id} className="flex items-start gap-3 px-5 py-3">
+                <span className="mt-0.5 grid h-6 min-w-[1.75rem] shrink-0 place-items-center rounded-md bg-primary-soft px-1.5 text-xs font-bold tabular-nums text-primary">
+                  {it.quantity}
                 </span>
-                <span className="tabular-nums">{brl(it.unitPrice * it.quantity)}</span>
+                <span className="min-w-0 flex-1 text-sm text-foreground">
+                  <span className="line-clamp-2">{it.name}</span>
+                </span>
+                <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
+                  {brl(it.unitPrice * it.quantity)}
+                </span>
               </li>
             ))}
           </ul>
-          <div className="mt-3 space-y-1 border-t border-border pt-3 text-sm">
+
+          <div className="space-y-1.5 border-t border-border bg-surface/40 px-5 py-4 text-sm">
             <Row label="Subtotal" value={brl(order.subtotal)} />
             {order.discount > 0 ? (
               <Row label="Desconto" value={`- ${brl(order.discount)}`} tone="success" />
             ) : null}
-            <Row label={order.pickup ? "Retirada" : "Entrega"} value={brl(order.deliveryFee)} />
-            <Row bold label="Total" value={brl(order.total)} />
+            <Row label={order.pickup ? "Retirada" : "Taxa de entrega"} value={brl(order.deliveryFee)} />
+            <div className="mt-2 border-t border-border pt-2">
+              <Row bold label="Total" value={brl(order.total)} />
+            </div>
           </div>
+
           {order.address ? (
-            <div className="mt-3 border-t border-border pt-3 text-sm">
-              <div className="text-xs text-muted-foreground">Entrega em</div>
-              <div>
-                {order.address.street}, {order.address.number} · {order.address.neighborhood}
+            <div className="flex items-start gap-3 border-t border-border px-5 py-4">
+              <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+                <MapPin className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 text-sm">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-foreground/50">
+                  {order.pickup ? "Retirada em" : "Entregar em"}
+                </div>
+                <div className="mt-0.5 font-medium text-foreground">
+                  {order.address.street}, {order.address.number}
+                </div>
+                <div className="text-xs text-foreground/60">
+                  {order.address.neighborhood} · {order.address.city}
+                </div>
               </div>
             </div>
           ) : null}
