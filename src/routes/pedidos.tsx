@@ -32,11 +32,13 @@ const icons: Record<OrderStatus, React.ComponentType<{ className?: string }>> = 
 
 function Page() {
   const [tab, setTab] = React.useState<"active" | "past">("active");
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["orders"],
     queryFn: listMyOrders,
     refetchInterval: 8000,
+    retry: 1,
   });
+
 
   const orders = data ?? [];
   const active = orders.filter(
