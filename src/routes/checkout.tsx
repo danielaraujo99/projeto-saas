@@ -78,6 +78,8 @@ function CheckoutPage() {
   const [pickup, setPickup] = React.useState(false);
   const [payment, setPayment] = React.useState<PaymentMethod>({ kind: "pix" });
   const [placing, setPlacing] = React.useState(false);
+  const [confirmLeave, setConfirmLeave] = React.useState(false);
+  const orderCreatedRef = React.useRef(false);
 
   const fee = pickup ? 0 : restaurant.deliveryFee;
   const total = Math.max(0, subtotal - discount) + fee;
@@ -89,8 +91,20 @@ function CheckoutPage() {
   const etaMin = pickup ? 15 : restaurant.deliveryMinutes[0];
 
   React.useEffect(() => {
-    if (items.length === 0) nav({ to: "/" });
+    if (items.length === 0 && !orderCreatedRef.current) nav({ to: "/" });
   }, [items.length]);
+
+  // Block navigating away from checkout while the cart still has items (except
+  // when we've just placed the order and are heading to /pagamento).
+  const { proceed, reset, status } = useBlocker({
+    shouldBlockFn: () => items.length > 0 && !orderCreatedRef.current && !placing,
+    withResolver: true,
+    enableBeforeUnload: () => items.length > 0 && !orderCreatedRef.current,
+  });
+  React.useEffect(() => {
+    if (status === "blocked") setConfirmLeave(true);
+  }, [status]);
+
 
   const canAdvance =
     step === "delivery" ? pickup || !!selectedAddress : step === "payment" ? true : true;
