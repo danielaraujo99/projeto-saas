@@ -101,12 +101,12 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
       title={product.name}
       size="lg"
     >
-      <div className="relative shrink-0">
+      <div className="relative shrink-0 overflow-hidden rounded-t-2xl bg-muted">
         {product.image ? (
           <img
             src={product.image}
             alt={product.name}
-            className="aspect-[16/10] w-full object-cover"
+            className="block aspect-[16/10] w-full object-cover"
           />
         ) : (
           <div className="aspect-[16/10] w-full bg-muted" />
@@ -123,7 +123,7 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
       <div
         ref={scrollRef}
         onScroll={(e) => setScrolled((e.currentTarget as HTMLDivElement).scrollTop > 4)}
-        className="min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-7"
+        className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-7"
       >
         <div className="space-y-2.5">
           <h2 className="text-2xl font-bold leading-tight text-foreground">{product.name}</h2>
@@ -183,9 +183,9 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
                         )
                       }
                       className={cn(
-                        "flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all",
+                        "flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-all",
                         active
-                          ? "border-primary bg-primary-soft shadow-[var(--shadow-card)]"
+                          ? "border-primary bg-primary-soft shadow-[var(--shadow-card)] ring-2 ring-primary/20"
                           : "border-border bg-card hover:border-primary/40 hover:bg-surface",
                       )}
                     >
@@ -201,7 +201,7 @@ export function ProductSheet({ product, editingItem, onClose }: Props) {
                         >
                           {active ? (
                             isRadio ? (
-                              <span className="h-2 w-2 rounded-full bg-primary-foreground" />
+                              <span className="h-2.5 w-2.5 rounded-full bg-primary-foreground" />
                             ) : (
                               <Check className="h-3 w-3" strokeWidth={3} />
                             )

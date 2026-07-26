@@ -152,6 +152,29 @@
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card3d {
+    transform-style: preserve-3d;
+    transition: transform 600ms cubic-bezier(0.4, 0.2, 0.2, 1);
+  }
+  .card3d-face {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .card3d-back {
+    transform: rotateY(180deg);
+  }
+  .card3d-flipped {
+    transform: rotateY(180deg);
+  }
 }
 
 /* Leaflet minimal styling overrides so the map looks clean */
