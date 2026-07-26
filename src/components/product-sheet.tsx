@@ -1,5 +1,5 @@
 import * as React from "react";
-import { X, Check, MessageSquareText } from "lucide-react";
+import { Check, MessageSquareText } from "lucide-react";
 import type { CartCustomization, CartItem, Product } from "@/types";
 import { brl } from "@/lib/format";
 import { QuantityStepper } from "@/components/quantity-stepper";
