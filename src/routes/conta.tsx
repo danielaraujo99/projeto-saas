@@ -35,12 +35,17 @@ function Page() {
   const logout = useAuth((s) => s.logout);
   const addresses = useAddresses((s) => s.addresses);
   const cards = useCards((s) => s.cards);
+  const removeCard = useCards((s) => s.remove);
   const nav = useNavigate();
   const [authOpen, setAuthOpen] = React.useState(!user);
+  const [pendingRemove, setPendingRemove] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setAuthOpen(!user);
   }, [user]);
+
+  const removingCard = pendingRemove ? cards.find((c) => c.id === pendingRemove) : null;
+
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pt-20">
