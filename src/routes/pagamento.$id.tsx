@@ -1,10 +1,9 @@
 import * as React from "react";
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Copy, QrCode as QrIcon, RefreshCw, TimerOff } from "lucide-react";
+import { Copy, QrCode as QrIcon, RefreshCw, TimerOff } from "lucide-react";
 import { getOrderById, confirmPayment } from "@/lib/orders-api";
 import { brl } from "@/lib/format";
-import { EmptyState } from "@/components/empty-state";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/pagamento/$id")({
