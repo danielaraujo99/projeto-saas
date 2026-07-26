@@ -14,7 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      orders: {
+        Row: {
+          address: Json | null
+          coupon_code: string | null
+          created_at: string
+          delivery_fee: number
+          device_id: string
+          discount: number
+          eta_minutes: number
+          id: string
+          items: Json
+          payment: Json
+          payment_confirmed_at: string | null
+          pickup: boolean
+          rated: boolean
+          rating_comment: string | null
+          rating_delivery: number | null
+          rating_food: number | null
+          restaurant_id: string
+          short_id: string
+          status: string
+          status_updated_at: string
+          subtotal: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          address?: Json | null
+          coupon_code?: string | null
+          created_at?: string
+          delivery_fee?: number
+          device_id: string
+          discount?: number
+          eta_minutes?: number
+          id?: string
+          items: Json
+          payment: Json
+          payment_confirmed_at?: string | null
+          pickup?: boolean
+          rated?: boolean
+          rating_comment?: string | null
+          rating_delivery?: number | null
+          rating_food?: number | null
+          restaurant_id: string
+          short_id: string
+          status?: string
+          status_updated_at?: string
+          subtotal: number
+          total: number
+          updated_at?: string
+        }
+        Update: {
+          address?: Json | null
+          coupon_code?: string | null
+          created_at?: string
+          delivery_fee?: number
+          device_id?: string
+          discount?: number
+          eta_minutes?: number
+          id?: string
+          items?: Json
+          payment?: Json
+          payment_confirmed_at?: string | null
+          pickup?: boolean
+          rated?: boolean
+          rating_comment?: string | null
+          rating_delivery?: number | null
+          rating_food?: number | null
+          restaurant_id?: string
+          short_id?: string
+          status?: string
+          status_updated_at?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
