@@ -9,13 +9,17 @@ import {
   MapPin,
   PackageCheck,
   Phone,
+  RefreshCw,
   Star,
+  WifiOff,
 } from "lucide-react";
 import { getOrderById } from "@/lib/orders-api";
 import { statusLabel, TIMELINE, type OrderStatus } from "@/lib/order-status";
 import { EmptyState } from "@/components/empty-state";
+import { Button } from "@/components/ui/button";
 import { brl } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/pedido/$id")({
   head: () => ({
