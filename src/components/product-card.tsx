@@ -16,16 +16,25 @@ export function ProductCard({ product, onClick }: Props) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      disabled={disabled}
+      onClick={() => {
+        if (disabled) {
+          toast.error("Item indisponível no momento", {
+            description: "Este item voltará em breve. Escolha outra opção enquanto isso.",
+          });
+          return;
+        }
+        onClick();
+      }}
+      aria-disabled={disabled}
       className={cn(
         "group relative flex w-full items-stretch gap-4 rounded-2xl border border-border bg-card p-3 text-left",
         "shadow-[var(--shadow-card)] transition-all duration-200",
         "hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-elevated)]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        disabled && "pointer-events-none opacity-60",
+        disabled && "opacity-60 hover:-translate-y-0 hover:border-border hover:shadow-[var(--shadow-card)]",
       )}
     >
+
       <div className="flex min-w-0 flex-1 flex-col">
         {product.badges?.length || disabled ? (
           <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
