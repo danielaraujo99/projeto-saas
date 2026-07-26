@@ -1,7 +1,9 @@
 import * as React from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Search, ClipboardList, User2 } from "lucide-react";
+import { Home, Search, ClipboardList, User2, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/store/cart";
+import { useAuth } from "@/store/auth";
 
 const ITEMS = [
   { to: "/", label: "Início", icon: Home },
@@ -20,6 +22,9 @@ function useShouldShowNav() {
 
 export function BottomNav() {
   const show = useShouldShowNav();
+  const itemCount = useCart((s) => s.itemCount());
+  const user = useAuth((s) => s.user);
+
   if (!show) return null;
   return (
     <>
@@ -45,29 +50,71 @@ export function BottomNav() {
         </ul>
       </nav>
 
-      {/* Desktop: top nav */}
+      {/* Desktop: top nav — balanced with brand on the left, nav center, cart/account on the right */}
       <nav
         aria-label="Navegação principal"
         className="fixed inset-x-0 top-0 z-40 hidden border-b border-border bg-background/90 backdrop-blur md:block"
       >
-        <div className="mx-auto flex max-w-6xl items-center gap-1 px-6 py-2">
-          <Link to="/" className="mr-4 text-sm font-extrabold tracking-tight text-primary">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-6">
+          <Link to="/" className="flex shrink-0 items-center gap-2 text-sm font-extrabold tracking-tight text-primary">
+            <span
+              aria-hidden
+              className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground text-xs font-bold"
+            >
+              BA
+            </span>
             Bistrô Azul
           </Link>
-          {ITEMS.map((it) => (
+
+          <div className="flex flex-1 items-center justify-center gap-1">
+            {ITEMS.map((it) => (
+              <Link
+                key={it.to}
+                to={it.to}
+                activeOptions={{ exact: it.to === "/" }}
+                className={cn(
+                  "relative inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-foreground/60 transition-colors hover:text-foreground",
+                  "data-[status=active]:text-primary",
+                  "after:pointer-events-none after:absolute after:inset-x-3 after:-bottom-[13px] after:h-0.5 after:rounded-full after:bg-primary after:opacity-0 data-[status=active]:after:opacity-100",
+                )}
+              >
+                <it.icon className="h-4 w-4" />
+                {it.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
             <Link
-              key={it.to}
-              to={it.to}
-              activeOptions={{ exact: it.to === "/" }}
+              to="/carrinho"
+              aria-label="Carrinho"
               className={cn(
-                "inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium text-foreground/60 hover:text-foreground",
-                "data-[status=active]:bg-primary-soft data-[status=active]:text-primary",
+                "relative inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors",
+                itemCount > 0
+                  ? "border-transparent bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "border-border text-foreground/70 hover:bg-surface hover:text-foreground",
               )}
             >
-              <it.icon className="h-4 w-4" />
-              {it.label}
+              <ShoppingBag className="h-4 w-4" />
+              {itemCount > 0 ? (
+                <span className="rounded-full bg-primary-foreground/20 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums leading-none">
+                  {itemCount}
+                </span>
+              ) : (
+                <span className="hidden lg:inline">Carrinho</span>
+              )}
             </Link>
-          ))}
+
+            <Link
+              to={user ? "/conta" : "/auth"}
+              className="inline-flex h-9 max-w-[160px] items-center gap-2 rounded-full border border-border px-3 text-sm font-medium text-foreground/80 hover:bg-surface hover:text-foreground"
+            >
+              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-soft text-[11px] font-bold text-primary">
+                {user ? user.name.trim().charAt(0).toUpperCase() : <User2 className="h-3.5 w-3.5" />}
+              </span>
+              <span className="hidden truncate lg:inline">{user ? user.name.split(" ")[0] : "Entrar"}</span>
+            </Link>
+          </div>
         </div>
       </nav>
     </>
