@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createFileRoute, Link, Outlet, useParams, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Bike, ChefHat, CheckCircle2, PackageCheck, Phone, Star } from "lucide-react";
+import { ArrowLeft, Bike, ChefHat, CheckCircle2, MapPin, PackageCheck, Phone, Star } from "lucide-react";
 import { STATUS_STEPS, statusLabel, useOrders } from "@/store/orders";
 import { EmptyState } from "@/components/empty-state";
 import { brl } from "@/lib/format";
