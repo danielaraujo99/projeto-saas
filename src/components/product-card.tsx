@@ -3,11 +3,13 @@ import type { Product } from "@/types";
 import { brl } from "@/lib/format";
 import { ProductBadgePill } from "@/components/product-badge";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type Props = {
   product: Product;
   onClick: () => void;
 };
+
 
 export function ProductCard({ product, onClick }: Props) {
   const disabled = product.available === false;
