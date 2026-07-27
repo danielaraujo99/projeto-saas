@@ -11,7 +11,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
     meta: [
-      { title: "Entrar no painel — Bistrô Azul" },
+      { title: "Entrar no painel — Restaurante Demo" },
       { name: "description", content: "Acesse o painel administrativo do seu restaurante." },
       { name: "robots", content: "noindex" },
     ],
@@ -59,7 +59,7 @@ function LoginPage() {
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 backdrop-blur">
             <Store className="h-5 w-5" />
           </div>
-          <span className="text-lg font-bold">Bistrô Painel</span>
+          <span className="text-lg font-bold">MenuAltas</span>
         </div>
         <div className="max-w-md">
           <h2 className="text-4xl font-black leading-tight">
@@ -70,7 +70,7 @@ function LoginPage() {
             desenhado para operar rápido em qualquer dispositivo.
           </p>
         </div>
-        <p className="text-sm text-white/60">© Bistrô · Painel para restaurantes</p>
+        <p className="text-sm text-white/60">© MenuAltas · Painel para restaurantes</p>
       </div>
 
       {/* Formulário */}
@@ -80,7 +80,7 @@ function LoginPage() {
             <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-white">
               <Store className="h-4 w-4" />
             </div>
-            <span className="text-base font-bold">Bistrô Painel</span>
+            <span className="text-base font-bold">MenuAltas</span>
           </div>
           <h1 className="text-2xl font-black text-slate-900">Entrar</h1>
           <p className="mt-1 text-sm text-slate-500">

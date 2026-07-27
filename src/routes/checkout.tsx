@@ -44,9 +44,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Finalizar pedido — Bistrô Azul" },
+      { title: "Finalizar pedido — Restaurante Demo" },
       { name: "description", content: "Escolha entrega, pagamento e revise seu pedido." },
-      { property: "og:title", content: "Finalizar pedido — Bistrô Azul" },
+      { property: "og:title", content: "Finalizar pedido — Restaurante Demo" },
       { property: "og:description", content: "Escolha entrega, pagamento e revise seu pedido." },
     ],
   }),

@@ -10,7 +10,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/admin/redefinir-senha")({
   head: () => ({
     meta: [
-      { title: "Redefinir senha — Bistrô Painel" },
+      { title: "Redefinir senha — MenuAltas" },
       { name: "robots", content: "noindex" },
     ],
   }),

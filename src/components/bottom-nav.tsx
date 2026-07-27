@@ -63,7 +63,7 @@ export function BottomNav() {
             >
               BA
             </span>
-            Bistrô Azul
+            Restaurante Demo
           </Link>
 
           <div className="flex flex-1 items-center justify-center gap-1">

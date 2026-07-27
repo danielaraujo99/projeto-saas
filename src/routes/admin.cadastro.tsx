@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/admin/cadastro")({
   head: () => ({
     meta: [
-      { title: "Cadastrar restaurante — Bistrô Painel" },
+      { title: "Cadastrar restaurante — MenuAltas" },
       { name: "description", content: "Crie sua conta e comece a operar o painel." },
       { name: "robots", content: "noindex" },
     ],
@@ -95,7 +95,7 @@ function SignupPage() {
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 backdrop-blur">
             <Store className="h-5 w-5" />
           </div>
-          <span className="text-lg font-bold">Bistrô Painel</span>
+          <span className="text-lg font-bold">MenuAltas</span>
         </div>
         <div className="max-w-md space-y-4">
           <h2 className="text-4xl font-black leading-tight">
@@ -113,7 +113,7 @@ function SignupPage() {
             </li>
           </ul>
         </div>
-        <p className="text-sm text-white/60">© Bistrô · Painel para restaurantes</p>
+        <p className="text-sm text-white/60">© MenuAltas · Painel para restaurantes</p>
       </div>
 
       <div className="flex items-center justify-center p-6 sm:p-10">

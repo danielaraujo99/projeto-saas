@@ -18,9 +18,9 @@ import { useQueryClient } from "@tanstack/react-query";
 export const Route = createFileRoute("/pedido/$id/avaliar")({
   head: () => ({
     meta: [
-      { title: "Avaliar pedido — Bistrô Azul" },
+      { title: "Avaliar pedido — Restaurante Demo" },
       { name: "description", content: "Deixe sua avaliação sobre o pedido." },
-      { property: "og:title", content: "Avaliar pedido — Bistrô Azul" },
+      { property: "og:title", content: "Avaliar pedido — Restaurante Demo" },
       { property: "og:description", content: "Deixe sua avaliação sobre o pedido." },
     ],
   }),

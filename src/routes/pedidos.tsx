@@ -14,9 +14,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/pedidos")({
   head: () => ({
     meta: [
-      { title: "Meus pedidos — Bistrô Azul" },
+      { title: "Meus pedidos — Restaurante Demo" },
       { name: "description", content: "Veja seus pedidos em andamento e o histórico completo." },
-      { property: "og:title", content: "Meus pedidos — Bistrô Azul" },
+      { property: "og:title", content: "Meus pedidos — Restaurante Demo" },
       { property: "og:description", content: "Veja seus pedidos em andamento e o histórico completo." },
     ],
   }),

@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/buscar")({
   head: () => ({
     meta: [
-      { title: "Buscar restaurantes — Bistrô Azul" },
+      { title: "Buscar restaurantes — Restaurante Demo" },
       { name: "description", content: "Descubra restaurantes e lanchonetes perto de você." },
-      { property: "og:title", content: "Buscar restaurantes — Bistrô Azul" },
+      { property: "og:title", content: "Buscar restaurantes — Restaurante Demo" },
       { property: "og:description", content: "Descubra restaurantes e lanchonetes perto de você." },
     ],
   }),

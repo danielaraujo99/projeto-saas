@@ -9,9 +9,9 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/pagamento/$id")({
   head: () => ({
     meta: [
-      { title: "Confirmando pagamento — Bistrô Azul" },
+      { title: "Confirmando pagamento — Restaurante Demo" },
       { name: "description", content: "Confirmação do pagamento do seu pedido." },
-      { property: "og:title", content: "Confirmando pagamento — Bistrô Azul" },
+      { property: "og:title", content: "Confirmando pagamento — Restaurante Demo" },
       { property: "og:description", content: "Confirmação do pagamento do seu pedido." },
     ],
   }),
