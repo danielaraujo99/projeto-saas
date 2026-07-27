@@ -77,7 +77,7 @@ export const METRICS: Metric[] = [
     icon: "clock",
     spark: makeSpark(30, 0.15),
   },
-] as const;
+];
 
 export const ORDER_STATUS_BREAKDOWN = [
   { key: "received", label: "Recebido", count: 32, pct: 25, color: "#3b82f6" },
