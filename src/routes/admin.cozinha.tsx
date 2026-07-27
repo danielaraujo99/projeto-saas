@@ -61,8 +61,9 @@ function KdsPage() {
   );
 
   const filtered = orders.filter((o) => {
-    if (tab === "novos") return o.status === "received" || o.status === "confirmed";
-    if (tab === "preparo") return o.status === "preparing";
+    const s = o.status as string;
+    if (tab === "novos") return s === "received" || s === "confirmed";
+    if (tab === "preparo") return s === "preparing";
     return true;
   });
 
