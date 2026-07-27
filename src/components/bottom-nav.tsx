@@ -13,7 +13,7 @@ const ITEMS = [
 ] as const;
 
 // Routes where the bottom nav should NOT appear (full-screen flows).
-const HIDDEN_PREFIXES = ["/carrinho", "/checkout", "/pagamento", "/pedido", "/enderecos", "/auth", "/admin"];
+const HIDDEN_PREFIXES = ["/", "/carrinho", "/checkout", "/pagamento", "/pedido", "/enderecos", "/auth", "/admin"];
 
 function useShouldShowNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
