@@ -215,17 +215,24 @@ export function printOrder(order: OrderRow, settings: PrintSettings) {
   const shared = {
     short_id: order.short_id,
     items: order.items.map((i) => ({
-      name: i.product.name,
+      name: i.name,
       qty: i.quantity,
       price: i.unitPrice,
-      addOns: i.addOns ?? [],
-      notes: i.notes ?? null,
+      addOns: (i.customizations ?? []).map((c) => ({ name: c.optionName, price: c.priceDelta })),
+      notes: i.note ?? null,
     })),
     total: order.total,
     subtotal: order.subtotal,
     delivery_fee: order.delivery_fee,
-    payment: order.payment?.method,
-    address: order.address,
+    payment: order.payment?.kind,
+    address: order.address
+      ? {
+          street: order.address.street,
+          number: order.address.number,
+          district: order.address.neighborhood,
+          recipient: order.address.label,
+        }
+      : null,
     pickup: order.pickup,
   };
   if (settings.kitchen) printHtml(buildReceiptHtml({ order: shared, variant: "kitchen", settings }));
