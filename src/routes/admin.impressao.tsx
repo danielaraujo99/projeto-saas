@@ -5,7 +5,7 @@ import { useAdminSession } from "@/lib/admin/session";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Printer, Info, Zap, FileText, Settings2 } from "lucide-react";
+import { Loader2, Printer, Zap, FileText, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_PRINT,
