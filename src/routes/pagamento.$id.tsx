@@ -2,8 +2,19 @@ import * as React from "react";
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, RefreshCw, TimerOff, AlertCircle } from "lucide-react";
-import { getOrderById, confirmPayment } from "@/lib/orders-api";
+import {
+  Copy,
+  RefreshCw,
+  TimerOff,
+  AlertCircle,
+  ShieldCheck,
+  Info,
+  Clock,
+  Lock,
+  ChevronRight,
+  Check,
+} from "lucide-react";
+import { getOrderById, confirmPayment, type OrderRow } from "@/lib/orders-api";
 import { createPixCharge, getPixStatus } from "@/lib/mercadopago.functions";
 import { useAuth } from "@/store/auth";
 import { brl } from "@/lib/format";
