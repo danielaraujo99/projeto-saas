@@ -22,7 +22,7 @@ export type CreatePixResult = {
 export const createPixCharge = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => createSchema.parse(input))
   .handler(async ({ data }): Promise<CreatePixResult> => {
-    const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    const token = process.env.MERCADOPAGO_ACCESS_TOKEN?.trim();
     if (!token) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado.");
 
     const expiresAt = new Date(Date.now() + data.expirationMinutes * 60_000);
@@ -65,7 +65,7 @@ export const createPixCharge = createServerFn({ method: "POST" })
 export const getPixStatus = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ paymentId: z.number() }).parse(input))
   .handler(async ({ data }) => {
-    const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    const token = process.env.MERCADOPAGO_ACCESS_TOKEN?.trim();
     if (!token) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado.");
     const res = await fetch(`${MP_BASE}/v1/payments/${data.paymentId}`, {
       headers: { Authorization: `Bearer ${token}` },
