@@ -179,9 +179,9 @@ function EntregasPage() {
                 {data.map((o) => {
                   const ref = o.payment_confirmed_at ?? o.created_at;
                   const addr = o.address
-                    ? `${o.address.street}, ${o.address.number}${o.address.district ? " · " + o.address.district : ""}`
+                    ? `${o.address.street}, ${o.address.number}${o.address.neighborhood ? " · " + o.address.neighborhood : ""}`
                     : "—";
-                  const customer = o.address?.recipient ?? "Cliente";
+                  const customer = o.address?.label ?? "Cliente";
                   return (
                     <tr key={o.id}>
                       <td className="px-4 py-3 font-mono text-slate-700">#{o.short_id}</td>
