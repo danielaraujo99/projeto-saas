@@ -70,7 +70,7 @@ function SignupPage() {
       if (s.error) {
         setBusy(false);
         toast.info("Verifique seu e-mail para confirmar o cadastro antes de continuar.");
-        nav({ to: "/admin/login" });
+        nav({ to: "/admin/login", search: {} });
         return;
       }
     }
