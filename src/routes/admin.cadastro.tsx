@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2, Store, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import cadastroBg from "@/assets/cadastro-bg.mp4.asset.json";
 
 export const Route = createFileRoute("/admin/cadastro")({
   head: () => ({
