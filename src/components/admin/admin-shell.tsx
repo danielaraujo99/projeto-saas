@@ -131,9 +131,9 @@ export function AdminShell({
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex h-screen overflow-hidden bg-slate-50">
       {/* Sidebar desktop */}
-      <aside className="hidden w-64 shrink-0 bg-slate-950 text-slate-200 lg:flex lg:flex-col">
+      <aside className="hidden h-screen w-64 shrink-0 bg-slate-950 text-slate-200 lg:flex lg:flex-col">
         <SidebarInner items={items} path={path} restaurantName={session.restaurantName} />
       </aside>
 
@@ -153,8 +153,8 @@ export function AdminShell({
       </Sheet>
 
       {/* Área de conteúdo */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
+      <div className="flex h-screen min-w-0 flex-1 flex-col">
+        <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
           <div className="flex min-w-0 items-center gap-2">
             <Button
               variant="ghost"
@@ -194,7 +194,7 @@ export function AdminShell({
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
       </div>
 
       <LogoutDialog open={logoutOpen} onOpenChange={setLogoutOpen} onConfirm={signOut} />
