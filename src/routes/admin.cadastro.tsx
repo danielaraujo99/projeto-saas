@@ -91,18 +91,32 @@ function SignupPage() {
 
   return (
     <div className="grid min-h-screen bg-white lg:grid-cols-2">
-      <div className="relative hidden overflow-hidden bg-gradient-to-br from-primary to-blue-700 p-12 text-white lg:flex lg:flex-col lg:justify-between">
-        <div className="flex items-center gap-2">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 backdrop-blur">
+      <div className="relative hidden overflow-hidden bg-slate-900 p-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <video
+          className="absolute inset-0 h-full w-full object-cover opacity-80 brightness-110 contrast-105"
+          src={cadastroBg.url}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/45 via-slate-800/30 to-black/55" aria-hidden />
+        <div className="relative flex items-center gap-2">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/20 backdrop-blur">
             <Store className="h-5 w-5" />
           </div>
           <span className="text-lg font-bold">MenuAltas</span>
         </div>
-        <div className="max-w-md space-y-4">
+        <div className="relative max-w-md space-y-4">
+          <span className="inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-white/85 backdrop-blur">
+            Cadastro do restaurante
+          </span>
           <h2 className="text-4xl font-black leading-tight">
-            Comece a operar seu restaurante em minutos.
+            Do forno ao pedido: seu restaurante rodando em minutos.
           </h2>
-          <ul className="space-y-2 text-white/80">
+          <ul className="space-y-2 text-white/85">
             <li className="flex items-center gap-2">
               <Check className="h-4 w-4" /> Pedidos em tempo real
             </li>
@@ -114,7 +128,7 @@ function SignupPage() {
             </li>
           </ul>
         </div>
-        <p className="text-sm text-white/60">© MenuAltas · Painel para restaurantes</p>
+        <p className="relative text-sm text-white/60">© MenuAltas · Painel para restaurantes</p>
       </div>
 
       <div className="flex items-center justify-center p-6 sm:p-10">
