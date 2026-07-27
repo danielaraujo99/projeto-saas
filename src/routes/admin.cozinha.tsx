@@ -68,8 +68,11 @@ function KdsPage() {
   });
 
   const stats = React.useMemo(() => {
-    const novos = orders.filter((o) => o.status === "received" || o.status === "confirmed").length;
-    const preparando = orders.filter((o) => o.status === "preparing").length;
+    const novos = orders.filter((o) => {
+      const s = o.status as string;
+      return s === "received" || s === "confirmed";
+    }).length;
+    const preparando = orders.filter((o) => (o.status as string) === "preparing").length;
     const atrasados = orders.filter(
       (o) => (now - new Date(o.created_at).getTime()) / 60000 >= 25,
     ).length;
