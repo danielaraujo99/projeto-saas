@@ -9,6 +9,7 @@ const TONE: Record<AdminOrderStatus, string> = {
   delivering: "bg-violet-100 text-violet-700",
   delivered: "bg-emerald-100 text-emerald-700",
   canceled: "bg-rose-100 text-rose-700",
+  concluded: "bg-slate-200 text-slate-700",
 };
 
 export function StatusBadge({
