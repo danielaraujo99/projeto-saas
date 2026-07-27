@@ -398,25 +398,22 @@ function NotificacoesTab() {
 function ImpressaoTab() {
   const { data: session } = useAdminSession();
   const rid = session?.restaurantId;
-  const [cfg, setCfg] = React.useState<import("@/lib/admin/printing").PrintSettings | null>(null);
+  const [cfg, setCfg] = React.useState<PrintSettings>(DEFAULT_PRINT);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
     if (!rid) return;
-    import("@/lib/admin/printing").then(({ loadPrintSettings }) =>
-      loadPrintSettings(rid).then((s) => {
-        setCfg(s);
-        setLoading(false);
-      }),
-    );
+    loadPrintSettings(rid).then((s) => {
+      setCfg(s);
+      setLoading(false);
+    });
   }, [rid]);
 
   async function save() {
     if (!rid) return;
     setSaving(true);
     try {
-      const { savePrintSettings } = await import("@/lib/admin/printing");
       await savePrintSettings(rid, cfg);
       toast.success("Preferências de impressão salvas");
     } catch (e) {
