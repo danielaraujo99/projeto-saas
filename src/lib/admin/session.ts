@@ -49,7 +49,10 @@ export function useAdminSession() {
   const query = useQuery({
     queryKey: ["admin-session"],
     queryFn: fetchAdminSession,
-    staleTime: 60_000,
+    staleTime: Infinity,
+    gcTime: 30 * 60_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
