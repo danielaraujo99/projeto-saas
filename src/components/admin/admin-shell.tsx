@@ -9,6 +9,15 @@ import {
   LogOut,
   Loader2,
   Store,
+  Calculator,
+  UtensilsCrossed,
+  Boxes,
+  Ticket,
+  Users,
+  Star,
+  Wallet,
+  Shield,
+  Settings,
 } from "lucide-react";
 import { supabase } from "@/lib/custom-supabase";
 import { useAdminSession, type AdminRole } from "@/lib/admin/session";
@@ -46,7 +55,16 @@ const NAV: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, roles: ["admin"] },
   { to: "/admin/pedidos", label: "Pedidos", icon: ClipboardList, roles: ["admin", "caixa"] },
   { to: "/admin/pedidos/novo", label: "Adicionar pedido", icon: Plus, roles: ["admin", "caixa"] },
-  { to: "/admin/cozinha", label: "Cozinha", icon: ChefHat, roles: ["admin", "cozinha"] },
+  { to: "/admin/cozinha", label: "Cozinha (KDS)", icon: ChefHat, roles: ["admin", "cozinha"] },
+  { to: "/admin/pdv", label: "PDV (Caixa)", icon: Calculator, roles: ["admin", "caixa"] },
+  { to: "/admin/cardapio", label: "Cardápio", icon: UtensilsCrossed, roles: ["admin"] },
+  { to: "/admin/estoque", label: "Estoque", icon: Boxes, roles: ["admin"] },
+  { to: "/admin/cupons", label: "Cupons e Promoções", icon: Ticket, roles: ["admin"] },
+  { to: "/admin/clientes", label: "Clientes", icon: Users, roles: ["admin"] },
+  { to: "/admin/avaliacoes", label: "Avaliações", icon: Star, roles: ["admin"] },
+  { to: "/admin/financeiro", label: "Financeiro", icon: Wallet, roles: ["admin"] },
+  { to: "/admin/equipe", label: "Equipe e Permissões", icon: Shield, roles: ["admin"] },
+  { to: "/admin/configuracoes", label: "Configurações", icon: Settings, roles: ["admin"] },
 ];
 
 export function AdminShell({
@@ -118,13 +136,13 @@ export function AdminShell({
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar desktop */}
-      <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
+      <aside className="hidden w-64 shrink-0 bg-slate-950 text-slate-200 lg:flex lg:flex-col">
         <SidebarInner items={items} path={path} restaurantName={session.restaurantName} />
       </aside>
 
       {/* Sidebar drawer mobile */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-64 p-0">
+        <SheetContent side="left" className="w-64 border-none bg-slate-950 p-0 text-slate-200">
           <VisuallyHidden asChild>
             <SheetTitle>Menu</SheetTitle>
           </VisuallyHidden>
@@ -200,16 +218,18 @@ function SidebarInner({
 }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-4">
-        <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-white">
-          <Store className="h-4 w-4" />
+      <div className="flex items-center gap-2.5 px-5 py-5">
+        <div className="grid h-9 w-9 place-items-center rounded-xl bg-white text-slate-900 font-black">
+          M
         </div>
         <div className="min-w-0">
-          <div className="truncate text-sm font-bold text-slate-900">{restaurantName}</div>
-          <div className="text-[11px] uppercase tracking-wide text-slate-500">Painel</div>
+          <div className="truncate text-sm font-bold text-white">{restaurantName}</div>
+          <div className="text-[11px] uppercase tracking-wide text-slate-400">
+            Painel administrativo
+          </div>
         </div>
       </div>
-      <nav className="flex-1 space-y-1 p-3">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
         {items.map((n) => {
           const active =
             n.to === "/admin"
@@ -222,20 +242,20 @@ function SidebarInner({
               to={n.to}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-primary/10 text-primary"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:bg-white/5 hover:text-white",
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-[18px] w-[18px]" />
               {n.label}
             </Link>
           );
         })}
       </nav>
-      <div className="border-t border-slate-200 p-3 text-[11px] text-slate-500">
-        v1 · Painel administrativo
+      <div className="border-t border-white/10 px-4 py-3 text-[11px] text-slate-500">
+        MenuAltas · v1.0
       </div>
     </div>
   );

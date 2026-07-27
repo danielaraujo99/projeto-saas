@@ -25,9 +25,18 @@ import { Route as EnderecosNovoRouteImport } from './routes/enderecos.novo'
 import { Route as AdminRedefinirSenhaRouteImport } from './routes/admin.redefinir-senha'
 import { Route as AdminRecuperarSenhaRouteImport } from './routes/admin.recuperar-senha'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
+import { Route as AdminPdvRouteImport } from './routes/admin.pdv'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminFinanceiroRouteImport } from './routes/admin.financeiro'
+import { Route as AdminEstoqueRouteImport } from './routes/admin.estoque'
+import { Route as AdminEquipeRouteImport } from './routes/admin.equipe'
+import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
 import { Route as AdminCozinhaRouteImport } from './routes/admin.cozinha'
+import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
+import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
+import { Route as AdminCardapioRouteImport } from './routes/admin.cardapio'
 import { Route as AdminCadastroRouteImport } from './routes/admin.cadastro'
+import { Route as AdminAvaliacoesRouteImport } from './routes/admin.avaliacoes'
 import { Route as PedidoIdAvaliarRouteImport } from './routes/pedido.$id.avaliar'
 import { Route as AdminPedidosNovoRouteImport } from './routes/admin.pedidos.novo'
 
@@ -111,9 +120,34 @@ const AdminPedidosRoute = AdminPedidosRouteImport.update({
   path: '/admin/pedidos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPdvRoute = AdminPdvRouteImport.update({
+  id: '/admin/pdv',
+  path: '/admin/pdv',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminFinanceiroRoute = AdminFinanceiroRouteImport.update({
+  id: '/admin/financeiro',
+  path: '/admin/financeiro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminEstoqueRoute = AdminEstoqueRouteImport.update({
+  id: '/admin/estoque',
+  path: '/admin/estoque',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminEquipeRoute = AdminEquipeRouteImport.update({
+  id: '/admin/equipe',
+  path: '/admin/equipe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCuponsRoute = AdminCuponsRouteImport.update({
+  id: '/admin/cupons',
+  path: '/admin/cupons',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminCozinhaRoute = AdminCozinhaRouteImport.update({
@@ -121,9 +155,29 @@ const AdminCozinhaRoute = AdminCozinhaRouteImport.update({
   path: '/admin/cozinha',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminConfiguracoesRoute = AdminConfiguracoesRouteImport.update({
+  id: '/admin/configuracoes',
+  path: '/admin/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminClientesRoute = AdminClientesRouteImport.update({
+  id: '/admin/clientes',
+  path: '/admin/clientes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCardapioRoute = AdminCardapioRouteImport.update({
+  id: '/admin/cardapio',
+  path: '/admin/cardapio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminCadastroRoute = AdminCadastroRouteImport.update({
   id: '/admin/cadastro',
   path: '/admin/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAvaliacoesRoute = AdminAvaliacoesRouteImport.update({
+  id: '/admin/avaliacoes',
+  path: '/admin/avaliacoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PedidoIdAvaliarRoute = PedidoIdAvaliarRouteImport.update({
@@ -147,9 +201,18 @@ export interface FileRoutesByFullPath {
   '/conta': typeof ContaRoute
   '/enderecos': typeof EnderecosRouteWithChildren
   '/pedidos': typeof PedidosRoute
+  '/admin/avaliacoes': typeof AdminAvaliacoesRoute
   '/admin/cadastro': typeof AdminCadastroRoute
+  '/admin/cardapio': typeof AdminCardapioRoute
+  '/admin/clientes': typeof AdminClientesRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cozinha': typeof AdminCozinhaRoute
+  '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/equipe': typeof AdminEquipeRoute
+  '/admin/estoque': typeof AdminEstoqueRoute
+  '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/pdv': typeof AdminPdvRoute
   '/admin/pedidos': typeof AdminPedidosRouteWithChildren
   '/admin/recuperar-senha': typeof AdminRecuperarSenhaRoute
   '/admin/redefinir-senha': typeof AdminRedefinirSenhaRoute
@@ -170,9 +233,18 @@ export interface FileRoutesByTo {
   '/conta': typeof ContaRoute
   '/enderecos': typeof EnderecosRouteWithChildren
   '/pedidos': typeof PedidosRoute
+  '/admin/avaliacoes': typeof AdminAvaliacoesRoute
   '/admin/cadastro': typeof AdminCadastroRoute
+  '/admin/cardapio': typeof AdminCardapioRoute
+  '/admin/clientes': typeof AdminClientesRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cozinha': typeof AdminCozinhaRoute
+  '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/equipe': typeof AdminEquipeRoute
+  '/admin/estoque': typeof AdminEstoqueRoute
+  '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/pdv': typeof AdminPdvRoute
   '/admin/pedidos': typeof AdminPedidosRouteWithChildren
   '/admin/recuperar-senha': typeof AdminRecuperarSenhaRoute
   '/admin/redefinir-senha': typeof AdminRedefinirSenhaRoute
@@ -194,9 +266,18 @@ export interface FileRoutesById {
   '/conta': typeof ContaRoute
   '/enderecos': typeof EnderecosRouteWithChildren
   '/pedidos': typeof PedidosRoute
+  '/admin/avaliacoes': typeof AdminAvaliacoesRoute
   '/admin/cadastro': typeof AdminCadastroRoute
+  '/admin/cardapio': typeof AdminCardapioRoute
+  '/admin/clientes': typeof AdminClientesRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cozinha': typeof AdminCozinhaRoute
+  '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/equipe': typeof AdminEquipeRoute
+  '/admin/estoque': typeof AdminEstoqueRoute
+  '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/pdv': typeof AdminPdvRoute
   '/admin/pedidos': typeof AdminPedidosRouteWithChildren
   '/admin/recuperar-senha': typeof AdminRecuperarSenhaRoute
   '/admin/redefinir-senha': typeof AdminRedefinirSenhaRoute
@@ -219,9 +300,18 @@ export interface FileRouteTypes {
     | '/conta'
     | '/enderecos'
     | '/pedidos'
+    | '/admin/avaliacoes'
     | '/admin/cadastro'
+    | '/admin/cardapio'
+    | '/admin/clientes'
+    | '/admin/configuracoes'
     | '/admin/cozinha'
+    | '/admin/cupons'
+    | '/admin/equipe'
+    | '/admin/estoque'
+    | '/admin/financeiro'
     | '/admin/login'
+    | '/admin/pdv'
     | '/admin/pedidos'
     | '/admin/recuperar-senha'
     | '/admin/redefinir-senha'
@@ -242,9 +332,18 @@ export interface FileRouteTypes {
     | '/conta'
     | '/enderecos'
     | '/pedidos'
+    | '/admin/avaliacoes'
     | '/admin/cadastro'
+    | '/admin/cardapio'
+    | '/admin/clientes'
+    | '/admin/configuracoes'
     | '/admin/cozinha'
+    | '/admin/cupons'
+    | '/admin/equipe'
+    | '/admin/estoque'
+    | '/admin/financeiro'
     | '/admin/login'
+    | '/admin/pdv'
     | '/admin/pedidos'
     | '/admin/recuperar-senha'
     | '/admin/redefinir-senha'
@@ -265,9 +364,18 @@ export interface FileRouteTypes {
     | '/conta'
     | '/enderecos'
     | '/pedidos'
+    | '/admin/avaliacoes'
     | '/admin/cadastro'
+    | '/admin/cardapio'
+    | '/admin/clientes'
+    | '/admin/configuracoes'
     | '/admin/cozinha'
+    | '/admin/cupons'
+    | '/admin/equipe'
+    | '/admin/estoque'
+    | '/admin/financeiro'
     | '/admin/login'
+    | '/admin/pdv'
     | '/admin/pedidos'
     | '/admin/recuperar-senha'
     | '/admin/redefinir-senha'
@@ -289,9 +397,18 @@ export interface RootRouteChildren {
   ContaRoute: typeof ContaRoute
   EnderecosRoute: typeof EnderecosRouteWithChildren
   PedidosRoute: typeof PedidosRoute
+  AdminAvaliacoesRoute: typeof AdminAvaliacoesRoute
   AdminCadastroRoute: typeof AdminCadastroRoute
+  AdminCardapioRoute: typeof AdminCardapioRoute
+  AdminClientesRoute: typeof AdminClientesRoute
+  AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
   AdminCozinhaRoute: typeof AdminCozinhaRoute
+  AdminCuponsRoute: typeof AdminCuponsRoute
+  AdminEquipeRoute: typeof AdminEquipeRoute
+  AdminEstoqueRoute: typeof AdminEstoqueRoute
+  AdminFinanceiroRoute: typeof AdminFinanceiroRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminPdvRoute: typeof AdminPdvRoute
   AdminPedidosRoute: typeof AdminPedidosRouteWithChildren
   AdminRecuperarSenhaRoute: typeof AdminRecuperarSenhaRoute
   AdminRedefinirSenhaRoute: typeof AdminRedefinirSenhaRoute
@@ -414,11 +531,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPedidosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/pdv': {
+      id: '/admin/pdv'
+      path: '/admin/pdv'
+      fullPath: '/admin/pdv'
+      preLoaderRoute: typeof AdminPdvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/admin/login'
       fullPath: '/admin/login'
       preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/financeiro': {
+      id: '/admin/financeiro'
+      path: '/admin/financeiro'
+      fullPath: '/admin/financeiro'
+      preLoaderRoute: typeof AdminFinanceiroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/estoque': {
+      id: '/admin/estoque'
+      path: '/admin/estoque'
+      fullPath: '/admin/estoque'
+      preLoaderRoute: typeof AdminEstoqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/equipe': {
+      id: '/admin/equipe'
+      path: '/admin/equipe'
+      fullPath: '/admin/equipe'
+      preLoaderRoute: typeof AdminEquipeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/cupons': {
+      id: '/admin/cupons'
+      path: '/admin/cupons'
+      fullPath: '/admin/cupons'
+      preLoaderRoute: typeof AdminCuponsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/cozinha': {
@@ -428,11 +580,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCozinhaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/configuracoes': {
+      id: '/admin/configuracoes'
+      path: '/admin/configuracoes'
+      fullPath: '/admin/configuracoes'
+      preLoaderRoute: typeof AdminConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/clientes': {
+      id: '/admin/clientes'
+      path: '/admin/clientes'
+      fullPath: '/admin/clientes'
+      preLoaderRoute: typeof AdminClientesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/cardapio': {
+      id: '/admin/cardapio'
+      path: '/admin/cardapio'
+      fullPath: '/admin/cardapio'
+      preLoaderRoute: typeof AdminCardapioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/cadastro': {
       id: '/admin/cadastro'
       path: '/admin/cadastro'
       fullPath: '/admin/cadastro'
       preLoaderRoute: typeof AdminCadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/avaliacoes': {
+      id: '/admin/avaliacoes'
+      path: '/admin/avaliacoes'
+      fullPath: '/admin/avaliacoes'
+      preLoaderRoute: typeof AdminAvaliacoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pedido/$id/avaliar': {
@@ -498,9 +678,18 @@ const rootRouteChildren: RootRouteChildren = {
   ContaRoute: ContaRoute,
   EnderecosRoute: EnderecosRouteWithChildren,
   PedidosRoute: PedidosRoute,
+  AdminAvaliacoesRoute: AdminAvaliacoesRoute,
   AdminCadastroRoute: AdminCadastroRoute,
+  AdminCardapioRoute: AdminCardapioRoute,
+  AdminClientesRoute: AdminClientesRoute,
+  AdminConfiguracoesRoute: AdminConfiguracoesRoute,
   AdminCozinhaRoute: AdminCozinhaRoute,
+  AdminCuponsRoute: AdminCuponsRoute,
+  AdminEquipeRoute: AdminEquipeRoute,
+  AdminEstoqueRoute: AdminEstoqueRoute,
+  AdminFinanceiroRoute: AdminFinanceiroRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminPdvRoute: AdminPdvRoute,
   AdminPedidosRoute: AdminPedidosRouteWithChildren,
   AdminRecuperarSenhaRoute: AdminRecuperarSenhaRoute,
   AdminRedefinirSenhaRoute: AdminRedefinirSenhaRoute,
@@ -511,13 +700,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
