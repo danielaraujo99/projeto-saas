@@ -136,7 +136,7 @@ export function AdminShell({
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar desktop */}
-      <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
+      <aside className="hidden w-64 shrink-0 bg-slate-950 text-slate-200 lg:flex lg:flex-col">
         <SidebarInner items={items} path={path} restaurantName={session.restaurantName} />
       </aside>
 
