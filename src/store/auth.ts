@@ -5,44 +5,52 @@ export type AuthUser = { id: string; name: string; email?: string; phone?: strin
 
 type AuthState = {
   user: AuthUser | null;
-  login: (identifier: string, password: string) => Promise<{ ok: boolean; message?: string }>;
-  signup: (data: { name: string; identifier: string; password: string }) => Promise<{
-    ok: boolean;
-    message?: string;
-  }>;
+  login: (email: string, password: string) => Promise<{ ok: boolean; message?: string }>;
+  signup: (data: {
+    name: string;
+    email: string;
+    phone?: string;
+    password: string;
+  }) => Promise<{ ok: boolean; message?: string }>;
   logout: () => void;
 };
+
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const useAuth = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      login: async (identifier, password) => {
-        await new Promise((r) => setTimeout(r, 500));
-        if (!identifier || password.length < 4)
-          return { ok: false, message: "Verifique suas credenciais." };
+      login: async (email, password) => {
+        await new Promise((r) => setTimeout(r, 400));
+        if (!emailRe.test(email.trim()))
+          return { ok: false, message: "Informe um e-mail válido." };
+        if (password.length < 4)
+          return { ok: false, message: "Senha inválida." };
         set({
           user: {
             id: crypto.randomUUID(),
-            name: identifier.split("@")[0] || "Cliente",
-            email: identifier.includes("@") ? identifier : undefined,
-            phone: identifier.includes("@") ? undefined : identifier,
+            name: email.split("@")[0] || "Cliente",
+            email: email.trim(),
           },
         });
         return { ok: true };
       },
-      signup: async ({ name, identifier, password }) => {
-        await new Promise((r) => setTimeout(r, 600));
+      signup: async ({ name, email, phone, password }) => {
+        await new Promise((r) => setTimeout(r, 500));
         if (!name.trim()) return { ok: false, message: "Informe seu nome completo." };
-        if (!identifier) return { ok: false, message: "Informe telefone ou e-mail." };
+        if (!emailRe.test(email.trim()))
+          return { ok: false, message: "Informe um e-mail válido." };
+        if (phone && phone.replace(/\D/g, "").length < 10)
+          return { ok: false, message: "Telefone inválido." };
         if (password.length < 6)
           return { ok: false, message: "A senha deve ter ao menos 6 caracteres." };
         set({
           user: {
             id: crypto.randomUUID(),
-            name,
-            email: identifier.includes("@") ? identifier : undefined,
-            phone: identifier.includes("@") ? undefined : identifier,
+            name: name.trim(),
+            email: email.trim(),
+            phone: phone?.trim() || undefined,
           },
         });
         return { ok: true };
