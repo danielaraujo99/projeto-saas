@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, QrCode as QrIcon, RefreshCw, TimerOff, AlertCircle } from "lucide-react";
+import { Copy, RefreshCw, TimerOff, AlertCircle } from "lucide-react";
 import { getOrderById, confirmPayment } from "@/lib/orders-api";
 import { createPixCharge, getPixStatus } from "@/lib/mercadopago.functions";
 import { useAuth } from "@/store/auth";
@@ -254,8 +254,11 @@ function PixCard({
     );
   }
 
+  const totalMs = 5 * 60_000;
   const mm = String(Math.floor(remaining / 60000)).padStart(2, "0");
   const ss = String(Math.floor((remaining % 60000) / 1000)).padStart(2, "0");
+  const progress = Math.max(0, Math.min(1, remaining / totalMs));
+  const urgent = remaining <= 60_000;
 
   const copy = async () => {
     try {
@@ -266,54 +269,159 @@ function PixCard({
     }
   };
 
+  const preview = state.code.length > 28 ? `${state.code.slice(0, 24)}…` : state.code;
+
   return (
-    <div className="w-full animate-fade-in rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-elevated)]">
-      <div className="text-center">
-        <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-primary-soft text-primary">
-          <QrIcon className="h-6 w-6" />
+    <div className="w-full max-w-md animate-fade-in">
+      <PixHero />
+
+      <div className="mt-6 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-elevated)] sm:p-7">
+        <div className="text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/70" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+            </span>
+            Aguardando pagamento
+          </span>
+          <h1 className="mt-4 text-[22px] font-bold leading-tight tracking-tight sm:text-2xl">
+            Pague com Pix em segundos
+          </h1>
+          <p className="mt-1.5 text-[13px] text-foreground/60">
+            Total <span className="font-semibold text-foreground">{brl(total)}</span> · confirmação automática
+          </p>
         </div>
-        <h1 className="mt-4 text-xl font-bold">Pagar com Pix</h1>
-        <p className="mt-1 text-sm text-foreground/60">
-          Total: <span className="font-semibold text-foreground">{brl(total)}</span>
-        </p>
+
+        <div className="mt-6">
+          <div className="flex items-center justify-between px-1 pb-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/50">
+              Pix Copia e Cola
+            </span>
+            <button
+              onClick={copy}
+              className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline"
+            >
+              Copiar
+            </button>
+          </div>
+          <button
+            onClick={copy}
+            className="group flex w-full items-center gap-3 rounded-2xl border border-dashed border-primary/40 bg-primary-soft/40 px-4 py-3.5 text-left transition-colors hover:bg-primary-soft/70"
+            aria-label="Copiar código Pix"
+          >
+            <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-foreground/80">
+              {preview}
+            </span>
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition-transform group-active:scale-95">
+              <Copy className="h-4 w-4" />
+            </span>
+          </button>
+        </div>
+
+        <div className="mt-5 rounded-2xl bg-surface p-4">
+          <div className="flex items-baseline justify-between">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/50">
+              Expira em
+            </span>
+            <span
+              className={`text-2xl font-bold tabular-nums transition-colors ${urgent ? "text-destructive" : "text-foreground"}`}
+            >
+              {mm}:{ss}
+            </span>
+          </div>
+          <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-border/60">
+            <div
+              className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${urgent ? "bg-destructive" : "bg-primary"}`}
+              style={{ width: `${progress * 100}%` }}
+            />
+          </div>
+        </div>
+
+        <ol className="mt-5 space-y-2.5">
+          {[
+            "Abra o app do seu banco",
+            "Escolha Pix Copia e Cola e cole o código",
+            "Confirme o valor — pronto!",
+          ].map((step, i) => (
+            <li key={i} className="flex items-start gap-3 text-[13px] text-foreground/75">
+              <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
+                {i + 1}
+              </span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+
+        <button
+          onClick={copy}
+          className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
+        >
+          <Copy className="h-4 w-4" /> Copiar código Pix
+        </button>
       </div>
 
-      <ol className="mt-6 space-y-2 text-sm text-foreground/75">
-        <li className="flex gap-2"><span className="font-semibold text-primary">1.</span> Abra o app do seu banco e escolha <b>Pix Copia e Cola</b>.</li>
-        <li className="flex gap-2"><span className="font-semibold text-primary">2.</span> Cole o código abaixo e confirme o valor.</li>
-        <li className="flex gap-2"><span className="font-semibold text-primary">3.</span> Aguarde nesta tela — a confirmação é automática.</li>
-      </ol>
+      <p className="mt-4 text-center text-[11px] text-foreground/45">
+        Pagamento processado com segurança · Mercado Pago
+      </p>
+    </div>
+  );
+}
 
-      <div className="mt-5 rounded-2xl border border-border bg-surface p-3">
-        <textarea
-          readOnly
-          value={state.code}
-          onFocus={(e) => e.currentTarget.select()}
-          className="h-24 w-full resize-none rounded-lg bg-transparent p-2 font-mono text-[11px] leading-snug text-foreground/80 outline-none"
-        />
+function PixHero() {
+  return (
+    <div className="relative mx-auto grid h-44 w-full place-items-center overflow-hidden sm:h-48">
+      <div className="pointer-events-none absolute inset-0 grid place-items-center">
+        <div className="h-56 w-56 rounded-full bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--primary)_22%,transparent),transparent_65%)]" />
       </div>
-
-      <button
-        onClick={copy}
-        className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.01]"
-      >
-        <Copy className="h-4 w-4" /> Copiar código Pix
-      </button>
-
-      <div className="mt-4 flex items-center justify-between rounded-2xl bg-primary-soft/60 px-4 py-3">
-        <span className="text-xs font-medium text-foreground/70">Expira em</span>
-        <span className="text-lg font-bold tabular-nums text-primary">
-          {mm}:{ss}
+      <span className="pointer-events-none absolute h-28 w-28 rounded-full border border-primary/30 animate-[pixring_2.6s_ease-out_infinite]" />
+      <span
+        className="pointer-events-none absolute h-28 w-28 rounded-full border border-primary/25 animate-[pixring_2.6s_ease-out_infinite]"
+        style={{ animationDelay: "0.9s" }}
+      />
+      <span
+        className="pointer-events-none absolute h-28 w-28 rounded-full border border-primary/20 animate-[pixring_2.6s_ease-out_infinite]"
+        style={{ animationDelay: "1.8s" }}
+      />
+      <span className="pointer-events-none absolute left-[22%] top-[18%] h-1.5 w-1.5 rounded-full bg-primary/70 animate-[pixfloat_3.4s_ease-in-out_infinite]" />
+      <span
+        className="pointer-events-none absolute right-[20%] top-[30%] h-1 w-1 rounded-full bg-primary/60 animate-[pixfloat_4s_ease-in-out_infinite]"
+        style={{ animationDelay: "0.8s" }}
+      />
+      <span
+        className="pointer-events-none absolute right-[26%] bottom-[22%] h-2 w-2 rounded-full bg-primary/50 animate-[pixfloat_3.8s_ease-in-out_infinite]"
+        style={{ animationDelay: "1.4s" }}
+      />
+      <div className="relative grid h-24 w-24 place-items-center rounded-[28%] bg-gradient-to-br from-primary to-[color-mix(in_oklab,var(--primary)_55%,black)] shadow-[0_20px_50px_-15px_color-mix(in_oklab,var(--primary)_55%,transparent)] animate-[pixpop_600ms_cubic-bezier(.2,.9,.3,1.2)_both]">
+        <svg viewBox="0 0 64 64" className="h-11 w-11 text-primary-foreground">
+          <g
+            fill="currentColor"
+            style={{ transformOrigin: "32px 32px", animation: "pixspin 9s linear infinite" }}
+          >
+            <path d="M32 6 L46 20 L40 20 L32 12 L24 20 L18 20 Z" opacity="0.95" />
+            <path d="M6 32 L20 18 L20 24 L12 32 L20 40 L20 46 Z" opacity="0.9" />
+            <path d="M58 32 L44 46 L44 40 L52 32 L44 24 L44 18 Z" opacity="0.9" />
+            <path d="M32 58 L18 44 L24 44 L32 52 L40 44 L46 44 Z" opacity="0.95" />
+          </g>
+          <circle
+            cx="32"
+            cy="32"
+            r="4"
+            fill="currentColor"
+            style={{ animation: "pixpulse 1.6s ease-in-out infinite" }}
+          />
+        </svg>
+        <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-[28%]">
+          <span className="absolute -inset-y-6 -left-1/2 w-1/2 rotate-12 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-[pixsweep_3.2s_ease-in-out_infinite]" />
         </span>
       </div>
-
-      <div className="mt-3 flex items-center justify-center gap-2 text-xs font-medium text-foreground/60">
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-        </span>
-        Aguardando confirmação do banco…
-      </div>
+      <style>{`
+        @keyframes pixring { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(1.9); opacity: 0; } }
+        @keyframes pixfloat { 0%,100% { transform: translateY(0); opacity: 0.7; } 50% { transform: translateY(-10px); opacity: 1; } }
+        @keyframes pixpop { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pixspin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pixpulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.6; } }
+        @keyframes pixsweep { 0% { transform: translateX(-40%) rotate(12deg); } 60%,100% { transform: translateX(320%) rotate(12deg); } }
+      `}</style>
     </div>
   );
 }
