@@ -4,6 +4,7 @@ import { supabase } from "@/lib/custom-supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AdaptiveSheet } from "@/components/adaptive-sheet";
 import {
   Eye,
   EyeOff,
@@ -12,6 +13,7 @@ import {
   Check,
   AlertTriangle,
   X,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
