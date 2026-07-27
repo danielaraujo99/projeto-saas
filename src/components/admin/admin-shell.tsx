@@ -1,0 +1,269 @@
+import * as React from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Plus,
+  ChefHat,
+  Menu,
+  LogOut,
+  Loader2,
+  Store,
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAdminSession, type AdminRole } from "@/lib/admin/session";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
+
+type NavItem = {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles: AdminRole[];
+};
+
+const NAV: NavItem[] = [
+  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, roles: ["admin"] },
+  { to: "/admin/pedidos", label: "Pedidos", icon: ClipboardList, roles: ["admin", "caixa"] },
+  { to: "/admin/pedidos/novo", label: "Adicionar pedido", icon: Plus, roles: ["admin", "caixa"] },
+  { to: "/admin/cozinha", label: "Cozinha", icon: ChefHat, roles: ["admin", "cozinha"] },
+];
+
+export function AdminShell({
+  title,
+  children,
+  minimal = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  minimal?: boolean;
+}) {
+  const nav = useNavigate();
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const { data: session, isLoading } = useAdminSession();
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [logoutOpen, setLogoutOpen] = React.useState(false);
+
+  // Guarda de rota + role
+  React.useEffect(() => {
+    if (isLoading) return;
+    if (!session) {
+      nav({ to: "/admin/login", search: { redirect: path } });
+      return;
+    }
+    if (session.role === "cozinha" && path !== "/admin/cozinha") {
+      nav({ to: "/admin/cozinha", replace: true });
+    }
+  }, [session, isLoading, path, nav]);
+
+  if (isLoading || !session) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-slate-50">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const items = NAV.filter((n) => n.roles.includes(session.role));
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    nav({ to: "/admin/login", replace: true });
+  }
+
+  if (minimal) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-50">
+        <header className="flex items-center justify-between border-b border-slate-800 px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-2 font-semibold">
+            <ChefHat className="h-5 w-5 text-amber-400" />
+            <span>{session.restaurantName} · Cozinha</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLogoutOpen(true)}
+            className="text-slate-300 hover:bg-slate-800 hover:text-white"
+          >
+            <LogOut className="h-4 w-4" />
+            Sair
+          </Button>
+        </header>
+        <main>{children}</main>
+        <LogoutDialog open={logoutOpen} onOpenChange={setLogoutOpen} onConfirm={signOut} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen bg-slate-50">
+      {/* Sidebar desktop */}
+      <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
+        <SidebarInner items={items} path={path} restaurantName={session.restaurantName} />
+      </aside>
+
+      {/* Sidebar drawer mobile */}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="w-64 p-0">
+          <VisuallyHidden asChild>
+            <SheetTitle>Menu</SheetTitle>
+          </VisuallyHidden>
+          <SidebarInner
+            items={items}
+            path={path}
+            restaurantName={session.restaurantName}
+            onNavigate={() => setMobileOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
+
+      {/* Área de conteúdo */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
+          <div className="flex min-w-0 items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Abrir menu"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="truncate text-base font-bold text-slate-900 sm:text-lg">{title}</h1>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50">
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                  {(session.profileName || "?").slice(0, 1).toUpperCase()}
+                </span>
+                <span className="hidden max-w-[140px] truncate sm:block">
+                  {session.profileName}
+                </span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                {session.role === "admin"
+                  ? "Administrador"
+                  : session.role === "caixa"
+                    ? "Caixa"
+                    : "Cozinha"}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => setLogoutOpen(true)}>
+                <LogOut className="h-4 w-4" />
+                Sair da conta
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </header>
+        <main className="min-w-0 flex-1">{children}</main>
+      </div>
+
+      <LogoutDialog open={logoutOpen} onOpenChange={setLogoutOpen} onConfirm={signOut} />
+    </div>
+  );
+}
+
+function SidebarInner({
+  items,
+  path,
+  restaurantName,
+  onNavigate,
+}: {
+  items: NavItem[];
+  path: string;
+  restaurantName: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-4">
+        <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-white">
+          <Store className="h-4 w-4" />
+        </div>
+        <div className="min-w-0">
+          <div className="truncate text-sm font-bold text-slate-900">{restaurantName}</div>
+          <div className="text-[11px] uppercase tracking-wide text-slate-500">Painel</div>
+        </div>
+      </div>
+      <nav className="flex-1 space-y-1 p-3">
+        {items.map((n) => {
+          const active =
+            n.to === "/admin"
+              ? path === "/admin"
+              : path === n.to || path.startsWith(n.to + "/");
+          const Icon = n.icon;
+          return (
+            <Link
+              key={n.to}
+              to={n.to}
+              onClick={onNavigate}
+              className={cn(
+                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                active
+                  ? "bg-primary/10 text-primary"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              {n.label}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="border-t border-slate-200 p-3 text-[11px] text-slate-500">
+        v1 · Painel administrativo
+      </div>
+    </div>
+  );
+}
+
+function LogoutDialog({
+  open,
+  onOpenChange,
+  onConfirm,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Sair da conta?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Você precisará entrar novamente para acessar o painel.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Ficar aqui</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>Sair</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
