@@ -3,12 +3,10 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   ClipboardList,
-  Plus,
   ChefHat,
   Menu,
   LogOut,
   Loader2,
-  Store,
   Calculator,
   UtensilsCrossed,
   Boxes,
