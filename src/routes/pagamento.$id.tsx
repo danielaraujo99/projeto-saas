@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, QrCode as QrIcon, RefreshCw, TimerOff, AlertCircle } from "lucide-react";
+import { Copy, RefreshCw, TimerOff, AlertCircle } from "lucide-react";
 import { getOrderById, confirmPayment } from "@/lib/orders-api";
 import { createPixCharge, getPixStatus } from "@/lib/mercadopago.functions";
 import { useAuth } from "@/store/auth";
