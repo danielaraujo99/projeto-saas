@@ -333,16 +333,25 @@ function SignupPage() {
               </div>
               <p className="text-[11px] text-slate-500">
                 {slugState.kind === "available" && (
-                  <span className="text-emerald-600">Disponível — este será o endereço do seu cardápio.</span>
+                  <span className="text-emerald-600">
+                    Disponível — <span className="font-medium">menualtas.com.br/{cleanSlug}</span>
+                  </span>
                 )}
                 {slugState.kind === "taken" && (
-                  <span className="text-rose-600">Já está em uso. Escolha outro.</span>
+                  <span className="text-rose-600">
+                    <span className="font-medium">menualtas.com.br/{cleanSlug}</span> já está em uso. Escolha outro.
+                  </span>
                 )}
                 {slugState.kind === "invalid" && (
                   <span className="text-rose-600">Use apenas letras, números e hífen.</span>
                 )}
                 {(slugState.kind === "idle" || slugState.kind === "checking") && (
-                  <>Gerado a partir do nome — você pode editar.</>
+                  <>
+                    Seu link:{" "}
+                    <span className="font-medium text-slate-700">
+                      menualtas.com.br/{cleanSlug || "seu-restaurante"}
+                    </span>
+                  </>
                 )}
               </p>
             </div>
