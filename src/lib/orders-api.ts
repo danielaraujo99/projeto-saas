@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/custom-supabase";
 import { getDeviceId } from "@/lib/device-id";
+import { createOrderRecord, confirmOrderPayment } from "@/lib/orders.functions";
 import { computeStatus, type OrderStatus } from "@/lib/order-status";
 import type { Address, CartItem, PaymentMethod } from "@/types";
 
@@ -68,43 +69,33 @@ export type CreateOrderInput = {
   payment: PaymentMethod;
   etaMinutes: number;
   restaurantId: string;
+  restaurantSlug?: string;
 };
 
 export async function createOrder(input: CreateOrderInput): Promise<OrderRow> {
   const deviceId = getDeviceId();
-  const { data, error } = await supabase
-    .from("orders")
-    .insert({
-      short_id: shortId(),
-      device_id: deviceId,
-      restaurant_id: input.restaurantId,
+  const data = await createOrderRecord({
+    data: {
+      deviceId,
+      restaurantId: input.restaurantId,
+      restaurantSlug: input.restaurantSlug,
       items: input.items,
       subtotal: input.subtotal,
-      delivery_fee: input.deliveryFee,
+      deliveryFee: input.deliveryFee,
       discount: input.discount,
       total: input.total,
-      coupon_code: input.couponCode ?? null,
-      address: input.address ?? null,
+      couponCode: input.couponCode,
+      address: input.address,
       pickup: input.pickup,
       payment: input.payment,
-      eta_minutes: input.etaMinutes,
-      status: "pending_payment",
-    })
-    .select()
-    .single();
-  if (error || !data) throw error ?? new Error("Falha ao criar pedido");
+      etaMinutes: input.etaMinutes,
+    },
+  });
   return parseRow(data as Record<string, unknown>);
 }
 
 export async function confirmPayment(id: string): Promise<OrderRow> {
-  const now = new Date().toISOString();
-  const { data, error } = await supabase
-    .from("orders")
-    .update({ status: "received", payment_confirmed_at: now })
-    .eq("id", id)
-    .select()
-    .single();
-  if (error || !data) throw error ?? new Error("Falha ao confirmar pagamento");
+  const data = await confirmOrderPayment({ data: { id } });
   return parseRow(data as Record<string, unknown>);
 }
 
