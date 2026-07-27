@@ -29,8 +29,10 @@ import {
   Merge,
   Trash2,
   X,
-  Save,
   Clock,
+  RefreshCw,
+  CalendarDays,
+  Receipt,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/mesas")({
@@ -55,6 +57,7 @@ type MockTable = {
   waiter_id: string | null;
   opened_at: string | null;
   reservation_name: string | null;
+  reservation_time: string | null;
 };
 type MockItem = { id: string; table_id: string; name: string; qty: number; price: number };
 type MockWaiter = { id: string; name: string; active: boolean };
@@ -68,57 +71,49 @@ const MOCK_WAITERS: MockWaiter[] = [
 
 const now = Date.now();
 const initialMockTables: MockTable[] = [
-  { id: "t1", number: 1, seats: 2, status: "occupied", pos_x: 40, pos_y: 40, waiter_id: "w1", opened_at: new Date(now - 42 * 60_000).toISOString(), reservation_name: null },
-  { id: "t2", number: 2, seats: 4, status: "free", pos_x: 200, pos_y: 40, waiter_id: null, opened_at: null, reservation_name: null },
-  { id: "t3", number: 3, seats: 4, status: "occupied", pos_x: 360, pos_y: 40, waiter_id: "w2", opened_at: new Date(now - 18 * 60_000).toISOString(), reservation_name: null },
-  { id: "t4", number: 4, seats: 6, status: "reserved", pos_x: 520, pos_y: 40, waiter_id: null, opened_at: null, reservation_name: "Família Pereira · 20h30" },
-  { id: "t5", number: 5, seats: 2, status: "free", pos_x: 680, pos_y: 40, waiter_id: null, opened_at: null, reservation_name: null },
-  { id: "t6", number: 6, seats: 4, status: "occupied", pos_x: 40, pos_y: 200, waiter_id: "w3", opened_at: new Date(now - 75 * 60_000).toISOString(), reservation_name: null },
-  { id: "t7", number: 7, seats: 4, status: "free", pos_x: 200, pos_y: 200, waiter_id: null, opened_at: null, reservation_name: null },
-  { id: "t8", number: 8, seats: 8, status: "occupied", pos_x: 360, pos_y: 200, waiter_id: "w4", opened_at: new Date(now - 32 * 60_000).toISOString(), reservation_name: null },
-  { id: "t9", number: 9, seats: 2, status: "free", pos_x: 520, pos_y: 200, waiter_id: null, opened_at: null, reservation_name: null },
-  { id: "t10", number: 10, seats: 4, status: "reserved", pos_x: 680, pos_y: 200, waiter_id: null, opened_at: null, reservation_name: "João · 21h" },
-  { id: "t11", number: 11, seats: 4, status: "free", pos_x: 40, pos_y: 360, waiter_id: null, opened_at: null, reservation_name: null },
-  { id: "t12", number: 12, seats: 6, status: "occupied", pos_x: 200, pos_y: 360, waiter_id: "w1", opened_at: new Date(now - 12 * 60_000).toISOString(), reservation_name: null },
+  { id: "t1", number: 1, seats: 4, status: "free", pos_x: 0, pos_y: 0, waiter_id: null, opened_at: null, reservation_name: null, reservation_time: null },
+  { id: "t2", number: 2, seats: 4, status: "free", pos_x: 0, pos_y: 0, waiter_id: null, opened_at: null, reservation_name: null, reservation_time: null },
+  { id: "t3", number: 3, seats: 4, status: "occupied", pos_x: 0, pos_y: 0, waiter_id: "w2", opened_at: new Date(now - 42 * 60_000).toISOString(), reservation_name: null, reservation_time: null },
+  { id: "t4", number: 4, seats: 6, status: "reserved", pos_x: 0, pos_y: 0, waiter_id: null, opened_at: null, reservation_name: "Família Pereira", reservation_time: "18:30" },
+  { id: "t5", number: 5, seats: 6, status: "free", pos_x: 0, pos_y: 0, waiter_id: null, opened_at: null, reservation_name: null, reservation_time: null },
+  { id: "t6", number: 6, seats: 4, status: "occupied", pos_x: 0, pos_y: 0, waiter_id: "w1", opened_at: new Date(now - 32 * 60_000).toISOString(), reservation_name: null, reservation_time: null },
+  { id: "t7", number: 7, seats: 4, status: "free", pos_x: 0, pos_y: 0, waiter_id: null, opened_at: null, reservation_name: null, reservation_time: null },
+  { id: "t8", number: 8, seats: 6, status: "occupied", pos_x: 0, pos_y: 0, waiter_id: "w3", opened_at: new Date(now - 55 * 60_000).toISOString(), reservation_name: null, reservation_time: null },
+  { id: "t9", number: 9, seats: 2, status: "free", pos_x: 0, pos_y: 0, waiter_id: null, opened_at: null, reservation_name: null, reservation_time: null },
+  { id: "t10", number: 10, seats: 4, status: "reserved", pos_x: 0, pos_y: 0, waiter_id: null, opened_at: null, reservation_name: "João Almeida", reservation_time: "20:00" },
+  { id: "t11", number: 11, seats: 4, status: "free", pos_x: 0, pos_y: 0, waiter_id: null, opened_at: null, reservation_name: null, reservation_time: null },
+  { id: "t12", number: 12, seats: 6, status: "occupied", pos_x: 0, pos_y: 0, waiter_id: "w4", opened_at: new Date(now - 18 * 60_000).toISOString(), reservation_name: null, reservation_time: null },
+  { id: "t13", number: 13, seats: 4, status: "free", pos_x: 0, pos_y: 0, waiter_id: null, opened_at: null, reservation_name: null, reservation_time: null },
 ];
 
 const initialMockItems: Record<string, MockItem[]> = {
-  t1: [
-    { id: "i1", table_id: "t1", name: "Chopp Pilsen 300ml", qty: 4, price: 12 },
-    { id: "i2", table_id: "t1", name: "Porção de Pastel", qty: 1, price: 38 },
-  ],
   t3: [
-    { id: "i3", table_id: "t3", name: "Picanha na Chapa", qty: 1, price: 89 },
-    { id: "i4", table_id: "t3", name: "Refrigerante 2L", qty: 1, price: 15 },
-    { id: "i5", table_id: "t3", name: "Farofa Especial", qty: 2, price: 12 },
+    { id: "i1", table_id: "t3", name: "Picanha na Chapa", qty: 1, price: 89 },
+    { id: "i2", table_id: "t3", name: "Refrigerante 2L", qty: 1, price: 15 },
+    { id: "i3", table_id: "t3", name: "Farofa Especial", qty: 2, price: 12 },
+    { id: "i4", table_id: "t3", name: "Caipirinha", qty: 5, price: 22 },
   ],
   t6: [
-    { id: "i6", table_id: "t6", name: "Rodízio Executivo", qty: 4, price: 79.9 },
-    { id: "i7", table_id: "t6", name: "Suco Natural", qty: 4, price: 12 },
+    { id: "i5", table_id: "t6", name: "Rodízio Executivo", qty: 2, price: 79.9 },
+    { id: "i6", table_id: "t6", name: "Suco Natural", qty: 2, price: 12 },
+    { id: "i7", table_id: "t6", name: "Chopp Pilsen", qty: 1, price: 12 },
   ],
   t8: [
     { id: "i8", table_id: "t8", name: "Combo Família", qty: 1, price: 189 },
-    { id: "i9", table_id: "t8", name: "Cerveja Long Neck", qty: 6, price: 11 },
+    { id: "i9", table_id: "t8", name: "Cerveja Long Neck", qty: 12, price: 11 },
   ],
   t12: [
-    { id: "i10", table_id: "t12", name: "Feijoada Completa", qty: 3, price: 68 },
-    { id: "i11", table_id: "t12", name: "Caipirinha", qty: 3, price: 22 },
+    { id: "i10", table_id: "t12", name: "Feijoada Completa", qty: 4, price: 68 },
+    { id: "i11", table_id: "t12", name: "Caipirinha", qty: 4, price: 22 },
+    { id: "i12", table_id: "t12", name: "Sobremesa", qty: 1, price: 17.1 },
   ],
 };
-
-const GRID = 40;
-const CANVAS_W = 900;
-const CANVAS_H = 560;
-const TABLE_SIZE = 96;
 
 function MesasPage() {
   const [tables, setTables] = React.useState<MockTable[]>(initialMockTables);
   const [items, setItems] = React.useState<Record<string, MockItem[]>>(initialMockItems);
-  const [editMode, setEditMode] = React.useState(false);
   const [openNew, setOpenNew] = React.useState(false);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
-  const surfaceRef = React.useRef<HTMLDivElement>(null);
-  const [drag, setDrag] = React.useState<{ id: string; dx: number; dy: number } | null>(null);
 
   const selected = selectedId ? tables.find((t) => t.id === selectedId) ?? null : null;
 
@@ -128,46 +123,9 @@ function MesasPage() {
     const res = tables.filter((t) => t.status === "reserved").length;
     const revenue = tables
       .filter((t) => t.status === "occupied")
-      .reduce(
-        (s, t) => s + (items[t.id]?.reduce((a, i) => a + i.qty * i.price, 0) ?? 0),
-        0,
-      );
-    const seats = tables.reduce((s, t) => s + t.seats, 0);
-    const occSeats = tables
-      .filter((t) => t.status === "occupied")
-      .reduce((s, t) => s + t.seats, 0);
-    return { total: tables.length, occ, free, res, revenue, seats, occSeats };
+      .reduce((s, t) => s + (items[t.id]?.reduce((a, i) => a + i.qty * i.price, 0) ?? 0), 0);
+    return { total: tables.length, occ, free, res, revenue };
   }, [tables, items]);
-
-  function onPointerDown(e: React.PointerEvent, t: MockTable) {
-    if (!editMode) return;
-    e.preventDefault();
-    const rect = surfaceRef.current!.getBoundingClientRect();
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    setDrag({
-      id: t.id,
-      dx: e.clientX - rect.left - t.pos_x,
-      dy: e.clientY - rect.top - t.pos_y,
-    });
-  }
-  function onPointerMove(e: React.PointerEvent) {
-    if (!drag) return;
-    const rect = surfaceRef.current!.getBoundingClientRect();
-    const nx = Math.max(
-      0,
-      Math.min(CANVAS_W - TABLE_SIZE, Math.round((e.clientX - rect.left - drag.dx) / 8) * 8),
-    );
-    const ny = Math.max(
-      0,
-      Math.min(CANVAS_H - TABLE_SIZE, Math.round((e.clientY - rect.top - drag.dy) / 8) * 8),
-    );
-    setTables((prev) =>
-      prev.map((x) => (x.id === drag.id ? { ...x, pos_x: nx, pos_y: ny } : x)),
-    );
-  }
-  function onPointerUp() {
-    setDrag(null);
-  }
 
   function updateTable(id: string, patch: Partial<MockTable>) {
     setTables((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
@@ -177,17 +135,7 @@ function MesasPage() {
     const id = `t${Date.now()}`;
     setTables((prev) => [
       ...prev,
-      {
-        id,
-        number,
-        seats,
-        status: "free",
-        pos_x: 40,
-        pos_y: 40,
-        waiter_id: null,
-        opened_at: null,
-        reservation_name: null,
-      },
+      { id, number, seats, status: "free", pos_x: 0, pos_y: 0, waiter_id: null, opened_at: null, reservation_name: null, reservation_time: null },
     ]);
     toast.success("Mesa criada");
   }
@@ -204,11 +152,7 @@ function MesasPage() {
   }
 
   function openComanda(id: string, waiterId: string | null) {
-    updateTable(id, {
-      status: "occupied",
-      waiter_id: waiterId,
-      opened_at: new Date().toISOString(),
-    });
+    updateTable(id, { status: "occupied", waiter_id: waiterId, opened_at: new Date().toISOString() });
     toast.success("Comanda aberta");
     setSelectedId(null);
   }
@@ -223,39 +167,22 @@ function MesasPage() {
   function addItem(tableId: string, name: string, qty: number, price: number) {
     setItems((prev) => ({
       ...prev,
-      [tableId]: [
-        ...(prev[tableId] ?? []),
-        { id: `i${Date.now()}`, table_id: tableId, name, qty, price },
-      ],
+      [tableId]: [...(prev[tableId] ?? []), { id: `i${Date.now()}`, table_id: tableId, name, qty, price }],
     }));
   }
 
   function removeItem(tableId: string, id: string) {
-    setItems((prev) => ({
-      ...prev,
-      [tableId]: (prev[tableId] ?? []).filter((i) => i.id !== id),
-    }));
+    setItems((prev) => ({ ...prev, [tableId]: (prev[tableId] ?? []).filter((i) => i.id !== id) }));
   }
 
   function transfer(fromId: string, toId: string) {
     const from = tables.find((t) => t.id === fromId);
     if (!from) return;
-    setItems((prev) => ({
-      ...prev,
-      [toId]: [...(prev[fromId] ?? [])],
-      [fromId]: [],
-    }));
+    setItems((prev) => ({ ...prev, [toId]: [...(prev[fromId] ?? [])], [fromId]: [] }));
     setTables((prev) =>
       prev.map((t) => {
-        if (t.id === toId)
-          return {
-            ...t,
-            status: "occupied",
-            waiter_id: from.waiter_id,
-            opened_at: from.opened_at,
-          };
-        if (t.id === fromId)
-          return { ...t, status: "free", waiter_id: null, opened_at: null };
+        if (t.id === toId) return { ...t, status: "occupied", waiter_id: from.waiter_id, opened_at: from.opened_at };
+        if (t.id === fromId) return { ...t, status: "free", waiter_id: null, opened_at: null };
         return t;
       }),
     );
@@ -274,83 +201,82 @@ function MesasPage() {
     setSelectedId(null);
   }
 
+  const pct = (n: number) => (stats.total ? (n / stats.total) * 100 : 0);
+
   return (
     <AdminShell title="Mesas">
-      <div className="px-4 py-6 sm:px-8">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
+      <div className="space-y-5 px-4 py-6 sm:px-8">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-0">
             <h2 className="text-2xl font-bold text-slate-900">Mapa do salão</h2>
             <p className="text-sm text-slate-500">
-              Toque em uma mesa para operar. Ative "Editar layout" para arrastar e reposicionar.
+              Toque em uma mesa para operar. Arraste para reposicionar.
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant={editMode ? "default" : "outline"}
-              onClick={() => setEditMode((v) => !v)}
-            >
-              {editMode ? <Save className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
-              {editMode ? "Concluir layout" : "Editar layout"}
+            <Button variant="outline" onClick={() => toast.info("Reorganização visual em breve.")}>
+              <Pencil className="h-4 w-4" /> Editar layout
             </Button>
-            <Button onClick={() => setOpenNew(true)}>
+            <Button className="bg-slate-900 text-white hover:bg-slate-800" onClick={() => setOpenNew(true)}>
               <Plus className="h-4 w-4" /> Nova mesa
             </Button>
           </div>
         </div>
 
         {/* Métricas */}
-        <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-          <StatCard label="Ocupadas" value={`${stats.occ}/${stats.total}`} tone="orange" />
-          <StatCard label="Livres" value={stats.free} tone="emerald" />
-          <StatCard label="Reservadas" value={stats.res} tone="slate" />
-          <StatCard label="Consumo em aberto" value={brl(stats.revenue)} tone="primary" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <MetricCard
+            label="Ocupadas"
+            value={`${stats.occ} / ${stats.total}`}
+            pct={pct(stats.occ)}
+            tone="orange"
+            icon={<UsersIcon className="h-4 w-4" />}
+          />
+          <MetricCard
+            label="Livres"
+            value={stats.free}
+            pct={pct(stats.free)}
+            tone="emerald"
+            icon={<ChairGlyph className="h-4 w-4" />}
+          />
+          <MetricCard
+            label="Reservadas"
+            value={stats.res}
+            pct={pct(stats.res)}
+            tone="blue"
+            icon={<CalendarDays className="h-4 w-4" />}
+          />
+          <MetricCard
+            label="Consumo em aberto"
+            value={brl(stats.revenue)}
+            pct={100}
+            tone="slate"
+            icon={<Receipt className="h-4 w-4" />}
+          />
         </div>
 
-        {/* Legenda */}
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 shadow-sm">
-          <LegendDot cls="bg-emerald-500" label="Livre" />
-          <LegendDot cls="bg-orange-500" label="Ocupada" />
-          <LegendDot cls="bg-indigo-400" label="Reservada" />
-          <span className="ml-auto text-slate-400">
-            {editMode
-              ? "Modo edição: arraste para reposicionar (snap a 8px)."
-              : "Ocupação de lugares: " + stats.occSeats + "/" + stats.seats}
-          </span>
-        </div>
-
-        {/* Canvas */}
-        <div
-          className={cn(
-            "mt-4 overflow-auto rounded-2xl border border-slate-200 bg-white shadow-sm",
-            editMode && "ring-2 ring-primary/30",
-          )}
-        >
-          <div
-            ref={surfaceRef}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            style={{
-              width: CANVAS_W,
-              height: CANVAS_H,
-              position: "relative",
-              backgroundImage:
-                "linear-gradient(#eef2f7 1px, transparent 1px), linear-gradient(90deg, #eef2f7 1px, transparent 1px)",
-              backgroundSize: `${GRID}px ${GRID}px`,
-              touchAction: editMode ? "none" : "auto",
-            }}
-          >
-            {tables.map((t) => (
-              <TableChip
-                key={t.id}
-                t={t}
-                editMode={editMode}
-                onPointerDown={(e) => onPointerDown(e, t)}
-                onClick={() => {
-                  if (editMode || drag) return;
-                  setSelectedId(t.id);
-                }}
-              />
-            ))}
+        {/* Grade de mesas */}
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center gap-4 border-b border-slate-100 px-4 py-3 text-xs">
+            <LegendDot cls="bg-emerald-500" label="Livre" />
+            <LegendDot cls="bg-orange-500" label="Ocupada" />
+            <LegendDot cls="bg-blue-500" label="Reservada" />
+            <span className="ml-auto flex items-center gap-2 text-slate-400">
+              Última atualização: agora há pouco
+              <button
+                type="button"
+                className="grid h-7 w-7 place-items-center rounded-md border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
+                aria-label="Atualizar"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
+            {tables.map((t) => {
+              const total = items[t.id]?.reduce((s, i) => s + i.qty * i.price, 0) ?? 0;
+              return <TableCard key={t.id} t={t} total={total} onClick={() => setSelectedId(t.id)} />;
+            })}
           </div>
         </div>
       </div>
@@ -380,33 +306,49 @@ function MesasPage() {
   );
 }
 
-function StatCard({
+/* ============= UI ============= */
+
+const TONE = {
+  orange: { text: "text-orange-600", bar: "bg-orange-500", chip: "bg-orange-50 text-orange-600" },
+  emerald: { text: "text-emerald-600", bar: "bg-emerald-500", chip: "bg-emerald-50 text-emerald-600" },
+  blue: { text: "text-blue-600", bar: "bg-blue-500", chip: "bg-blue-50 text-blue-600" },
+  slate: { text: "text-slate-900", bar: "bg-slate-900", chip: "bg-slate-100 text-slate-700" },
+} as const;
+
+function MetricCard({
   label,
   value,
+  pct,
   tone,
+  icon,
 }: {
   label: string;
   value: React.ReactNode;
-  tone: "orange" | "emerald" | "slate" | "primary";
+  pct: number;
+  tone: keyof typeof TONE;
+  icon: React.ReactNode;
 }) {
-  const map = {
-    orange: "bg-orange-50 text-orange-700 ring-orange-100",
-    emerald: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-    slate: "bg-slate-50 text-slate-700 ring-slate-100",
-    primary: "bg-primary/10 text-primary ring-primary/10",
-  };
+  const t = TONE[tone];
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-      <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-        {label}
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+            {label}
+          </div>
+          <div className={cn("mt-2 text-3xl font-black tabular-nums leading-none", t.text)}>
+            {value}
+          </div>
+        </div>
+        <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-xl", t.chip)}>
+          {icon}
+        </span>
       </div>
-      <div
-        className={cn(
-          "mt-1 inline-flex items-baseline rounded-lg px-2 py-1 text-xl font-black ring-1",
-          map[tone],
-        )}
-      >
-        {value}
+      <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+        <div
+          className={cn("h-full rounded-full transition-all", t.bar)}
+          style={{ width: `${Math.max(6, Math.min(100, pct))}%` }}
+        />
       </div>
     </div>
   );
@@ -414,59 +356,137 @@ function StatCard({
 
 function LegendDot({ cls, label }: { cls: string; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className={cn("h-2.5 w-2.5 rounded-full", cls)} />
+    <span className="inline-flex items-center gap-1.5 text-slate-600">
+      <span className={cn("h-2 w-2 rounded-full", cls)} />
       {label}
     </span>
   );
 }
 
-function TableChip({
+function TableCard({
   t,
-  editMode,
-  onPointerDown,
+  total,
   onClick,
 }: {
   t: MockTable;
-  editMode: boolean;
-  onPointerDown: (e: React.PointerEvent) => void;
+  total: number;
   onClick: () => void;
 }) {
-  const tone =
-    t.status === "free"
-      ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white ring-emerald-700/30"
-      : t.status === "occupied"
-        ? "bg-gradient-to-br from-orange-400 to-orange-600 text-white ring-orange-700/30"
-        : "bg-gradient-to-br from-indigo-300 to-indigo-500 text-white ring-indigo-700/30";
+  const config =
+    t.status === "occupied"
+      ? {
+          border: "border-orange-200",
+          bg: "bg-orange-50/60 hover:bg-orange-50",
+          stroke: "#f97316",
+          dot: "bg-orange-500",
+          label: "Ocupada",
+          labelCls: "text-orange-600",
+        }
+      : t.status === "reserved"
+        ? {
+            border: "border-blue-200",
+            bg: "bg-blue-50/60 hover:bg-blue-50",
+            stroke: "#3b82f6",
+            dot: "bg-blue-500",
+            label: "Reservada",
+            labelCls: "text-blue-600",
+          }
+        : {
+            border: "border-emerald-200",
+            bg: "bg-white hover:bg-emerald-50/40",
+            stroke: "#10b981",
+            dot: "bg-emerald-500",
+            label: "Livre",
+            labelCls: "text-emerald-600",
+          };
 
-  const elapsed = t.opened_at
-    ? Math.floor((Date.now() - new Date(t.opened_at).getTime()) / 60000)
-    : 0;
+  const shape: "round" | "square" = t.seats % 2 === 0 && t.seats >= 6 ? "square" : t.number % 2 === 1 ? "round" : "square";
 
   return (
     <button
-      onPointerDown={onPointerDown}
       onClick={onClick}
-      style={{ left: t.pos_x, top: t.pos_y, width: TABLE_SIZE, height: TABLE_SIZE, position: "absolute" }}
       className={cn(
-        "grid select-none place-items-center rounded-2xl shadow-lg ring-2 transition-transform",
-        editMode ? "cursor-grab active:cursor-grabbing active:scale-95" : "hover:scale-[1.04]",
-        tone,
+        "group flex flex-col items-center gap-2 rounded-xl border p-3 text-center shadow-sm transition-all",
+        "hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+        config.border,
+        config.bg,
       )}
       aria-label={`Mesa ${t.number}`}
     >
-      <div className="text-2xl font-black leading-none">{t.number}</div>
-      <div className="mt-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider opacity-95">
-        <UsersIcon className="h-3 w-3" />
-        {t.seats}
+      <TableGlyph shape={shape} seats={t.seats} stroke={config.stroke} />
+      <div className="text-xl font-black leading-none tracking-tight text-slate-900">
+        {String(t.number).padStart(2, "0")}
       </div>
-      {t.status === "occupied" && (
-        <div className="absolute bottom-1.5 flex items-center gap-0.5 rounded-full bg-black/25 px-1.5 py-0.5 text-[9px] font-bold">
-          <Clock className="h-2.5 w-2.5" />
-          {elapsed}m
-        </div>
-      )}
+      <div className="flex items-center gap-1.5 text-[12px] font-medium">
+        <span className={cn("h-1.5 w-1.5 rounded-full", config.dot)} />
+        <span className={config.labelCls}>{config.label}</span>
+      </div>
+      <div className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold tabular-nums">
+        {t.status === "occupied" ? (
+          <span className="text-orange-600">{brl(total)}</span>
+        ) : t.status === "reserved" ? (
+          <span className="inline-flex items-center gap-1 text-blue-600">
+            <Clock className="h-3 w-3" />
+            {t.reservation_time ?? "—"}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 text-slate-500">
+            <UsersIcon className="h-3 w-3" />
+            {t.seats} lugares
+          </span>
+        )}
+      </div>
     </button>
+  );
+}
+
+function TableGlyph({
+  shape,
+  seats,
+  stroke,
+}: {
+  shape: "round" | "square";
+  seats: number;
+  stroke: string;
+}) {
+  // chair positions: top, bottom, left, right (+ extra for 6/8 seats)
+  const chairs =
+    seats >= 6
+      ? [
+          { x: 18, y: 4, w: 12, h: 6 },
+          { x: 34, y: 4, w: 12, h: 6 },
+          { x: 18, y: 54, w: 12, h: 6 },
+          { x: 34, y: 54, w: 12, h: 6 },
+          { x: 4, y: 26, w: 6, h: 12 },
+          { x: 54, y: 26, w: 6, h: 12 },
+        ]
+      : [
+          { x: 26, y: 4, w: 12, h: 6 },
+          { x: 26, y: 54, w: 12, h: 6 },
+          { x: 4, y: 26, w: 6, h: 12 },
+          { x: 54, y: 26, w: 6, h: 12 },
+        ];
+  return (
+    <svg viewBox="0 0 64 64" className="h-14 w-14" fill="none" stroke={stroke} strokeWidth="1.8">
+      {shape === "round" ? (
+        <circle cx="32" cy="32" r="14" />
+      ) : (
+        <rect x="18" y="18" width="28" height="28" rx="3" />
+      )}
+      {chairs.map((c, i) => (
+        <rect key={i} x={c.x} y={c.y} width={c.w} height={c.h} rx="2" />
+      ))}
+    </svg>
+  );
+}
+
+function ChairGlyph({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 10V6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4" />
+      <path d="M5 10h14l-1 6H6z" />
+      <path d="M8 16v4M16 16v4" />
+    </svg>
   );
 }
 
