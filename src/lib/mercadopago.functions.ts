@@ -1,16 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const MP_BASE = "https://api.mercadopago.com";
-
-const createSchema = z.object({
-  amount: z.number().positive(),
-  description: z.string().min(1).max(256),
-  externalReference: z.string().min(1).max(64),
-  payerEmail: z.string().email().optional(),
-  expirationMinutes: z.number().int().min(1).max(60).default(5),
-});
-
 export type CreatePixResult = {
   id: number;
   qrCode: string; // copia e cola (EMV BR Code)
@@ -20,14 +10,24 @@ export type CreatePixResult = {
 };
 
 export const createPixCharge = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => createSchema.parse(input))
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        amount: z.number().positive(),
+        description: z.string().min(1).max(256),
+        externalReference: z.string().min(1).max(64),
+        payerEmail: z.string().email().optional(),
+        expirationMinutes: z.number().int().min(1).max(60).default(5),
+      })
+      .parse(input),
+  )
   .handler(async ({ data }): Promise<CreatePixResult> => {
     const token = process.env.MERCADOPAGO_ACCESS_TOKEN?.trim();
     if (!token) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado.");
 
     const expiresAt = new Date(Date.now() + data.expirationMinutes * 60_000);
 
-    const res = await fetch(`${MP_BASE}/v1/payments`, {
+    const res = await fetch("https://api.mercadopago.com/v1/payments", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -67,7 +67,7 @@ export const getPixStatus = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const token = process.env.MERCADOPAGO_ACCESS_TOKEN?.trim();
     if (!token) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado.");
-    const res = await fetch(`${MP_BASE}/v1/payments/${data.paymentId}`, {
+    const res = await fetch(`https://api.mercadopago.com/v1/payments/${data.paymentId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) throw new Error(`Mercado Pago status (${res.status})`);
