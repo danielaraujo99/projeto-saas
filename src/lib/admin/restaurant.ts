@@ -26,7 +26,8 @@ export type RestaurantRow = {
 };
 
 export async function getRestaurant(id: string): Promise<RestaurantRow | null> {
-  const { data, error } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any)
     .from("restaurants")
     .select("id,name,slug,phone,description,address,category,logo_url,cover_url,settings,active")
     .eq("id", id)
@@ -35,18 +36,20 @@ export async function getRestaurant(id: string): Promise<RestaurantRow | null> {
     console.warn("[restaurant] fetch:", error.message);
     return null;
   }
-  return data as unknown as RestaurantRow;
+  return (data ?? null) as RestaurantRow | null;
 }
 
 export async function updateRestaurantInfo(
   id: string,
   patch: Partial<Pick<RestaurantRow, "name" | "slug" | "phone" | "description" | "address" | "category" | "logo_url" | "cover_url">>,
 ) {
-  const { error } = await supabase.from("restaurants").update(patch).eq("id", id);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any).from("restaurants").update(patch).eq("id", id);
   if (error) throw error;
 }
 
 export async function updateRestaurantSettings(id: string, settings: OperationSettings) {
-  const { error } = await supabase.from("restaurants").update({ settings }).eq("id", id);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any).from("restaurants").update({ settings }).eq("id", id);
   if (error) throw error;
 }
