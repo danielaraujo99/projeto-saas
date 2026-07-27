@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, LogIn, Loader2, Store } from "lucide-react";
 import { toast } from "sonner";
+import loginBg from "@/assets/login-bg.mp4.asset.json";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
