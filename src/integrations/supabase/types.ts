@@ -159,28 +159,46 @@ export type Database = {
       restaurants: {
         Row: {
           active: boolean
+          address: string | null
+          category: string | null
+          cover_url: string | null
           created_at: string
+          description: string | null
           id: string
+          logo_url: string | null
           name: string
           phone: string | null
+          settings: Json
           slug: string
           updated_at: string
         }
         Insert: {
           active?: boolean
+          address?: string | null
+          category?: string | null
+          cover_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
+          logo_url?: string | null
           name: string
           phone?: string | null
+          settings?: Json
           slug: string
           updated_at?: string
         }
         Update: {
           active?: boolean
+          address?: string | null
+          category?: string | null
+          cover_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
           phone?: string | null
+          settings?: Json
           slug?: string
           updated_at?: string
         }
@@ -193,6 +211,18 @@ export type Database = {
     Functions: {
       create_restaurant_for_current_user: {
         Args: { _name: string }
+        Returns: {
+          restaurant_id: string
+          slug: string
+        }[]
+      }
+      create_restaurant_with_slug: {
+        Args: {
+          _category?: string
+          _name: string
+          _phone?: string
+          _slug: string
+        }
         Returns: {
           restaurant_id: string
           slug: string
@@ -211,6 +241,7 @@ export type Database = {
         Args: { _restaurant_id: string; _user_id: string }
         Returns: boolean
       }
+      is_slug_available: { Args: { _slug: string }; Returns: boolean }
       slugify: { Args: { _input: string }; Returns: string }
       unaccent_safe: { Args: { _input: string }; Returns: string }
     }
