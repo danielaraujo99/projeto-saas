@@ -534,38 +534,35 @@ function ReceiptPreview({
   cfg,
 }: {
   variant: "kitchen" | "delivery";
-  cfg: import("@/lib/admin/printing").PrintSettings;
+  cfg: PrintSettings;
 }) {
-  const [html, setHtml] = React.useState("");
-  React.useEffect(() => {
-    import("@/lib/admin/printing").then(({ buildReceiptHtml }) => {
-      const sample = {
-        short_id: "PED123456",
-        items: [
-          {
-            name: "X-Burger",
-            qty: 2,
-            price: 32,
-            addOns: [{ name: "Bacon", price: 4 }],
-            notes: "Sem cebola",
-          },
-          { name: "Batata frita", qty: 1, price: 18 },
-          { name: "Coca-Cola 350ml", qty: 2, price: 8 },
-        ],
-        subtotal: 96,
-        delivery_fee: 8,
-        total: 104,
-        payment: "pix",
-        address: {
-          street: "Rua das Flores",
-          number: "123",
-          district: "Centro",
-          recipient: "Maria Silva",
+  const html = React.useMemo(() => {
+    const sample = {
+      short_id: "PED123456",
+      items: [
+        {
+          name: "X-Burger",
+          qty: 2,
+          price: 32,
+          addOns: [{ name: "Bacon", price: 4 }],
+          notes: "Sem cebola",
         },
-        pickup: false,
-      };
-      setHtml(buildReceiptHtml({ order: sample, variant, settings: cfg }));
-    });
+        { name: "Batata frita", qty: 1, price: 18 },
+        { name: "Coca-Cola 350ml", qty: 2, price: 8 },
+      ],
+      subtotal: 96,
+      delivery_fee: 8,
+      total: 104,
+      payment: "pix",
+      address: {
+        street: "Rua das Flores",
+        number: "123",
+        district: "Centro",
+        recipient: "Maria Silva",
+      },
+      pickup: false,
+    };
+    return buildReceiptHtml({ order: sample, variant, settings: cfg });
   }, [variant, cfg]);
   const label = variant === "kitchen" ? "Via Cozinha" : "Via Entrega/Cliente";
   const width = cfg.paper === "58mm" ? 220 : 300;
