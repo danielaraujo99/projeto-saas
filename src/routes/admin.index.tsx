@@ -102,9 +102,9 @@ function DashboardPage() {
           })}
         </div>
 
-        {/* Middle row: Faturamento full width */}
-        <div className="mt-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        {/* Row: Faturamento (2/3) + Horário de pico (1/3) */}
+        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-semibold text-slate-900">Faturamento no período</div>
@@ -120,52 +120,20 @@ function DashboardPage() {
               <SmoothArea
                 data={REVENUE_7D.map((r) => ({ x: r.date, y: r.value }))}
                 color="#0f172a"
-                height={260}
+                height={240}
                 yFormatter={(v) => `R$ ${v.toLocaleString("pt-BR")}`}
               />
             </div>
           </div>
-        </div>
 
-        {/* Row: Pedidos por status + Horário de pico — side by side, same height */}
-        <div className="mt-4 grid gap-4 lg:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold text-slate-900">Pedidos por status</div>
-            <div className="mt-4 space-y-3.5">
-              {ORDER_STATUS_BREAKDOWN.map((s) => (
-                <div key={s.key}>
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full" style={{ background: s.color }} />
-                      <span className="text-slate-700">{s.label}</span>
-                    </div>
-                    <span className="text-slate-500">
-                      {s.count} ({s.pct}%)
-                    </span>
-                  </div>
-                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                    <div
-                      className="h-full rounded-full"
-                      style={{ width: `${s.pct * 3}%`, background: s.color }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-sm">
-              <span className="text-slate-600">Total</span>
-              <span className="font-bold text-slate-900">128</span>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold text-slate-900">Horário de pico</div>
               <button className="text-xs font-medium text-blue-600 hover:underline">
                 Ver relatório
               </button>
             </div>
-            <div className="mt-4 grid grid-cols-[42px_1fr] gap-2">
+            <div className="mt-4 grid grid-cols-[36px_1fr] gap-1.5">
               <div className="flex flex-col justify-between py-0.5 text-[10px] text-slate-500">
                 {HEATMAP_ROWS.map((r) => (
                   <span key={r}>{r}</span>
@@ -177,11 +145,9 @@ function DashboardPage() {
                     row.map((v, ci) => (
                       <div
                         key={`${ri}-${ci}`}
-                        className="h-6 rounded"
-                        style={{
-                          background: `rgba(15,23,42,${0.05 + v * 0.85})`,
-                        }}
-                        title={`${HEATMAP_COLS[ci]} — intensidade ${(v * 100).toFixed(0)}%`}
+                        className="h-5 rounded"
+                        style={{ background: `rgba(15,23,42,${0.05 + v * 0.85})` }}
+                        title={`${HEATMAP_COLS[ci]} — ${(v * 100).toFixed(0)}%`}
                       />
                     )),
                   )}
@@ -195,6 +161,7 @@ function DashboardPage() {
             </div>
           </div>
         </div>
+
 
         {/* Bottom row: 3 cards */}
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
