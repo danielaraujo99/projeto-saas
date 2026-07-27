@@ -4,6 +4,7 @@ import { supabase } from "@/lib/custom-supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AdaptiveSheet } from "@/components/adaptive-sheet";
 import {
   Eye,
   EyeOff,
@@ -12,6 +13,7 @@ import {
   Check,
   AlertTriangle,
   X,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -85,7 +87,9 @@ function SignupPage() {
   const [show2, setShow2] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [catOpen, setCatOpen] = React.useState(false);
   const strength = passwordStrength(password);
+  const selectedCat = CATEGORIES.find((c) => c.id === category);
 
   // slug: auto-derived from name; user can edit
   const [slug, setSlug] = React.useState("");
@@ -199,8 +203,9 @@ function SignupPage() {
   }
 
   return (
-    <div className="grid min-h-screen bg-white lg:grid-cols-2">
-      <div className="relative hidden overflow-hidden bg-slate-900 p-12 text-white lg:flex lg:flex-col lg:justify-between">
+    <div className="min-h-screen bg-white lg:grid lg:grid-cols-2">
+      {/* Coluna visual — fixa em desktop, não rola */}
+      <aside className="relative hidden overflow-hidden bg-slate-900 p-10 text-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:justify-between xl:p-12">
         <video
           className="absolute inset-0 h-full w-full object-cover"
           src={cadastroBg.url}
@@ -241,65 +246,74 @@ function SignupPage() {
           </ul>
         </div>
         <p className="relative text-sm text-white/60">© MenuAltas · Painel para restaurantes</p>
-      </div>
+      </aside>
 
-      <div className="flex items-center justify-center p-6 sm:p-10">
+      {/* Coluna do formulário — rola independente */}
+      <main className="flex min-h-screen items-start justify-center px-5 py-8 sm:px-8 sm:py-12 lg:h-screen lg:overflow-y-auto">
         <div className="w-full max-w-md">
-          <h1 className="text-2xl font-black text-slate-900">Criar conta do restaurante</h1>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-[26px]">
+            Criar conta do restaurante
+          </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Você entra como administrador. Convide caixa e cozinha depois, dentro do painel.
+            Crie seu cardápio digital e comece a receber pedidos hoje mesmo.
           </p>
 
-          <form onSubmit={submit} className="mt-6 space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="name">Seu nome</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="rname">Nome do restaurante</Label>
-              <Input
-                id="rname"
-                value={restaurantName}
-                onChange={(e) => setRestaurantName(e.target.value)}
-                placeholder="Ex.: Cantina do Zé"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Categoria do restaurante</Label>
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((c) => {
-                  const active = category === c.id;
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => setCategory(c.id)}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition",
-                        active
-                          ? "border-slate-900 bg-slate-900 text-white"
-                          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
-                      )}
-                    >
-                      <span aria-hidden>{c.emoji}</span> {c.label}
-                    </button>
-                  );
-                })}
+          <form onSubmit={submit} className="mt-5 space-y-3.5">
+            <div className="grid gap-3.5 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="name">Seu nome</Label>
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="rname">Nome do restaurante</Label>
+                <Input
+                  id="rname"
+                  value={restaurantName}
+                  onChange={(e) => setRestaurantName(e.target.value)}
+                  placeholder="Ex.: Cantina do Zé"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Categoria</Label>
+              <button
+                type="button"
+                onClick={() => setCatOpen(true)}
+                className={cn(
+                  "flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition",
+                  selectedCat
+                    ? "border-slate-300 bg-white text-slate-900"
+                    : "border-slate-200 bg-white text-slate-400 hover:border-slate-300",
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  {selectedCat ? (
+                    <>
+                      <span aria-hidden className="text-base">{selectedCat.emoji}</span>
+                      {selectedCat.label}
+                    </>
+                  ) : (
+                    "Escolha o tipo do seu restaurante"
+                  )}
+                </span>
+                <ChevronDown className="h-4 w-4 text-slate-400" />
+              </button>
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="slug">Link público do cardápio</Label>
               <div className="flex items-stretch overflow-hidden rounded-md border border-slate-200 focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-200">
-                <span className="grid place-items-center bg-slate-50 px-3 text-xs text-slate-500">
+                <span className="hidden place-items-center bg-slate-50 px-3 text-xs text-slate-500 sm:grid">
                   menualtas.com.br/
+                </span>
+                <span className="grid place-items-center bg-slate-50 px-2 text-xs text-slate-500 sm:hidden">
+                  /
                 </span>
                 <input
                   id="slug"
-                  className="flex-1 bg-white px-2 py-2 text-sm outline-none"
+                  className="min-w-0 flex-1 bg-white px-2 py-2 text-sm outline-none"
                   value={slug}
                   onChange={(e) => {
                     setSlugTouched(true);
@@ -307,7 +321,7 @@ function SignupPage() {
                   }}
                   placeholder="cantina-do-ze"
                 />
-                <span className="grid w-9 place-items-center bg-white pr-2">
+                <span className="grid w-9 shrink-0 place-items-center bg-white pr-2">
                   {slugState.kind === "checking" ? (
                     <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
                   ) : slugState.kind === "available" ? (
@@ -319,16 +333,16 @@ function SignupPage() {
               </div>
               <p className="text-[11px] text-slate-500">
                 {slugState.kind === "available" && (
-                  <span className="text-emerald-600">Disponível — este será o endereço público do seu cardápio.</span>
+                  <span className="text-emerald-600">Disponível — este será o endereço do seu cardápio.</span>
                 )}
                 {slugState.kind === "taken" && (
-                  <span className="text-rose-600">Já está em uso. Escolha outro para não conflitar com um restaurante existente.</span>
+                  <span className="text-rose-600">Já está em uso. Escolha outro.</span>
                 )}
                 {slugState.kind === "invalid" && (
                   <span className="text-rose-600">Use apenas letras, números e hífen.</span>
                 )}
                 {(slugState.kind === "idle" || slugState.kind === "checking") && (
-                  <>Gerado a partir do nome. Você pode editar antes de criar a conta.</>
+                  <>Gerado a partir do nome — você pode editar.</>
                 )}
               </p>
             </div>
@@ -346,75 +360,76 @@ function SignupPage() {
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Senha</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={show ? "text" : "password"}
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  onClick={() => setShow((s) => !s)}
-                  aria-label={show ? "Ocultar" : "Mostrar"}
-                >
-                  {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {password ? (
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-1 gap-1">
-                    {[0, 1, 2, 3].map((i) => (
-                      <div
-                        key={i}
-                        className={cn(
-                          "h-1 flex-1 rounded-full",
-                          i < strength.score
-                            ? strength.score >= 3
-                              ? "bg-emerald-500"
-                              : "bg-amber-500"
-                            : "bg-slate-200",
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-[11px] text-slate-500">{strength.label}</span>
+            <div className="grid gap-3.5 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Senha</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={show ? "text" : "password"}
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    onClick={() => setShow((s) => !s)}
+                    aria-label={show ? "Ocultar" : "Mostrar"}
+                  >
+                    {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
-              ) : null}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="password2">Confirmar senha</Label>
-              <div className="relative">
-                <Input
-                  id="password2"
-                  type={show2 ? "text" : "password"}
-                  autoComplete="new-password"
-                  value={password2}
-                  onChange={(e) => setPassword2(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  onClick={() => setShow2((s) => !s)}
-                  aria-label={show2 ? "Ocultar" : "Mostrar"}
-                >
-                  {show2 ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+                {password ? (
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-1 gap-1">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className={cn(
+                            "h-1 flex-1 rounded-full",
+                            i < strength.score
+                              ? strength.score >= 3
+                                ? "bg-emerald-500"
+                                : "bg-amber-500"
+                              : "bg-slate-200",
+                          )}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[11px] text-slate-500">{strength.label}</span>
+                  </div>
+                ) : null}
               </div>
-              {password2 && password && password !== password2 ? (
-                <p className="text-[11px] text-rose-600">As senhas não coincidem.</p>
-              ) : null}
+              <div className="space-y-1.5">
+                <Label htmlFor="password2">Confirmar</Label>
+                <div className="relative">
+                  <Input
+                    id="password2"
+                    type={show2 ? "text" : "password"}
+                    autoComplete="new-password"
+                    value={password2}
+                    onChange={(e) => setPassword2(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    onClick={() => setShow2((s) => !s)}
+                    aria-label={show2 ? "Ocultar" : "Mostrar"}
+                  >
+                    {show2 ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {password2 && password && password !== password2 ? (
+                  <p className="text-[11px] text-rose-600">Não coincidem.</p>
+                ) : null}
+              </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="phone">Seu celular pessoal (WhatsApp) com DDD</Label>
+              <Label htmlFor="phone">WhatsApp pessoal (com DDD)</Label>
               <Input
                 id="phone"
                 type="tel"
@@ -426,21 +441,11 @@ function SignupPage() {
                 maxLength={16}
                 required
               />
-              <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                <div>
-                  <p className="font-semibold">Importante: use o SEU número pessoal, não o do restaurante.</p>
-                  <p className="mt-0.5 text-amber-900/80">
-                    Precisamos falar diretamente com quem contratou o MenuAltas — atualizações, suporte e cobranças vão para este WhatsApp.
-                  </p>
-                </div>
-              </div>
+              <p className="flex items-start gap-1.5 text-[11px] text-amber-800">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
+                Use o SEU número, não o do restaurante — é por onde falamos com o titular da conta.
+              </p>
             </div>
-
-            <p className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
-              Contas de caixa e cozinha não se cadastram por aqui — são convidadas pelo
-              administrador dentro do painel, em Equipe e Permissões.
-            </p>
 
             {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
@@ -454,14 +459,64 @@ function SignupPage() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-slate-500">
+          <p className="mt-5 text-center text-sm text-slate-500">
             Já tem conta?{" "}
             <Link to="/admin/login" search={{}} className="font-semibold text-primary hover:underline">
               Entrar
             </Link>
           </p>
+
+          <p className="mt-4 text-center text-[11px] text-slate-400">
+            Ao criar a conta você concorda com os{" "}
+            <Link to="/" className="underline underline-offset-2 hover:text-slate-600">
+              Termos de uso
+            </Link>{" "}
+            e a{" "}
+            <Link to="/" className="underline underline-offset-2 hover:text-slate-600">
+              Política de privacidade
+            </Link>
+            .
+          </p>
         </div>
-      </div>
+      </main>
+
+      <AdaptiveSheet
+        open={catOpen}
+        onOpenChange={setCatOpen}
+        title="Escolha a categoria"
+        size="md"
+      >
+        <div className="px-5 pb-6 pt-5 sm:px-6">
+          <div className="mb-1 text-base font-bold text-slate-900">Qual é o seu tipo de negócio?</div>
+          <p className="mb-4 text-sm text-slate-500">
+            Isso ajuda a preparar o cardápio inicial com o que faz sentido para você.
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {CATEGORIES.map((c) => {
+              const active = category === c.id;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    setCategory(c.id);
+                    setCatOpen(false);
+                  }}
+                  className={cn(
+                    "flex flex-col items-center gap-1.5 rounded-xl border px-3 py-4 text-sm transition",
+                    active
+                      ? "border-slate-900 bg-slate-900 text-white"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50",
+                  )}
+                >
+                  <span aria-hidden className="text-2xl">{c.emoji}</span>
+                  <span className="font-medium">{c.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </AdaptiveSheet>
     </div>
   );
 }
