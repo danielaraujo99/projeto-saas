@@ -125,26 +125,29 @@ function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold text-slate-900">Horário de pico</div>
               <button className="text-xs font-medium text-blue-600 hover:underline">
                 Ver relatório
               </button>
             </div>
-            <div className="mt-4 grid grid-cols-[36px_1fr] gap-1.5">
+            <div className="mt-4 grid flex-1 grid-cols-[36px_1fr] gap-1.5">
               <div className="flex flex-col justify-between py-0.5 text-[10px] text-slate-500">
                 {HEATMAP_ROWS.map((r) => (
                   <span key={r}>{r}</span>
                 ))}
               </div>
-              <div>
-                <div className="grid grid-cols-7 gap-1">
+              <div className="flex flex-col">
+                <div
+                  className="grid flex-1 grid-cols-7 gap-1.5"
+                  style={{ gridTemplateRows: `repeat(${HEATMAP.length}, minmax(20px, 1fr))` }}
+                >
                   {HEATMAP.map((row, ri) =>
                     row.map((v, ci) => (
                       <div
                         key={`${ri}-${ci}`}
-                        className="h-5 rounded"
+                        className="rounded-md"
                         style={{ background: `rgba(15,23,42,${0.05 + v * 0.85})` }}
                         title={`${HEATMAP_COLS[ci]} — ${(v * 100).toFixed(0)}%`}
                       />
