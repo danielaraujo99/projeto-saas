@@ -193,16 +193,36 @@ function AuthPage() {
             ) : null}
 
             <div className="space-y-1.5">
-              <Label htmlFor="identifier">E-mail ou telefone</Label>
+              <Label htmlFor="email">E-mail</Label>
               <Input
-                id="identifier"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="voce@email.com ou (11) 99999-9999"
-                autoComplete="username"
+                id="email"
+                type="email"
+                inputMode="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="voce@email.com"
+                autoComplete="email"
                 required
               />
             </div>
+
+            {mode === "signup" ? (
+              <div className="space-y-1.5">
+                <Label htmlFor="phone">
+                  Telefone <span className="text-xs font-normal text-muted-foreground">(opcional)</span>
+                </Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  inputMode="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  placeholder="(11) 99999-9999"
+                  autoComplete="tel"
+                  maxLength={16}
+                />
+              </div>
+            ) : null}
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
