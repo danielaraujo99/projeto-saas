@@ -19,6 +19,13 @@ import {
 } from "@/lib/admin/restaurant";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import mpLogo from "@/assets/mercado-pago.webp.asset.json";
+import {
+  DEFAULT_PRINT,
+  buildReceiptHtml,
+  loadPrintSettings,
+  savePrintSettings,
+  type PrintSettings,
+} from "@/lib/admin/printing";
 
 export const Route = createFileRoute("/admin/configuracoes")({
   head: () => ({
