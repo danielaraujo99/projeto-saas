@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-function HomePage() {
+export function HomePage() {
   const [query, setQuery] = React.useState("");
   const [activeCat, setActiveCat] = React.useState(categories[0].id);
   const [selected, setSelected] = React.useState<Product | null>(null);
