@@ -29,7 +29,8 @@ function AuthPage() {
   const nav = useNavigate();
   const search = useSearch({ from: "/auth" });
   const [mode, setMode] = React.useState<"login" | "signup">(search.mode ?? "login");
-  const [identifier, setIdentifier] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [phone, setPhone] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [name, setName] = React.useState("");
   const [show, setShow] = React.useState(false);
@@ -43,14 +44,22 @@ function AuthPage() {
     if (user) nav({ to: search.redirect || "/", replace: true });
   }, [user, nav, search.redirect]);
 
+  function formatPhone(v: string) {
+    const d = v.replace(/\D/g, "").slice(0, 11);
+    if (d.length <= 2) return d;
+    if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+    if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
     const res =
       mode === "login"
-        ? await login(identifier, password)
-        : await signup({ name, identifier, password });
+        ? await login(email, password)
+        : await signup({ name, email, phone: phone || undefined, password });
     setBusy(false);
     if (!res.ok) {
       setError(res.message ?? "Não foi possível continuar.");
