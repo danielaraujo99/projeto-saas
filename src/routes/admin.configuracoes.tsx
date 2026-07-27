@@ -30,12 +30,13 @@ export const Route = createFileRoute("/admin/configuracoes")({
   component: ConfigPage,
 });
 
-type TabId = "restaurante" | "operacao" | "notificacoes" | "integracoes";
+type TabId = "restaurante" | "operacao" | "notificacoes" | "impressao" | "integracoes";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "restaurante", label: "Restaurante" },
   { id: "operacao", label: "Operação" },
   { id: "notificacoes", label: "Notificações" },
+  { id: "impressao", label: "Impressão" },
   { id: "integracoes", label: "Integrações" },
 ];
 
