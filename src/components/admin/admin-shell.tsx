@@ -55,7 +55,16 @@ const NAV: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, roles: ["admin"] },
   { to: "/admin/pedidos", label: "Pedidos", icon: ClipboardList, roles: ["admin", "caixa"] },
   { to: "/admin/pedidos/novo", label: "Adicionar pedido", icon: Plus, roles: ["admin", "caixa"] },
-  { to: "/admin/cozinha", label: "Cozinha", icon: ChefHat, roles: ["admin", "cozinha"] },
+  { to: "/admin/cozinha", label: "Cozinha (KDS)", icon: ChefHat, roles: ["admin", "cozinha"] },
+  { to: "/admin/pdv", label: "PDV (Caixa)", icon: Calculator, roles: ["admin", "caixa"] },
+  { to: "/admin/cardapio", label: "Cardápio", icon: UtensilsCrossed, roles: ["admin"] },
+  { to: "/admin/estoque", label: "Estoque", icon: Boxes, roles: ["admin"] },
+  { to: "/admin/cupons", label: "Cupons e Promoções", icon: Ticket, roles: ["admin"] },
+  { to: "/admin/clientes", label: "Clientes", icon: Users, roles: ["admin"] },
+  { to: "/admin/avaliacoes", label: "Avaliações", icon: Star, roles: ["admin"] },
+  { to: "/admin/financeiro", label: "Financeiro", icon: Wallet, roles: ["admin"] },
+  { to: "/admin/equipe", label: "Equipe e Permissões", icon: Shield, roles: ["admin"] },
+  { to: "/admin/configuracoes", label: "Configurações", icon: Settings, roles: ["admin"] },
 ];
 
 export function AdminShell({
