@@ -135,7 +135,7 @@ function Page() {
             />
           </div>
         ) : (
-          <ProcessingCard method={order.payment.kind} total={order.total} />
+          <ProcessingCard method={order.payment.kind as "credit" | "debit" | "cash"} total={order.total} />
         )}
       </main>
     </div>
