@@ -68,7 +68,7 @@ export function AdminShell({
   React.useEffect(() => {
     if (isLoading) return;
     if (!session) {
-      nav({ to: "/admin/login", search: { redirect: path } });
+      nav({ to: "/admin/login", search: { redirect: path } as never });
       return;
     }
     if (session.role === "cozinha" && path !== "/admin/cozinha") {
@@ -88,7 +88,7 @@ export function AdminShell({
 
   async function signOut() {
     await supabase.auth.signOut();
-    nav({ to: "/admin/login", replace: true });
+    nav({ to: "/admin/login", search: {}, replace: true });
   }
 
   if (minimal) {

@@ -70,7 +70,7 @@ function SignupPage() {
       if (s.error) {
         setBusy(false);
         toast.info("Verifique seu e-mail para confirmar o cadastro antes de continuar.");
-        nav({ to: "/admin/login" });
+        nav({ to: "/admin/login", search: {} });
         return;
       }
     }
@@ -205,7 +205,7 @@ function SignupPage() {
 
           <p className="mt-6 text-center text-sm text-slate-500">
             Já tem conta?{" "}
-            <Link to="/admin/login" className="font-semibold text-primary hover:underline">
+            <Link to="/admin/login" search={{}} className="font-semibold text-primary hover:underline">
               Entrar
             </Link>
           </p>
