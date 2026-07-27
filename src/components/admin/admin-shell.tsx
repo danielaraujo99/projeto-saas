@@ -55,6 +55,9 @@ type NavItem = {
 const NAV: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, roles: ["admin"] },
   { to: "/admin/pedidos", label: "Pedidos", icon: ClipboardList, roles: ["admin", "caixa"] },
+  { to: "/admin/entregas", label: "Entregas", icon: Truck, roles: ["admin", "caixa"] },
+  { to: "/admin/mesas", label: "Mesas", icon: Grid3x3, roles: ["admin", "caixa"] },
+  { to: "/admin/garcons", label: "Garçons", icon: UserRound, roles: ["admin"] },
   { to: "/admin/pdv", label: "PDV (Caixa)", icon: Calculator, roles: ["admin", "caixa"] },
   { to: "/admin/cardapio", label: "Cardápio", icon: UtensilsCrossed, roles: ["admin"] },
   { to: "/admin/estoque", label: "Estoque", icon: Boxes, roles: ["admin"] },
