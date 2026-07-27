@@ -217,9 +217,10 @@ function MesasPage() {
             <Button variant="outline" onClick={() => toast.info("Reorganização visual em breve.")}>
               <Pencil className="h-4 w-4" /> Editar layout
             </Button>
-            <Button className="bg-slate-900 text-white hover:bg-slate-800" onClick={() => setOpenNew(true)}>
+            <Button onClick={() => setOpenNew(true)}>
               <Plus className="h-4 w-4" /> Nova mesa
             </Button>
+
           </div>
         </div>
 
