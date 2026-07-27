@@ -19,7 +19,7 @@ import { useCart } from "@/store/cart";
 import { useAddresses } from "@/store/addresses";
 import { useAuth } from "@/store/auth";
 import { createOrder as apiCreateOrder } from "@/lib/orders-api";
-import { restaurant } from "@/data/restaurant";
+import { BISTRO_AZUL_SLUG, restaurant } from "@/data/restaurant";
 import { brl } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -134,6 +134,7 @@ function CheckoutPage() {
         payment,
         etaMinutes: etaMax,
         restaurantId: restaurant.id,
+        restaurantSlug: BISTRO_AZUL_SLUG,
       });
       orderCreatedRef.current = true;
       clear();
