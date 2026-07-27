@@ -197,29 +197,6 @@ function ImpressaoPage() {
               </div>
             </Card>
 
-            <Card
-              icon={<Info className="h-4 w-4 text-blue-600" />}
-              title="MenuAltas Print Bridge"
-              description="Agente local para impressão 100% silenciosa, sem o diálogo do navegador."
-              tone="info"
-            >
-              <p className="text-[13px] leading-relaxed text-slate-600">
-                Sem o agente, o navegador exibirá a janela padrão de impressão a cada pedido. O
-                <b> Print Bridge</b> é um app leve (Windows/macOS/Linux) que roda no computador
-                conectado à impressora térmica, escuta os cupons do painel em tempo real e envia
-                direto para a impressora — sem cliques, sem janelas, sem atraso.
-              </p>
-              <ul className="space-y-1 text-[13px] text-slate-600">
-                <li>• Comunicação criptografada via WebSocket local (porta 47811).</li>
-                <li>• Suporte a ESC/POS (Epson, Bematech, Elgin, Daruma, Sunmi).</li>
-                <li>• Fila com reenvio automático se a impressora estiver offline.</li>
-                <li>• Múltiplas impressoras: cozinha, balcão, bar.</li>
-              </ul>
-              <div className="rounded-lg bg-blue-50 px-3 py-2 text-[12px] text-blue-800">
-                Em breve disponibilizaremos o instalador. Enquanto isso, a impressão continua
-                funcionando pelo navegador com um clique.
-              </div>
-            </Card>
           </div>
 
           {/* Coluna direita: preview */}
