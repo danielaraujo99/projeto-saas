@@ -17,8 +17,19 @@ import {
   updateRestaurantSettings,
   type OperationSettings,
 } from "@/lib/admin/restaurant";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { AlertTriangle, Check, CheckCircle2, Loader2, X } from "lucide-react";
 import mpLogo from "@/assets/mercado-pago.webp.asset.json";
+import { supabase } from "@/lib/custom-supabase";
+
+function slugify(v: string) {
+  return v
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-+/g, "-");
+}
 
 export const Route = createFileRoute("/admin/configuracoes")({
   head: () => ({
