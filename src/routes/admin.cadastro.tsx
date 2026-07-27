@@ -12,8 +12,8 @@ import cadastroBg from "@/assets/cadastro-bg.mp4.asset.json";
 export const Route = createFileRoute("/admin/cadastro")({
   head: () => ({
     meta: [
-      { title: "Cadastrar restaurante — MenuAltas" },
-      { name: "description", content: "Crie sua conta e comece a operar o painel." },
+      { title: "Criar conta do restaurante — MenuAltas" },
+      { name: "description", content: "Cadastre seu restaurante em minutos e comece a receber pedidos, organizar mesas e gerenciar o cardápio em um só painel." },
       { name: "robots", content: "noindex" },
     ],
   }),
