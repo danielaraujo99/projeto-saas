@@ -11,27 +11,26 @@ export type AdminOrderStatus =
   | "canceled";
 
 export const KANBAN_COLUMNS: { id: AdminOrderStatus; label: string; hint?: string }[] = [
-  { id: "received", label: "Recebidos", hint: "Aguardando confirmação" },
-  { id: "confirmed", label: "Confirmados" },
+  { id: "received", label: "Pedido feito", hint: "Novo pedido" },
   { id: "preparing", label: "Em preparo" },
-  { id: "delivering", label: "Saída / Retirada" },
-  { id: "delivered", label: "Concluídos" },
-  { id: "canceled", label: "Cancelados" },
+  { id: "delivering", label: "Saiu pra entrega" },
+  { id: "delivered", label: "Entregue" },
+  { id: "canceled", label: "Cancelado" },
 ];
 
 export const STATUS_LABEL: Record<AdminOrderStatus, string> = {
   pending_payment: "Aguardando pagamento",
-  received: "Recebido",
-  confirmed: "Confirmado",
+  received: "Pedido feito",
+  confirmed: "Pedido feito",
   preparing: "Em preparo",
-  delivering: "Saiu para entrega",
-  delivered: "Concluído",
+  delivering: "Saiu pra entrega",
+  delivered: "Entregue",
   canceled: "Cancelado",
 };
 
 // Fluxo linear de avanço no Kanban.
 export const NEXT_STATUS: Partial<Record<AdminOrderStatus, AdminOrderStatus>> = {
-  received: "confirmed",
+  received: "preparing",
   confirmed: "preparing",
   preparing: "delivering",
   delivering: "delivered",

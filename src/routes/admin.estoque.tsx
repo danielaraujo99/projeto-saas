@@ -5,13 +5,13 @@ import { STOCK_ITEMS, STOCK_MOVEMENTS } from "@/lib/admin/mock-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import { Plus, ArrowDownCircle, AlertTriangle, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
@@ -64,22 +64,22 @@ function EstoquePage() {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-600">
                   <tr>
-                    <th className="px-4 py-3">Item</th>
-                    <th className="px-4 py-3">Un.</th>
-                    <th className="px-4 py-3">Qtd atual</th>
-                    <th className="px-4 py-3">Mínimo</th>
-                    <th className="px-4 py-3">Custo</th>
-                    <th className="px-4 py-3 text-right">Ações</th>
+                    <th className="px-4 py-3 font-semibold">Item</th>
+                    <th className="px-4 py-3 font-semibold">Un.</th>
+                    <th className="px-4 py-3 font-semibold">Qtd atual</th>
+                    <th className="px-4 py-3 font-semibold">Mínimo</th>
+                    <th className="px-4 py-3 font-semibold">Custo</th>
+                    <th className="px-4 py-3 text-right font-semibold">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {STOCK_ITEMS.map((i) => {
                     const isLow = i.qty < i.min;
                     return (
-                      <tr key={i.id} className="hover:bg-slate-50/60">
-                        <td className="px-4 py-3 font-medium text-slate-800">{i.name}</td>
+                      <tr key={i.id} className="bg-white hover:bg-slate-50">
+                        <td className="px-4 py-3 font-medium text-slate-900">{i.name}</td>
                         <td className="px-4 py-3 text-slate-600">{i.unit}</td>
                         <td className="px-4 py-3">
                           <span className={isLow ? "font-semibold text-rose-600" : "text-slate-800"}>
@@ -87,7 +87,7 @@ function EstoquePage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-slate-600">{i.min}</td>
-                        <td className="px-4 py-3">R$ {i.cost.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-slate-800">R$ {i.cost.toFixed(2)}</td>
                         <td className="px-4 py-3 text-right">
                           <button
                             className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
@@ -129,47 +129,60 @@ function EstoquePage() {
         </div>
       </div>
 
-      <Dialog open={openItem} onOpenChange={setOpenItem}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Novo item de estoque</DialogTitle>
-            <DialogDescription>Cadastre um insumo controlado.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-3">
-            <Input placeholder="Nome do item" />
+      <Sheet open={openItem} onOpenChange={setOpenItem}>
+        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>Novo item de estoque</SheetTitle>
+            <SheetDescription>Cadastre um insumo controlado.</SheetDescription>
+          </SheetHeader>
+          <div className="mt-4 grid gap-3">
+            <Field label="Nome"><Input placeholder="Nome do item" /></Field>
             <div className="grid grid-cols-3 gap-2">
-              <Input placeholder="Unidade (un, kg, L)" />
-              <Input type="number" placeholder="Qtd inicial" />
-              <Input type="number" placeholder="Mínimo" />
+              <Field label="Unidade"><Input placeholder="un, kg, L" /></Field>
+              <Field label="Qtd inicial"><Input type="number" placeholder="0" /></Field>
+              <Field label="Mínimo"><Input type="number" placeholder="0" /></Field>
             </div>
-            <Input type="number" placeholder="Custo unitário (R$)" />
+            <Field label="Custo unitário (R$)"><Input type="number" placeholder="0,00" /></Field>
+            <Field label="Fornecedor (opcional)"><Input placeholder="Nome do fornecedor" /></Field>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpenItem(false)}>Cancelar</Button>
-            <Button onClick={() => { toast.success("Item cadastrado"); setOpenItem(false); }}>Salvar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <SheetFooter className="mt-6 flex-row gap-2">
+            <Button variant="outline" className="flex-1" onClick={() => setOpenItem(false)}>Cancelar</Button>
+            <Button className="flex-1" onClick={() => { toast.success("Item cadastrado"); setOpenItem(false); }}>Salvar</Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
-      <Dialog open={openEntry} onOpenChange={setOpenEntry}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Registrar entrada de estoque</DialogTitle>
-            <DialogDescription>Adicione uma compra recebida.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-3">
-            <select className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm">
-              {STOCK_ITEMS.map((i) => <option key={i.id}>{i.name}</option>)}
-            </select>
-            <Input type="number" placeholder="Quantidade" />
-            <Input placeholder="Observação (opcional)" />
+      <Sheet open={openEntry} onOpenChange={setOpenEntry}>
+        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>Registrar entrada</SheetTitle>
+            <SheetDescription>Adicione uma compra recebida.</SheetDescription>
+          </SheetHeader>
+          <div className="mt-4 grid gap-3">
+            <Field label="Item">
+              <select className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm">
+                {STOCK_ITEMS.map((i) => <option key={i.id}>{i.name}</option>)}
+              </select>
+            </Field>
+            <Field label="Quantidade"><Input type="number" placeholder="0" /></Field>
+            <Field label="Custo total (R$)"><Input type="number" placeholder="0,00" /></Field>
+            <Field label="Observação"><Input placeholder="Opcional" /></Field>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpenEntry(false)}>Cancelar</Button>
-            <Button onClick={() => { toast.success("Entrada registrada"); setOpenEntry(false); }}>Registrar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <SheetFooter className="mt-6 flex-row gap-2">
+            <Button variant="outline" className="flex-1" onClick={() => setOpenEntry(false)}>Cancelar</Button>
+            <Button className="flex-1" onClick={() => { toast.success("Entrada registrada"); setOpenEntry(false); }}>Registrar</Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </AdminShell>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="grid gap-1.5 text-xs font-medium text-slate-600">
+      {label}
+      {children}
+    </label>
   );
 }

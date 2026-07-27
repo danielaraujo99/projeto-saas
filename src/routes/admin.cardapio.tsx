@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -76,32 +77,39 @@ function CardapioPage() {
             <div className="border-b border-slate-100 p-4">
               <div className="relative max-w-md">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input placeholder="Buscar produto…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+                <Input
+                  placeholder="Buscar produto…"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  className="pl-9"
+                />
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-600">
                   <tr>
-                    <th className="px-4 py-3">Produto</th>
-                    <th className="px-4 py-3">Categoria</th>
-                    <th className="px-4 py-3">Preço</th>
-                    <th className="px-4 py-3">Estoque</th>
-                    <th className="px-4 py-3">Ativo</th>
-                    <th className="px-4 py-3 text-right">Ações</th>
+                    <th className="px-4 py-3 font-semibold">Produto</th>
+                    <th className="px-4 py-3 font-semibold">Categoria</th>
+                    <th className="px-4 py-3 font-semibold">Preço</th>
+                    <th className="px-4 py-3 font-semibold">Estoque</th>
+                    <th className="px-4 py-3 font-semibold">Ativo</th>
+                    <th className="px-4 py-3 text-right font-semibold">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {items.map((i) => (
-                    <tr key={i.id} className="hover:bg-slate-50/60">
-                      <td className="flex items-center gap-3 px-4 py-3">
-                        <span className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-lg">
-                          {i.emoji}
-                        </span>
-                        <span className="font-medium text-slate-800">{i.name}</span>
+                    <tr key={i.id} className="bg-white text-slate-800 hover:bg-slate-50">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <span className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-lg">
+                            {i.emoji}
+                          </span>
+                          <span className="font-medium text-slate-900">{i.name}</span>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-slate-600">{i.cat}</td>
-                      <td className="px-4 py-3 font-semibold">R$ {i.price.toFixed(2)}</td>
+                      <td className="px-4 py-3 font-semibold text-slate-900">R$ {i.price.toFixed(2)}</td>
                       <td className="px-4 py-3 text-slate-600">{i.stock}</td>
                       <td className="px-4 py-3">
                         <Switch defaultChecked={i.active} />
@@ -151,7 +159,7 @@ function CardapioPage() {
         )}
       </div>
 
-      <ItemDialog open={openItem} onOpenChange={setOpenItem} />
+      <ItemSheet open={openItem} onOpenChange={setOpenItem} />
       <CategoryDialog open={openCat} onOpenChange={setOpenCat} />
       <AlertDialog open={!!delId} onOpenChange={(v) => !v && setDelId(null)}>
         <AlertDialogContent>
@@ -176,15 +184,15 @@ function CardapioPage() {
   );
 }
 
-function ItemDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+function ItemSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Novo produto</DialogTitle>
-          <DialogDescription>Cadastre um item do cardápio.</DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-3">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
+        <SheetHeader>
+          <SheetTitle>Novo produto</SheetTitle>
+          <SheetDescription>Cadastre um item do cardápio.</SheetDescription>
+        </SheetHeader>
+        <div className="mt-4 grid gap-3">
           <Field label="Nome"><Input placeholder="Ex.: X-Salada" /></Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Categoria">
@@ -194,23 +202,42 @@ function ItemDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
                 ))}
               </select>
             </Field>
-            <Field label="Preço"><Input type="number" placeholder="0,00" /></Field>
+            <Field label="Preço (R$)"><Input type="number" placeholder="0,00" /></Field>
           </div>
-          <Field label="Descrição"><Input placeholder="Ingredientes e detalhes…" /></Field>
+          <Field label="Descrição">
+            <textarea
+              className="min-h-[80px] w-full rounded-md border border-slate-200 bg-white p-2 text-sm"
+              placeholder="Ingredientes e detalhes…"
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Estoque inicial"><Input type="number" placeholder="0" /></Field>
+            <Field label="Tempo de preparo (min)"><Input type="number" placeholder="15" /></Field>
+          </div>
+          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <div>
+              <div className="text-sm font-semibold text-slate-800">Produto ativo</div>
+              <div className="text-xs text-slate-500">Fica visível no cardápio online</div>
+            </div>
+            <Switch defaultChecked />
+          </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+        <SheetFooter className="mt-6 flex-row gap-2">
+          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
           <Button
+            className="flex-1"
             onClick={() => {
               toast.success("Produto salvo");
               onOpenChange(false);
             }}
           >
-            Salvar
+            Salvar produto
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -225,12 +252,7 @@ function CategoryDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
         <Field label="Nome"><Input placeholder="Ex.: Sobremesas" /></Field>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button
-            onClick={() => {
-              toast.success("Categoria salva");
-              onOpenChange(false);
-            }}
-          >
+          <Button onClick={() => { toast.success("Categoria salva"); onOpenChange(false); }}>
             Salvar
           </Button>
         </DialogFooter>
