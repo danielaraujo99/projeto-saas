@@ -1,12 +1,13 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, CreditCard, LogOut, MapPin, Plus, Trash2, User2 } from "lucide-react";
+import { ChevronRight, CreditCard, FileText, LogOut, MapPin, Plus, ShieldCheck, Trash2, User2, UserX } from "lucide-react";
 import { useAuth } from "@/store/auth";
 import { useAddresses } from "@/store/addresses";
 import { useCards } from "@/store/cards";
 import { AuthGate } from "@/components/auth-gate";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsDesktop } from "@/hooks/use-media-query";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
 
 
 export const Route = createFileRoute("/conta")({
@@ -39,13 +41,28 @@ function Page() {
   const cards = useCards((s) => s.cards);
   const removeCard = useCards((s) => s.remove);
   const nav = useNavigate();
-  const [authOpen, setAuthOpen] = React.useState(!user);
+  const isDesktop = useIsDesktop();
+  const [authOpen, setAuthOpen] = React.useState(false);
   const [pendingRemove, setPendingRemove] = React.useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = React.useState(false);
   const [hydrated, setHydrated] = React.useState(false);
 
+  // Desktop: open modal login. Mobile: redirect to full /auth page so the
+  // experience matches the rest of the mobile flow instead of being stuck in
+  // a bottom sheet.
   React.useEffect(() => {
-    setAuthOpen(!user);
-  }, [user]);
+    if (!hydrated) return;
+    if (user) {
+      setAuthOpen(false);
+      return;
+    }
+    if (isDesktop) {
+      setAuthOpen(true);
+    } else {
+      setAuthOpen(false);
+      nav({ to: "/auth", search: { redirect: "/conta", mode: "login" }, replace: true });
+    }
+  }, [user, isDesktop, hydrated, nav]);
 
   React.useEffect(() => {
     const t = window.setTimeout(() => setHydrated(true), 250);
@@ -53,6 +70,21 @@ function Page() {
   }, []);
 
   const removingCard = pendingRemove ? cards.find((c) => c.id === pendingRemove) : null;
+
+  const deleteAccount = () => {
+    try {
+      ["bistro-auth", "bistro-addresses", "bistro-cards", "bistro-cart", "bistro-orders"].forEach((k) =>
+        localStorage.removeItem(k),
+      );
+    } catch {
+      /* ignore */
+    }
+    logout();
+    setPendingDelete(false);
+    toast.success("Conta e dados locais excluídos");
+    nav({ to: "/" });
+  };
+
 
 
   return (
@@ -137,30 +169,75 @@ function Page() {
             </SectionCard>
 
 
+            {/* Legal / privacy links — required for LGPD/GDPR */}
+            <SectionCard title="Privacidade e termos">
+              <ul className="divide-y divide-border/60">
+                <li>
+                  <Link
+                    to="/termos"
+                    className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-surface"
+                  >
+                    <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-primary">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <span className="flex-1 text-sm font-semibold text-foreground">Termos de Uso</span>
+                    <ChevronRight className="h-4 w-4 text-foreground/40" />
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/privacidade"
+                    className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-surface"
+                  >
+                    <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-primary">
+                      <ShieldCheck className="h-4 w-4" />
+                    </div>
+                    <span className="flex-1 text-sm font-semibold text-foreground">Política de Privacidade</span>
+                    <ChevronRight className="h-4 w-4 text-foreground/40" />
+                  </Link>
+                </li>
+              </ul>
+            </SectionCard>
+
             {user ? (
-              <button
-                onClick={() => {
-                  logout();
-                  toast.success("Sessão encerrada");
-                  nav({ to: "/" });
-                }}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-4 text-sm font-semibold text-destructive shadow-[var(--shadow-card)]"
-              >
-                <LogOut className="h-4 w-4" /> Sair da conta
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    logout();
+                    toast.success("Sessão encerrada");
+                    nav({ to: "/" });
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-4 text-sm font-semibold text-destructive shadow-[var(--shadow-card)]"
+                >
+                  <LogOut className="h-4 w-4" /> Sair da conta
+                </button>
+                <button
+                  onClick={() => setPendingDelete(true)}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
+                >
+                  <UserX className="h-4 w-4" /> Excluir minha conta e dados
+                </button>
+                <p className="px-2 text-center text-[11px] leading-relaxed text-foreground/55">
+                  Direito garantido pela LGPD (art. 18). Remove seu perfil, endereços, cartões, carrinho e histórico local
+                  deste dispositivo.
+                </p>
+              </div>
             ) : null}
           </>
         )}
       </main>
 
-      <AuthGate
-        open={authOpen}
-        onOpenChange={(o) => {
-          setAuthOpen(o);
-          if (!o && !user) nav({ to: "/" });
-        }}
-        onSuccess={() => setAuthOpen(false)}
-      />
+      {isDesktop ? (
+        <AuthGate
+          open={authOpen}
+          onOpenChange={(o) => {
+            setAuthOpen(o);
+            if (!o && !user) nav({ to: "/" });
+          }}
+          onSuccess={() => setAuthOpen(false)}
+        />
+      ) : null}
+
 
       <AlertDialog open={!!pendingRemove} onOpenChange={(o) => !o && setPendingRemove(null)}>
         <AlertDialogContent>
@@ -189,7 +266,29 @@ function Page() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={pendingDelete} onOpenChange={setPendingDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir sua conta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação encerra sua sessão e apaga seus dados salvos neste dispositivo: perfil, endereços, cartões,
+              carrinho e histórico local de pedidos. A ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={deleteAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir permanentemente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+
 
   );
 }

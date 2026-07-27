@@ -1,8 +1,8 @@
 import * as React from "react";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { supabase } from "@/lib/custom-supabase";
 import { HomePage } from "./index";
-import { Loader2 } from "lucide-react";
+import { Loader2, SearchX, Home, UtensilsCrossed } from "lucide-react";
 
 export const Route = createFileRoute("/$slug")({
   head: () => ({
@@ -44,21 +44,44 @@ function SlugStorefront() {
   }
   if (state === "notfound") {
     return (
-      <div className="grid min-h-screen place-items-center bg-background px-6 text-center">
-        <div>
-          <h1 className="text-2xl font-bold">Restaurante não encontrado</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            O endereço /{slug} não está disponível.
-          </p>
-          <Link
-            to="/"
-            className="mt-4 inline-flex rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-          >
-            Ir para o início
-          </Link>
+      <div className="min-h-screen bg-background px-4 pb-24 pt-10 md:pt-24">
+        <div className="mx-auto max-w-md">
+          <div className="rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-card)]">
+            <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-full bg-primary-soft text-primary">
+              <SearchX className="h-7 w-7" />
+            </div>
+            <h1 className="text-xl font-bold text-foreground">Restaurante não encontrado</h1>
+            <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+              O endereço{" "}
+              <span className="rounded-md bg-surface px-1.5 py-0.5 font-mono text-xs text-foreground/80">
+                /{slug}
+              </span>{" "}
+              não existe ou o restaurante está temporariamente indisponível.
+            </p>
+
+            <div className="mt-6 flex flex-col gap-2">
+              <Link
+                to="/"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground hover:opacity-95"
+              >
+                <Home className="h-4 w-4" /> Ir para o início
+              </Link>
+              <Link
+                to="/buscar"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-border bg-background px-5 text-sm font-semibold text-foreground hover:bg-surface"
+              >
+                <UtensilsCrossed className="h-4 w-4" /> Explorar restaurantes
+              </Link>
+            </div>
+
+            <p className="mt-6 text-[11px] text-foreground/50">
+              Se você é o dono deste restaurante, verifique se o slug está correto no painel administrativo.
+            </p>
+          </div>
         </div>
       </div>
     );
   }
   return <HomePage />;
 }
+

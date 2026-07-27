@@ -147,8 +147,11 @@ export function AuthGate({ open, onOpenChange, onSuccess }: Props) {
                 : "Criar conta e continuar"}
           </Button>
           <p className="pt-2 text-center text-xs text-muted-foreground">
-            Ao continuar você concorda com os Termos de uso e Política de privacidade.
+            Ao continuar você concorda com os{" "}
+            <a href="/termos" className="text-primary underline">Termos de uso</a> e{" "}
+            <a href="/privacidade" className="text-primary underline">Política de privacidade</a>.
           </p>
+
         </form>
       </div>
     </AdaptiveSheet>

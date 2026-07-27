@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermosRouteImport } from './routes/termos'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as EnderecosRouteImport } from './routes/enderecos'
 import { Route as ContaRouteImport } from './routes/conta'
@@ -44,6 +46,16 @@ import { Route as AdminAvaliacoesRouteImport } from './routes/admin.avaliacoes'
 import { Route as PedidoIdAvaliarRouteImport } from './routes/pedido.$id.avaliar'
 import { Route as AdminPedidosNovoRouteImport } from './routes/admin.pedidos.novo'
 
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PedidosRoute = PedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
@@ -225,6 +237,8 @@ export interface FileRoutesByFullPath {
   '/conta': typeof ContaRoute
   '/enderecos': typeof EnderecosRouteWithChildren
   '/pedidos': typeof PedidosRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/admin/avaliacoes': typeof AdminAvaliacoesRoute
   '/admin/cadastro': typeof AdminCadastroRoute
   '/admin/cardapio': typeof AdminCardapioRoute
@@ -261,6 +275,8 @@ export interface FileRoutesByTo {
   '/conta': typeof ContaRoute
   '/enderecos': typeof EnderecosRouteWithChildren
   '/pedidos': typeof PedidosRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/admin/avaliacoes': typeof AdminAvaliacoesRoute
   '/admin/cadastro': typeof AdminCadastroRoute
   '/admin/cardapio': typeof AdminCardapioRoute
@@ -298,6 +314,8 @@ export interface FileRoutesById {
   '/conta': typeof ContaRoute
   '/enderecos': typeof EnderecosRouteWithChildren
   '/pedidos': typeof PedidosRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/admin/avaliacoes': typeof AdminAvaliacoesRoute
   '/admin/cadastro': typeof AdminCadastroRoute
   '/admin/cardapio': typeof AdminCardapioRoute
@@ -336,6 +354,8 @@ export interface FileRouteTypes {
     | '/conta'
     | '/enderecos'
     | '/pedidos'
+    | '/privacidade'
+    | '/termos'
     | '/admin/avaliacoes'
     | '/admin/cadastro'
     | '/admin/cardapio'
@@ -372,6 +392,8 @@ export interface FileRouteTypes {
     | '/conta'
     | '/enderecos'
     | '/pedidos'
+    | '/privacidade'
+    | '/termos'
     | '/admin/avaliacoes'
     | '/admin/cadastro'
     | '/admin/cardapio'
@@ -408,6 +430,8 @@ export interface FileRouteTypes {
     | '/conta'
     | '/enderecos'
     | '/pedidos'
+    | '/privacidade'
+    | '/termos'
     | '/admin/avaliacoes'
     | '/admin/cadastro'
     | '/admin/cardapio'
@@ -445,6 +469,8 @@ export interface RootRouteChildren {
   ContaRoute: typeof ContaRoute
   EnderecosRoute: typeof EnderecosRouteWithChildren
   PedidosRoute: typeof PedidosRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
+  TermosRoute: typeof TermosRoute
   AdminAvaliacoesRoute: typeof AdminAvaliacoesRoute
   AdminCadastroRoute: typeof AdminCadastroRoute
   AdminCardapioRoute: typeof AdminCardapioRoute
@@ -471,6 +497,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pedidos': {
       id: '/pedidos'
       path: '/pedidos'
@@ -758,6 +798,8 @@ const rootRouteChildren: RootRouteChildren = {
   ContaRoute: ContaRoute,
   EnderecosRoute: EnderecosRouteWithChildren,
   PedidosRoute: PedidosRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
+  TermosRoute: TermosRoute,
   AdminAvaliacoesRoute: AdminAvaliacoesRoute,
   AdminCadastroRoute: AdminCadastroRoute,
   AdminCardapioRoute: AdminCardapioRoute,
@@ -784,13 +826,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
