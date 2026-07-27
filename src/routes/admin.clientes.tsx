@@ -1,27 +1,48 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AdminShell } from "@/components/admin/admin-shell";
-import { CUSTOMERS } from "@/lib/admin/mock-data";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Search, Phone, Mail } from "lucide-react";
+import { Search, Users } from "lucide-react";
+import { useAdminSession } from "@/lib/admin/session";
+import { supabase } from "@/lib/custom-supabase";
 
 export const Route = createFileRoute("/admin/clientes")({
   head: () => ({ meta: [{ title: "Clientes — MenuAltas" }, { name: "robots", content: "noindex" }] }),
   component: ClientesPage,
 });
 
+type Customer = { device_id: string; orders: number; spent: number; last: string };
+
+async function loadCustomers(restaurantId: string): Promise<Customer[]> {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("device_id,total,created_at,status")
+    .eq("restaurant_id", restaurantId)
+    .neq("status", "pending_payment")
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (error) return [];
+  const map = new Map<string, Customer>();
+  for (const r of (data ?? []) as Array<{ device_id: string; total: number; created_at: string }>) {
+    const cur = map.get(r.device_id) ?? { device_id: r.device_id, orders: 0, spent: 0, last: r.created_at };
+    cur.orders += 1;
+    cur.spent += Number(r.total || 0);
+    if (new Date(r.created_at) > new Date(cur.last)) cur.last = r.created_at;
+    map.set(r.device_id, cur);
+  }
+  return Array.from(map.values()).sort((a, b) => b.spent - a.spent);
+}
+
 function ClientesPage() {
   const [q, setQ] = React.useState("");
-  const [selected, setSelected] = React.useState<(typeof CUSTOMERS)[number] | null>(null);
-  const list = CUSTOMERS.filter((c) => c.name.toLowerCase().includes(q.toLowerCase()));
+  const { data: session } = useAdminSession();
+  const { data = [] } = useQuery({
+    queryKey: ["admin-customers", session?.restaurantId],
+    queryFn: () => loadCustomers(session!.restaurantId),
+    enabled: !!session?.restaurantId,
+  });
+  const list = data.filter((c) => c.device_id.toLowerCase().includes(q.toLowerCase()));
 
   return (
     <AdminShell title="Clientes">
@@ -33,89 +54,49 @@ function ClientesPage() {
           </div>
           <div className="relative max-w-xs">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input placeholder="Buscar cliente…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+            <Input placeholder="Buscar…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 grid-cols-2 md:grid-cols-4">
-          <Kpi label="Total de clientes" value="482" />
-          <Kpi label="Novos no mês" value="34" />
-          <Kpi label="Ticket médio" value="R$ 67,59" />
-          <Kpi label="Recorrentes" value="61%" />
-        </div>
-
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-4 py-3">Nome</th>
-                <th className="px-4 py-3">Telefone</th>
-                <th className="px-4 py-3">Pedidos</th>
-                <th className="px-4 py-3">Total gasto</th>
-                <th className="px-4 py-3">Último</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {list.map((c) => (
-                <tr
-                  key={c.id}
-                  onClick={() => setSelected(c)}
-                  className="cursor-pointer hover:bg-slate-50"
-                >
-                  <td className="flex items-center gap-3 px-4 py-3">
-                    <span className="grid h-8 w-8 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                      {c.name.slice(0, 1)}
-                    </span>
-                    <span className="font-medium text-slate-800">{c.name}</span>
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">{c.phone}</td>
-                  <td className="px-4 py-3">{c.orders}</td>
-                  <td className="px-4 py-3 font-semibold">
-                    R$ {c.spent.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">{c.last}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <Dialog open={!!selected} onOpenChange={(v) => !v && setSelected(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selected?.name}</DialogTitle>
-            <DialogDescription>Perfil e resumo de consumo.</DialogDescription>
-          </DialogHeader>
-          {selected && (
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-2 text-slate-600">
-                <Phone className="h-4 w-4" /> {selected.phone}
-              </div>
-              <div className="flex items-center gap-2 text-slate-600">
-                <Mail className="h-4 w-4" /> {selected.name.toLowerCase().replace(/\s/g, ".")}@email.com
-              </div>
-              <div className="grid grid-cols-3 gap-2 pt-2">
-                <Kpi label="Pedidos" value={String(selected.orders)} small />
-                <Kpi label="Gastos" value={`R$ ${selected.spent.toFixed(0)}`} small />
-                <Kpi label="Último" value={selected.last} small />
-              </div>
-              <Button className="mt-2 w-full">Enviar promoção</Button>
+        {list.length === 0 ? (
+          <div className="mt-6 grid place-items-center rounded-2xl border border-dashed border-slate-200 bg-white p-16 text-center">
+            <div className="grid h-12 w-12 place-items-center rounded-xl bg-blue-50 text-blue-600">
+              <Users className="h-6 w-6" />
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </AdminShell>
-  );
-}
-
-function Kpi({ label, value, small }: { label: string; value: string; small?: boolean }) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-      <div className="text-xs text-slate-500">{label}</div>
-      <div className={small ? "mt-0.5 text-base font-bold" : "mt-1 text-xl font-bold text-slate-900"}>
-        {value}
+            <div className="mt-3 text-sm font-semibold text-slate-800">Nenhum cliente ainda</div>
+            <p className="mt-1 max-w-sm text-xs text-slate-500">
+              Assim que houver pedidos, os clientes aparecerão aqui.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Cliente (device)</th>
+                  <th className="px-4 py-3">Pedidos</th>
+                  <th className="px-4 py-3">Total gasto</th>
+                  <th className="px-4 py-3">Último pedido</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {list.map((c) => (
+                  <tr key={c.device_id}>
+                    <td className="px-4 py-3 font-medium text-slate-800">{c.device_id}</td>
+                    <td className="px-4 py-3">{c.orders}</td>
+                    <td className="px-4 py-3">
+                      {c.spent.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">
+                      {new Date(c.last).toLocaleDateString("pt-BR")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-    </div>
+    </AdminShell>
   );
 }
