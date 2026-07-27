@@ -55,9 +55,9 @@ function LoginPage() {
   return (
     <div className="grid min-h-screen bg-white lg:grid-cols-2">
       {/* Painel de identidade */}
-      <div className="relative hidden overflow-hidden bg-slate-950 p-12 text-white lg:flex lg:flex-col lg:justify-between">
+      <div className="relative hidden overflow-hidden bg-slate-900 p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <video
-          className="absolute inset-0 h-full w-full object-cover opacity-40"
+          className="absolute inset-0 h-full w-full object-cover opacity-90 brightness-110 contrast-105"
           src={loginBg.url}
           autoPlay
           loop
@@ -66,20 +66,23 @@ function LoginPage() {
           preload="auto"
           aria-hidden
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-slate-900/75 to-black/80" aria-hidden />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/35 via-slate-800/25 to-black/45" aria-hidden />
         <div className="relative flex items-center gap-2">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 backdrop-blur">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/20 backdrop-blur">
             <Store className="h-5 w-5" />
           </div>
           <span className="text-lg font-bold">MenuAltas</span>
         </div>
         <div className="relative max-w-md">
+          <span className="mb-3 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-white/80 backdrop-blur">
+            Painel administrativo
+          </span>
           <h2 className="text-4xl font-black leading-tight">
-            O centro de comando do seu restaurante.
+            Operação no ritmo certo, resultados na medida.
           </h2>
-          <p className="mt-4 text-white/80">
-            Gerencie pedidos em tempo real, cardápio, equipe e finanças em um só lugar —
-            desenhado para operar rápido em qualquer dispositivo.
+          <p className="mt-4 text-white/85">
+            Receba pedidos, organize mesas e entregas, ajuste seu cardápio e acompanhe o
+            caixa em tempo real. Tudo em um só lugar, para você focar no que realmente importa.
           </p>
         </div>
         <p className="relative text-sm text-white/60">© MenuAltas · Painel para restaurantes</p>
