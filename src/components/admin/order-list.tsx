@@ -70,7 +70,7 @@ export function OrderList({
           </thead>
           <tbody className="divide-y divide-slate-100">
             {orders.map((o) => {
-              const status = (o.status === "confirmed" ? "received" : o.status) as AdminOrderStatus;
+              const status = ((o.status as string) === "confirmed" ? "received" : (o.status as string)) as AdminOrderStatus;
               const next = NEXT_STATUS[status];
               const items = o.items.reduce((s, i) => s + i.quantity, 0);
               return (
