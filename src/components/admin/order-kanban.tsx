@@ -42,7 +42,8 @@ function groupBy(orders: OrderRow[]) {
   const map = new Map<AdminOrderStatus, OrderRow[]>();
   for (const col of KANBAN_COLUMNS) map.set(col.id, []);
   for (const o of orders) {
-    const s = o.status as AdminOrderStatus;
+    let s = o.status as AdminOrderStatus;
+    if (s === "confirmed") s = "received";
     if (!map.has(s)) map.set(s, []);
     map.get(s)!.push(o);
   }
