@@ -164,6 +164,40 @@ function MesasPage() {
     setSelectedId(null);
   }
 
+  function reserveTable(id: string, name: string, time: string) {
+    updateTable(id, {
+      status: "reserved",
+      reservation_name: name || null,
+      reservation_time: time || null,
+      waiter_id: null,
+      opened_at: null,
+    });
+    toast.success("Mesa reservada");
+    setSelectedId(null);
+  }
+
+  function cancelReservation(id: string) {
+    updateTable(id, {
+      status: "free",
+      reservation_name: null,
+      reservation_time: null,
+    });
+    toast.info("Reserva cancelada");
+    setSelectedId(null);
+  }
+
+  function arriveReservation(id: string, waiterId: string | null) {
+    updateTable(id, {
+      status: "occupied",
+      waiter_id: waiterId,
+      opened_at: new Date().toISOString(),
+      reservation_name: null,
+      reservation_time: null,
+    });
+    toast.success("Cliente chegou · comanda aberta");
+    setSelectedId(null);
+  }
+
   function addItem(tableId: string, name: string, qty: number, price: number) {
     setItems((prev) => ({
       ...prev,
