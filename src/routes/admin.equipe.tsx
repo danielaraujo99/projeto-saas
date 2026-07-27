@@ -35,7 +35,7 @@ function EquipePage() {
   const [del, setDel] = React.useState<string | null>(null);
   return (
     <AdminShell title="Equipe e Permissões">
-      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-8">
+      <div className="px-4 py-6 sm:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">Equipe e Permissões</h2>

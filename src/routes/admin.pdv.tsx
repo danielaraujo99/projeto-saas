@@ -44,7 +44,7 @@ function PdvPage() {
 
   return (
     <AdminShell title="PDV (Caixa)">
-      <div className="mx-auto grid max-w-[1400px] gap-4 px-4 py-6 sm:px-8 lg:grid-cols-[1fr_400px]">
+      <div className="grid gap-4 px-4 py-6 sm:px-8 lg:grid-cols-[1fr_400px]">
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>

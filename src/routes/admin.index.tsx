@@ -44,7 +44,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 function DashboardPage() {
   return (
     <AdminShell title="Dashboard">
-      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-8">
+      <div className="px-4 py-6 sm:px-8">
         {/* Page header */}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -102,9 +102,9 @@ function DashboardPage() {
           })}
         </div>
 
-        {/* Middle row */}
-        <div className="mt-4 grid gap-4 lg:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
+        {/* Middle row: Faturamento full width */}
+        <div className="mt-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-semibold text-slate-900">Faturamento no período</div>
@@ -125,7 +125,10 @@ function DashboardPage() {
               />
             </div>
           </div>
+        </div>
 
+        {/* Row: Pedidos por status + Horário de pico — side by side, same height */}
+        <div className="mt-4 grid gap-4 lg:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="text-sm font-semibold text-slate-900">Pedidos por status</div>
             <div className="mt-4 space-y-3.5">
@@ -133,10 +136,7 @@ function DashboardPage() {
                 <div key={s.key}>
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
-                      <span
-                        className="h-2 w-2 rounded-full"
-                        style={{ background: s.color }}
-                      />
+                      <span className="h-2 w-2 rounded-full" style={{ background: s.color }} />
                       <span className="text-slate-700">{s.label}</span>
                     </div>
                     <span className="text-slate-500">
@@ -157,10 +157,7 @@ function DashboardPage() {
               <span className="font-bold text-slate-900">128</span>
             </div>
           </div>
-        </div>
 
-        {/* Heatmap row */}
-        <div className="mt-4 grid gap-4 lg:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold text-slate-900">Horário de pico</div>
@@ -169,18 +166,18 @@ function DashboardPage() {
               </button>
             </div>
             <div className="mt-4 grid grid-cols-[42px_1fr] gap-2">
-              <div className="flex flex-col justify-between py-1 text-[10px] text-slate-500">
+              <div className="flex flex-col justify-between py-0.5 text-[10px] text-slate-500">
                 {HEATMAP_ROWS.map((r) => (
                   <span key={r}>{r}</span>
                 ))}
               </div>
               <div>
-                <div className="grid grid-cols-7 gap-1.5">
+                <div className="grid grid-cols-7 gap-1">
                   {HEATMAP.map((row, ri) =>
                     row.map((v, ci) => (
                       <div
                         key={`${ri}-${ci}`}
-                        className="aspect-square rounded-md"
+                        className="h-6 rounded"
                         style={{
                           background: `rgba(15,23,42,${0.05 + v * 0.85})`,
                         }}
@@ -197,7 +194,10 @@ function DashboardPage() {
               </div>
             </div>
           </div>
+        </div>
 
+        {/* Bottom row: 3 cards */}
+        <div className="mt-4 grid gap-4 lg:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold text-slate-900">Produtos mais vendidos</div>
@@ -216,10 +216,7 @@ function DashboardPage() {
               ))}
             </ul>
           </div>
-        </div>
 
-        {/* Bottom row */}
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold text-slate-900">Formas de pagamento</div>
