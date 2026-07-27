@@ -1,8 +1,11 @@
 import * as React from "react";
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Copy, QrCode as QrIcon, RefreshCw, TimerOff } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Copy, QrCode as QrIcon, RefreshCw, TimerOff, AlertCircle } from "lucide-react";
 import { getOrderById, confirmPayment } from "@/lib/orders-api";
+import { createPixCharge, getPixStatus } from "@/lib/mercadopago.functions";
+import { useAuth } from "@/store/auth";
 import { brl } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -20,9 +23,8 @@ export const Route = createFileRoute("/pagamento/$id")({
 
 type Phase = "loading" | "awaiting_pix" | "processing" | "success" | "pix_expired";
 
-const PIX_EXPIRATION_MS = 3 * 60 * 1000; // 3 minutos
-const PIX_CONFIRM_MS = 6000;
 const CARD_CONFIRM_MS = 2200;
+const POLL_INTERVAL_MS = 3000;
 
 function Page() {
   const { id } = useParams({ from: "/pagamento/$id" });
@@ -33,7 +35,6 @@ function Page() {
   });
   const [phase, setPhase] = React.useState<Phase>("loading");
   const [pixCycle, setPixCycle] = React.useState(0);
-  const [pixDeadline, setPixDeadline] = React.useState<number | null>(null);
   const confirmedRef = React.useRef(false);
 
   React.useEffect(() => {
@@ -45,14 +46,12 @@ function Page() {
     setPhase(order.payment.kind === "pix" ? "awaiting_pix" : "processing");
   }, [order, nav]);
 
-  // Simulated payment confirmation + Pix expiration timer.
+  // Card / cash: manter simulação existente
   React.useEffect(() => {
     if (!order) return;
     if (confirmedRef.current) return;
-    if (phase !== "awaiting_pix" && phase !== "processing") return;
-
-    const confirmDelay = phase === "awaiting_pix" ? PIX_CONFIRM_MS : CARD_CONFIRM_MS;
-    const confirmT = window.setTimeout(async () => {
+    if (phase !== "processing") return;
+    const t = window.setTimeout(async () => {
       confirmedRef.current = true;
       try {
         await confirmPayment(order.id);
@@ -64,29 +63,29 @@ function Page() {
         console.error(e);
         toast.error("Falha ao confirmar pagamento. Tente novamente.");
       }
-    }, confirmDelay);
+    }, CARD_CONFIRM_MS);
+    return () => window.clearTimeout(t);
+  }, [order, phase, nav]);
 
-    let expireT: number | undefined;
-    if (phase === "awaiting_pix") {
-      const deadline = Date.now() + PIX_EXPIRATION_MS;
-      setPixDeadline(deadline);
-      expireT = window.setTimeout(() => {
-        if (confirmedRef.current) return;
-        setPhase("pix_expired");
-      }, PIX_EXPIRATION_MS);
+  const onPixApproved = React.useCallback(async () => {
+    if (!order || confirmedRef.current) return;
+    confirmedRef.current = true;
+    try {
+      await confirmPayment(order.id);
+      setPhase("success");
+      window.setTimeout(() => {
+        nav({ to: "/pedido/$id", params: { id: order.id }, replace: true });
+      }, 1600);
+    } catch (e) {
+      console.error(e);
+      toast.error("Falha ao confirmar pagamento.");
     }
-
-    return () => {
-      window.clearTimeout(confirmT);
-      if (expireT) window.clearTimeout(expireT);
-    };
-  }, [order, phase, nav, pixCycle]);
+  }, [order, nav]);
 
   const regeneratePix = () => {
     confirmedRef.current = false;
     setPhase("awaiting_pix");
     setPixCycle((c) => c + 1);
-    toast.success("Novo código Pix gerado");
   };
 
   if (isLoading || !order) {
@@ -105,11 +104,13 @@ function Page() {
         ) : phase === "pix_expired" ? (
           <PixExpiredCard total={order.total} onRegenerate={regeneratePix} />
         ) : order.payment.kind === "pix" ? (
-          <PixWaitingCard
+          <PixCard
             key={pixCycle}
-            total={order.total}
+            orderId={order.id}
             shortId={order.short_id}
-            deadline={pixDeadline}
+            total={order.total}
+            onApproved={onPixApproved}
+            onExpired={() => setPhase("pix_expired")}
           />
         ) : (
           <ProcessingCard method={order.payment.kind} total={order.total} />
@@ -131,68 +132,182 @@ function PulseLoader({ label }: { label: string }) {
   );
 }
 
-function PixWaitingCard({
-  total,
+function PixCard({
+  orderId,
   shortId,
-  deadline,
+  total,
+  onApproved,
+  onExpired,
 }: {
-  total: number;
+  orderId: string;
   shortId: string;
-  deadline: number | null;
+  total: number;
+  onApproved: () => void;
+  onExpired: () => void;
 }) {
-  const pixCode = React.useMemo(
-    () =>
-      `00020126360014BR.GOV.BCB.PIX0114+55119999999995204000053039865406${total.toFixed(2)}5802BR5913MENUALTAS DEMO6009SAO PAULO62070503${shortId}6304ABCD`,
-    [total, shortId],
-  );
+  const createFn = useServerFn(createPixCharge);
+  const statusFn = useServerFn(getPixStatus);
+  const email = useAuth((s) => s.user?.email);
 
-  const [remaining, setRemaining] = React.useState(() =>
-    deadline ? Math.max(0, deadline - Date.now()) : 0,
-  );
+  const [state, setState] = React.useState<
+    | { phase: "creating" }
+    | { phase: "error"; message: string }
+    | { phase: "ready"; paymentId: number; code: string; deadline: number }
+  >({ phase: "creating" });
+  const [remaining, setRemaining] = React.useState(5 * 60_000);
+
+  // Criar cobrança uma vez
   React.useEffect(() => {
-    if (!deadline) return;
-    const t = window.setInterval(() => {
-      setRemaining(Math.max(0, deadline - Date.now()));
-    }, 1000);
-    return () => window.clearInterval(t);
-  }, [deadline]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await createFn({
+          data: {
+            amount: total,
+            description: `Pedido ${shortId}`,
+            externalReference: orderId,
+            payerEmail: email,
+            expirationMinutes: 5,
+          },
+        });
+        if (cancelled) return;
+        if (!res.qrCode) {
+          setState({ phase: "error", message: "Mercado Pago não retornou o código Pix." });
+          return;
+        }
+        setState({
+          phase: "ready",
+          paymentId: res.id,
+          code: res.qrCode,
+          deadline: new Date(res.expiresAt).getTime(),
+        });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Falha ao gerar Pix.";
+        setState({ phase: "error", message: msg });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const copy = () => {
-    navigator.clipboard?.writeText(pixCode);
-    toast.success("Código Pix copiado");
-  };
+  // Contagem regressiva + expiração
+  React.useEffect(() => {
+    if (state.phase !== "ready") return;
+    const tick = () => {
+      const left = Math.max(0, state.deadline - Date.now());
+      setRemaining(left);
+      if (left === 0) onExpired();
+    };
+    tick();
+    const t = window.setInterval(tick, 1000);
+    return () => window.clearInterval(t);
+  }, [state, onExpired]);
+
+  // Polling do status
+  React.useEffect(() => {
+    if (state.phase !== "ready") return;
+    let stopped = false;
+    const poll = async () => {
+      if (stopped) return;
+      try {
+        const s = await statusFn({ data: { paymentId: state.paymentId } });
+        if (s.status === "approved") {
+          stopped = true;
+          onApproved();
+          return;
+        }
+        if (["cancelled", "rejected", "refunded", "charged_back"].includes(s.status)) {
+          stopped = true;
+          onExpired();
+          return;
+        }
+      } catch (e) {
+        console.warn("[pix poll]", e);
+      }
+    };
+    const t = window.setInterval(poll, POLL_INTERVAL_MS);
+    return () => {
+      stopped = true;
+      window.clearInterval(t);
+    };
+  }, [state, statusFn, onApproved, onExpired]);
+
+  if (state.phase === "creating") {
+    return (
+      <div className="w-full animate-fade-in rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-elevated)]">
+        <PulseLoader label="Gerando código Pix…" />
+      </div>
+    );
+  }
+
+  if (state.phase === "error") {
+    return (
+      <div className="w-full animate-fade-in rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-elevated)]">
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-destructive/15 text-destructive">
+          <AlertCircle className="h-6 w-6" />
+        </div>
+        <h1 className="mt-4 text-lg font-bold">Não foi possível gerar o Pix</h1>
+        <p className="mt-2 break-words text-sm text-foreground/60">{state.message}</p>
+      </div>
+    );
+  }
 
   const mm = String(Math.floor(remaining / 60000)).padStart(2, "0");
   const ss = String(Math.floor((remaining % 60000) / 1000)).padStart(2, "0");
 
-  return (
-    <div className="w-full animate-fade-in rounded-3xl border border-border bg-card p-6 text-center shadow-[var(--shadow-elevated)]">
-      <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-primary-soft text-primary">
-        <QrIcon className="h-6 w-6" />
-      </div>
-      <h1 className="mt-4 text-xl font-bold">Aguardando pagamento Pix</h1>
-      <p className="mt-1 text-sm text-foreground/60">
-        Escaneie o QR code no app do seu banco para pagar {brl(total)}.
-      </p>
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(state.code);
+      toast.success("Código Pix copiado");
+    } catch {
+      toast.error("Não foi possível copiar. Selecione e copie manualmente.");
+    }
+  };
 
-      <div className="mx-auto mt-6 grid h-56 w-56 place-items-center rounded-2xl border border-border bg-white p-3">
-        <QrPattern />
+  return (
+    <div className="w-full animate-fade-in rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-elevated)]">
+      <div className="text-center">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-primary-soft text-primary">
+          <QrIcon className="h-6 w-6" />
+        </div>
+        <h1 className="mt-4 text-xl font-bold">Pagar com Pix</h1>
+        <p className="mt-1 text-sm text-foreground/60">
+          Total: <span className="font-semibold text-foreground">{brl(total)}</span>
+        </p>
+      </div>
+
+      <ol className="mt-6 space-y-2 text-sm text-foreground/75">
+        <li className="flex gap-2"><span className="font-semibold text-primary">1.</span> Abra o app do seu banco e escolha <b>Pix Copia e Cola</b>.</li>
+        <li className="flex gap-2"><span className="font-semibold text-primary">2.</span> Cole o código abaixo e confirme o valor.</li>
+        <li className="flex gap-2"><span className="font-semibold text-primary">3.</span> Aguarde nesta tela — a confirmação é automática.</li>
+      </ol>
+
+      <div className="mt-5 rounded-2xl border border-border bg-surface p-3">
+        <textarea
+          readOnly
+          value={state.code}
+          onFocus={(e) => e.currentTarget.select()}
+          className="h-24 w-full resize-none rounded-lg bg-transparent p-2 font-mono text-[11px] leading-snug text-foreground/80 outline-none"
+        />
       </div>
 
       <button
         onClick={copy}
-        className="mx-auto mt-5 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary-soft"
+        className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.01]"
       >
-        <Copy className="h-3.5 w-3.5" /> Copiar código Pix
+        <Copy className="h-4 w-4" /> Copiar código Pix
       </button>
 
-      {deadline ? (
-        <div className="mt-4 text-xs font-medium tabular-nums text-foreground/60">
-          Código válido por <span className="font-semibold text-foreground">{mm}:{ss}</span>
-        </div>
-      ) : null}
+      <div className="mt-4 flex items-center justify-between rounded-2xl bg-primary-soft/60 px-4 py-3">
+        <span className="text-xs font-medium text-foreground/70">Expira em</span>
+        <span className="text-lg font-bold tabular-nums text-primary">
+          {mm}:{ss}
+        </span>
+      </div>
 
-      <div className="mt-4 flex items-center justify-center gap-2 text-xs font-medium text-foreground/60">
+      <div className="mt-3 flex items-center justify-center gap-2 text-xs font-medium text-foreground/60">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
@@ -217,7 +332,7 @@ function PixExpiredCard({
       </div>
       <h1 className="mt-5 text-xl font-bold">Código Pix expirado</h1>
       <p className="mt-2 text-sm text-foreground/60">
-        Este código não foi pago a tempo. Gere um novo QR code para tentar novamente — nenhum valor foi cobrado.
+        Este código não foi pago a tempo. Gere um novo para tentar novamente — nenhum valor foi cobrado.
       </p>
       <p className="mt-4 text-2xl font-bold tabular-nums text-foreground">{brl(total)}</p>
       <button
@@ -280,42 +395,4 @@ function CheckDraw() {
       <style>{`@keyframes checkDraw { to { stroke-dashoffset: 0; } }`}</style>
     </svg>
   );
-}
-
-/** Purely decorative QR-like pattern. */
-function QrPattern() {
-  const cells = React.useMemo(() => {
-    const rng = mulberry32(42);
-    return Array.from({ length: 21 * 21 }, (_, i) => {
-      const x = i % 21;
-      const y = Math.floor(i / 21);
-      const inCorner =
-        (x < 7 && y < 7) || (x >= 14 && y < 7) || (x < 7 && y >= 14);
-      if (inCorner) {
-        const cx = x < 7 ? 3 : 17;
-        const cy = y < 7 ? 3 : 17;
-        const d = Math.max(Math.abs(x - cx), Math.abs(y - cy));
-        return d === 0 || d === 2 || d === 3;
-      }
-      return rng() > 0.55;
-    });
-  }, []);
-  return (
-    <div className="grid h-full w-full gap-[1px]" style={{ gridTemplateColumns: "repeat(21, 1fr)" }}>
-      {cells.map((on, i) => (
-        <div key={i} className={on ? "bg-foreground" : "bg-transparent"} />
-      ))}
-    </div>
-  );
-}
-
-function mulberry32(seed: number) {
-  let t = seed;
-  return () => {
-    t += 0x6d2b79f5;
-    let r = t;
-    r = Math.imul(r ^ (r >>> 15), r | 1);
-    r ^= r + Math.imul(r ^ (r >>> 7), r | 61);
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-  };
 }
