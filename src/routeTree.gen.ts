@@ -17,10 +17,18 @@ import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as PedidoIdRouteImport } from './routes/pedido.$id'
 import { Route as PagamentoIdRouteImport } from './routes/pagamento.$id'
 import { Route as EnderecosNovoRouteImport } from './routes/enderecos.novo'
+import { Route as AdminRedefinirSenhaRouteImport } from './routes/admin.redefinir-senha'
+import { Route as AdminRecuperarSenhaRouteImport } from './routes/admin.recuperar-senha'
+import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminCozinhaRouteImport } from './routes/admin.cozinha'
+import { Route as AdminCadastroRouteImport } from './routes/admin.cadastro'
 import { Route as PedidoIdAvaliarRouteImport } from './routes/pedido.$id.avaliar'
+import { Route as AdminPedidosNovoRouteImport } from './routes/admin.pedidos.novo'
 
 const PedidosRoute = PedidosRouteImport.update({
   id: '/pedidos',
@@ -62,6 +70,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PedidoIdRoute = PedidoIdRouteImport.update({
   id: '/pedido/$id',
   path: '/pedido/$id',
@@ -77,10 +90,45 @@ const EnderecosNovoRoute = EnderecosNovoRouteImport.update({
   path: '/novo',
   getParentRoute: () => EnderecosRoute,
 } as any)
+const AdminRedefinirSenhaRoute = AdminRedefinirSenhaRouteImport.update({
+  id: '/admin/redefinir-senha',
+  path: '/admin/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRecuperarSenhaRoute = AdminRecuperarSenhaRouteImport.update({
+  id: '/admin/recuperar-senha',
+  path: '/admin/recuperar-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPedidosRoute = AdminPedidosRouteImport.update({
+  id: '/admin/pedidos',
+  path: '/admin/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCozinhaRoute = AdminCozinhaRouteImport.update({
+  id: '/admin/cozinha',
+  path: '/admin/cozinha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCadastroRoute = AdminCadastroRouteImport.update({
+  id: '/admin/cadastro',
+  path: '/admin/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PedidoIdAvaliarRoute = PedidoIdAvaliarRouteImport.update({
   id: '/avaliar',
   path: '/avaliar',
   getParentRoute: () => PedidoIdRoute,
+} as any)
+const AdminPedidosNovoRoute = AdminPedidosNovoRouteImport.update({
+  id: '/novo',
+  path: '/novo',
+  getParentRoute: () => AdminPedidosRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -92,9 +140,17 @@ export interface FileRoutesByFullPath {
   '/conta': typeof ContaRoute
   '/enderecos': typeof EnderecosRouteWithChildren
   '/pedidos': typeof PedidosRoute
+  '/admin/cadastro': typeof AdminCadastroRoute
+  '/admin/cozinha': typeof AdminCozinhaRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/pedidos': typeof AdminPedidosRouteWithChildren
+  '/admin/recuperar-senha': typeof AdminRecuperarSenhaRoute
+  '/admin/redefinir-senha': typeof AdminRedefinirSenhaRoute
   '/enderecos/novo': typeof EnderecosNovoRoute
   '/pagamento/$id': typeof PagamentoIdRoute
   '/pedido/$id': typeof PedidoIdRouteWithChildren
+  '/admin/': typeof AdminIndexRoute
+  '/admin/pedidos/novo': typeof AdminPedidosNovoRoute
   '/pedido/$id/avaliar': typeof PedidoIdAvaliarRoute
 }
 export interface FileRoutesByTo {
@@ -106,9 +162,17 @@ export interface FileRoutesByTo {
   '/conta': typeof ContaRoute
   '/enderecos': typeof EnderecosRouteWithChildren
   '/pedidos': typeof PedidosRoute
+  '/admin/cadastro': typeof AdminCadastroRoute
+  '/admin/cozinha': typeof AdminCozinhaRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/pedidos': typeof AdminPedidosRouteWithChildren
+  '/admin/recuperar-senha': typeof AdminRecuperarSenhaRoute
+  '/admin/redefinir-senha': typeof AdminRedefinirSenhaRoute
   '/enderecos/novo': typeof EnderecosNovoRoute
   '/pagamento/$id': typeof PagamentoIdRoute
   '/pedido/$id': typeof PedidoIdRouteWithChildren
+  '/admin': typeof AdminIndexRoute
+  '/admin/pedidos/novo': typeof AdminPedidosNovoRoute
   '/pedido/$id/avaliar': typeof PedidoIdAvaliarRoute
 }
 export interface FileRoutesById {
@@ -121,9 +185,17 @@ export interface FileRoutesById {
   '/conta': typeof ContaRoute
   '/enderecos': typeof EnderecosRouteWithChildren
   '/pedidos': typeof PedidosRoute
+  '/admin/cadastro': typeof AdminCadastroRoute
+  '/admin/cozinha': typeof AdminCozinhaRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/pedidos': typeof AdminPedidosRouteWithChildren
+  '/admin/recuperar-senha': typeof AdminRecuperarSenhaRoute
+  '/admin/redefinir-senha': typeof AdminRedefinirSenhaRoute
   '/enderecos/novo': typeof EnderecosNovoRoute
   '/pagamento/$id': typeof PagamentoIdRoute
   '/pedido/$id': typeof PedidoIdRouteWithChildren
+  '/admin/': typeof AdminIndexRoute
+  '/admin/pedidos/novo': typeof AdminPedidosNovoRoute
   '/pedido/$id/avaliar': typeof PedidoIdAvaliarRoute
 }
 export interface FileRouteTypes {
@@ -137,9 +209,17 @@ export interface FileRouteTypes {
     | '/conta'
     | '/enderecos'
     | '/pedidos'
+    | '/admin/cadastro'
+    | '/admin/cozinha'
+    | '/admin/login'
+    | '/admin/pedidos'
+    | '/admin/recuperar-senha'
+    | '/admin/redefinir-senha'
     | '/enderecos/novo'
     | '/pagamento/$id'
     | '/pedido/$id'
+    | '/admin/'
+    | '/admin/pedidos/novo'
     | '/pedido/$id/avaliar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -151,9 +231,17 @@ export interface FileRouteTypes {
     | '/conta'
     | '/enderecos'
     | '/pedidos'
+    | '/admin/cadastro'
+    | '/admin/cozinha'
+    | '/admin/login'
+    | '/admin/pedidos'
+    | '/admin/recuperar-senha'
+    | '/admin/redefinir-senha'
     | '/enderecos/novo'
     | '/pagamento/$id'
     | '/pedido/$id'
+    | '/admin'
+    | '/admin/pedidos/novo'
     | '/pedido/$id/avaliar'
   id:
     | '__root__'
@@ -165,9 +253,17 @@ export interface FileRouteTypes {
     | '/conta'
     | '/enderecos'
     | '/pedidos'
+    | '/admin/cadastro'
+    | '/admin/cozinha'
+    | '/admin/login'
+    | '/admin/pedidos'
+    | '/admin/recuperar-senha'
+    | '/admin/redefinir-senha'
     | '/enderecos/novo'
     | '/pagamento/$id'
     | '/pedido/$id'
+    | '/admin/'
+    | '/admin/pedidos/novo'
     | '/pedido/$id/avaliar'
   fileRoutesById: FileRoutesById
 }
@@ -180,8 +276,15 @@ export interface RootRouteChildren {
   ContaRoute: typeof ContaRoute
   EnderecosRoute: typeof EnderecosRouteWithChildren
   PedidosRoute: typeof PedidosRoute
+  AdminCadastroRoute: typeof AdminCadastroRoute
+  AdminCozinhaRoute: typeof AdminCozinhaRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminPedidosRoute: typeof AdminPedidosRouteWithChildren
+  AdminRecuperarSenhaRoute: typeof AdminRecuperarSenhaRoute
+  AdminRedefinirSenhaRoute: typeof AdminRedefinirSenhaRoute
   PagamentoIdRoute: typeof PagamentoIdRoute
   PedidoIdRoute: typeof PedidoIdRouteWithChildren
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -242,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pedido/$id': {
       id: '/pedido/$id'
       path: '/pedido/$id'
@@ -263,12 +373,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EnderecosNovoRouteImport
       parentRoute: typeof EnderecosRoute
     }
+    '/admin/redefinir-senha': {
+      id: '/admin/redefinir-senha'
+      path: '/admin/redefinir-senha'
+      fullPath: '/admin/redefinir-senha'
+      preLoaderRoute: typeof AdminRedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/recuperar-senha': {
+      id: '/admin/recuperar-senha'
+      path: '/admin/recuperar-senha'
+      fullPath: '/admin/recuperar-senha'
+      preLoaderRoute: typeof AdminRecuperarSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/pedidos': {
+      id: '/admin/pedidos'
+      path: '/admin/pedidos'
+      fullPath: '/admin/pedidos'
+      preLoaderRoute: typeof AdminPedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/cozinha': {
+      id: '/admin/cozinha'
+      path: '/admin/cozinha'
+      fullPath: '/admin/cozinha'
+      preLoaderRoute: typeof AdminCozinhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/cadastro': {
+      id: '/admin/cadastro'
+      path: '/admin/cadastro'
+      fullPath: '/admin/cadastro'
+      preLoaderRoute: typeof AdminCadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pedido/$id/avaliar': {
       id: '/pedido/$id/avaliar'
       path: '/avaliar'
       fullPath: '/pedido/$id/avaliar'
       preLoaderRoute: typeof PedidoIdAvaliarRouteImport
       parentRoute: typeof PedidoIdRoute
+    }
+    '/admin/pedidos/novo': {
+      id: '/admin/pedidos/novo'
+      path: '/novo'
+      fullPath: '/admin/pedidos/novo'
+      preLoaderRoute: typeof AdminPedidosNovoRouteImport
+      parentRoute: typeof AdminPedidosRoute
     }
   }
 }
@@ -283,6 +442,18 @@ const EnderecosRouteChildren: EnderecosRouteChildren = {
 
 const EnderecosRouteWithChildren = EnderecosRoute._addFileChildren(
   EnderecosRouteChildren,
+)
+
+interface AdminPedidosRouteChildren {
+  AdminPedidosNovoRoute: typeof AdminPedidosNovoRoute
+}
+
+const AdminPedidosRouteChildren: AdminPedidosRouteChildren = {
+  AdminPedidosNovoRoute: AdminPedidosNovoRoute,
+}
+
+const AdminPedidosRouteWithChildren = AdminPedidosRoute._addFileChildren(
+  AdminPedidosRouteChildren,
 )
 
 interface PedidoIdRouteChildren {
@@ -306,8 +477,15 @@ const rootRouteChildren: RootRouteChildren = {
   ContaRoute: ContaRoute,
   EnderecosRoute: EnderecosRouteWithChildren,
   PedidosRoute: PedidosRoute,
+  AdminCadastroRoute: AdminCadastroRoute,
+  AdminCozinhaRoute: AdminCozinhaRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminPedidosRoute: AdminPedidosRouteWithChildren,
+  AdminRecuperarSenhaRoute: AdminRecuperarSenhaRoute,
+  AdminRedefinirSenhaRoute: AdminRedefinirSenhaRoute,
   PagamentoIdRoute: PagamentoIdRoute,
   PedidoIdRoute: PedidoIdRouteWithChildren,
+  AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

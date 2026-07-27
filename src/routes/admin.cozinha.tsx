@@ -46,8 +46,8 @@ function KdsPage() {
     };
   }, [restaurantId, qc]);
 
-  const kitchenOrders = (data ?? []).filter((o) =>
-    o.status === "confirmed" || o.status === "preparing",
+  const kitchenOrders = (data ?? []).filter(
+    (o) => (o.status as string) === "confirmed" || (o.status as string) === "preparing",
   );
 
   return (
