@@ -205,7 +205,7 @@ function SignupPage() {
 
           <p className="mt-6 text-center text-sm text-slate-500">
             Já tem conta?{" "}
-            <Link to="/admin/login" className="font-semibold text-primary hover:underline">
+            <Link to="/admin/login" search={{}} className="font-semibold text-primary hover:underline">
               Entrar
             </Link>
           </p>
