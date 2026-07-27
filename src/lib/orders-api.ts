@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/custom-supabase";
 import { getDeviceId } from "@/lib/device-id";
 import { computeStatus, type OrderStatus } from "@/lib/order-status";
 import type { Address, CartItem, PaymentMethod } from "@/types";

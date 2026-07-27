@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/custom-supabase";
 import type { OrderRow } from "@/lib/orders-api";
 
 export type AdminOrderStatus =
