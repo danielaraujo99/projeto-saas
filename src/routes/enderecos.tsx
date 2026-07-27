@@ -7,9 +7,9 @@ import type { AddressKind } from "@/types";
 export const Route = createFileRoute("/enderecos")({
   head: () => ({
     meta: [
-      { title: "Meus endereços — Bistrô Azul" },
+      { title: "Meus endereços — Restaurante Demo" },
       { name: "description", content: "Gerencie seus endereços de entrega." },
-      { property: "og:title", content: "Meus endereços — Bistrô Azul" },
+      { property: "og:title", content: "Meus endereços — Restaurante Demo" },
       { property: "og:description", content: "Gerencie seus endereços de entrega." },
     ],
   }),

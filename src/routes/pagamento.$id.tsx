@@ -9,9 +9,9 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/pagamento/$id")({
   head: () => ({
     meta: [
-      { title: "Confirmando pagamento — Bistrô Azul" },
+      { title: "Confirmando pagamento — Restaurante Demo" },
       { name: "description", content: "Confirmação do pagamento do seu pedido." },
-      { property: "og:title", content: "Confirmando pagamento — Bistrô Azul" },
+      { property: "og:title", content: "Confirmando pagamento — Restaurante Demo" },
       { property: "og:description", content: "Confirmação do pagamento do seu pedido." },
     ],
   }),
@@ -142,7 +142,7 @@ function PixWaitingCard({
 }) {
   const pixCode = React.useMemo(
     () =>
-      `00020126360014BR.GOV.BCB.PIX0114+55119999999995204000053039865406${total.toFixed(2)}5802BR5913BISTRO AZUL LTDA6009SAO PAULO62070503${shortId}6304ABCD`,
+      `00020126360014BR.GOV.BCB.PIX0114+55119999999995204000053039865406${total.toFixed(2)}5802BR5913MENUALTAS DEMO6009SAO PAULO62070503${shortId}6304ABCD`,
     [total, shortId],
   );
 

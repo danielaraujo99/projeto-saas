@@ -18,13 +18,13 @@ import { brl } from "@/lib/format";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Bistrô Azul — Cardápio digital" },
+      { title: "Restaurante Demo — Cardápio digital" },
       {
         name: "description",
         content:
           "Hambúrgueres artesanais, acompanhamentos e bebidas. Peça pelo cardápio digital e receba em casa.",
       },
-      { property: "og:title", content: "Bistrô Azul — Cardápio digital" },
+      { property: "og:title", content: "Restaurante Demo — Cardápio digital" },
       {
         property: "og:description",
         content: "Hambúrgueres artesanais, acompanhamentos e bebidas para levar até você.",

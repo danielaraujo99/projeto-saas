@@ -24,9 +24,9 @@ import {
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
     meta: [
-      { title: "Seu carrinho — Bistrô Azul" },
+      { title: "Seu carrinho — Restaurante Demo" },
       { name: "description", content: "Revise seu pedido antes de finalizar." },
-      { property: "og:title", content: "Seu carrinho — Bistrô Azul" },
+      { property: "og:title", content: "Seu carrinho — Restaurante Demo" },
       { property: "og:description", content: "Revise seu pedido antes de finalizar." },
     ],
   }),

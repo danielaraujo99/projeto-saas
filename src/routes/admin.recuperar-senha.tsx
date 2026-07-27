@@ -9,7 +9,7 @@ import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
 export const Route = createFileRoute("/admin/recuperar-senha")({
   head: () => ({
     meta: [
-      { title: "Recuperar senha — Bistrô Painel" },
+      { title: "Recuperar senha — MenuAltas" },
       { name: "robots", content: "noindex" },
     ],
   }),

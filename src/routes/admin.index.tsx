@@ -5,7 +5,7 @@ import { ClipboardList, Plus, ChefHat, TrendingUp } from "lucide-react";
 export const Route = createFileRoute("/admin/")({
   head: () => ({
     meta: [
-      { title: "Painel — Bistrô" },
+      { title: "Painel — MenuAltas" },
       { name: "description", content: "Visão geral do seu restaurante." },
       { name: "robots", content: "noindex" },
     ],

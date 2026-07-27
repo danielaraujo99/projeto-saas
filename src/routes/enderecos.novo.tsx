@@ -11,9 +11,9 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/enderecos/novo")({
   head: () => ({
     meta: [
-      { title: "Novo endereço — Bistrô Azul" },
+      { title: "Novo endereço — Restaurante Demo" },
       { name: "description", content: "Cadastre um novo endereço de entrega." },
-      { property: "og:title", content: "Novo endereço — Bistrô Azul" },
+      { property: "og:title", content: "Novo endereço — Restaurante Demo" },
       { property: "og:description", content: "Cadastre um novo endereço de entrega." },
     ],
   }),

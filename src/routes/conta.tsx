@@ -23,9 +23,9 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/conta")({
   head: () => ({
     meta: [
-      { title: "Minha conta — Bistrô Azul" },
+      { title: "Minha conta — Restaurante Demo" },
       { name: "description", content: "Dados pessoais, endereços e formas de pagamento salvas." },
-      { property: "og:title", content: "Minha conta — Bistrô Azul" },
+      { property: "og:title", content: "Minha conta — Restaurante Demo" },
       { property: "og:description", content: "Dados pessoais, endereços e formas de pagamento salvas." },
     ],
   }),

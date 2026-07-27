@@ -79,15 +79,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Bistrô Azul — Peça pelo cardápio digital" },
+      { title: "Restaurante Demo — Peça pelo cardápio digital" },
       {
         name: "description",
-        content: "Cardápio digital do Bistrô Azul. Monte seu pedido e receba em casa.",
+        content: "Cardápio digital do Restaurante Demo. Monte seu pedido e receba em casa.",
       },
-      { property: "og:title", content: "Bistrô Azul" },
+      { property: "og:title", content: "Restaurante Demo" },
       {
         property: "og:description",
-        content: "Cardápio digital do Bistrô Azul. Monte seu pedido e receba em casa.",
+        content: "Cardápio digital do Restaurante Demo. Monte seu pedido e receba em casa.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

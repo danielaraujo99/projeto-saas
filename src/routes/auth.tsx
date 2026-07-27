@@ -5,10 +5,10 @@ import { ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar — Bistrô Azul" },
-      { name: "description", content: "Entre ou crie sua conta no Bistrô Azul." },
-      { property: "og:title", content: "Entrar — Bistrô Azul" },
-      { property: "og:description", content: "Entre ou crie sua conta no Bistrô Azul." },
+      { title: "Entrar — Restaurante Demo" },
+      { name: "description", content: "Entre ou crie sua conta no Restaurante Demo." },
+      { property: "og:title", content: "Entrar — Restaurante Demo" },
+      { property: "og:description", content: "Entre ou crie sua conta no Restaurante Demo." },
     ],
   }),
   component: Page,
