@@ -88,7 +88,7 @@ export function AdminShell({
 
   async function signOut() {
     await supabase.auth.signOut();
-    nav({ to: "/admin/login", replace: true });
+    nav({ to: "/admin/login", search: {}, replace: true });
   }
 
   if (minimal) {
