@@ -55,9 +55,9 @@ function LoginPage() {
   return (
     <div className="grid min-h-screen bg-white lg:grid-cols-2">
       {/* Painel de identidade */}
-      <div className="relative hidden overflow-hidden bg-gradient-to-br from-primary to-blue-700 p-12 text-white lg:flex lg:flex-col lg:justify-between">
+      <div className="relative hidden overflow-hidden bg-slate-950 p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <video
-          className="absolute inset-0 h-full w-full object-cover opacity-25"
+          className="absolute inset-0 h-full w-full object-cover opacity-40"
           src={loginBg.url}
           autoPlay
           loop
@@ -66,7 +66,7 @@ function LoginPage() {
           preload="auto"
           aria-hidden
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-blue-700/85" aria-hidden />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-slate-900/75 to-black/80" aria-hidden />
         <div className="relative flex items-center gap-2">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 backdrop-blur">
             <Store className="h-5 w-5" />
