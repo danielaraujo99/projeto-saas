@@ -391,9 +391,7 @@ function NotificacoesTab() {
 function ImpressaoTab() {
   const { data: session } = useAdminSession();
   const rid = session?.restaurantId;
-  const [cfg, setCfg] = React.useState<import("@/lib/admin/printing").PrintSettings>(
-    { ...require("@/lib/admin/printing").DEFAULT_PRINT },
-  );
+  const [cfg, setCfg] = React.useState<import("@/lib/admin/printing").PrintSettings | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
 
