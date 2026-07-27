@@ -13,6 +13,7 @@ import { Route as TermosRouteImport } from './routes/termos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as EnderecosRouteImport } from './routes/enderecos'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as ContaRouteImport } from './routes/conta'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
@@ -64,6 +65,11 @@ const PedidosRoute = PedidosRouteImport.update({
 const EnderecosRoute = EnderecosRouteImport.update({
   id: '/enderecos',
   path: '/enderecos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContaRoute = ContaRouteImport.update({
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/conta': typeof ContaRoute
+  '/demo': typeof DemoRoute
   '/enderecos': typeof EnderecosRouteWithChildren
   '/pedidos': typeof PedidosRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -273,6 +280,7 @@ export interface FileRoutesByTo {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/conta': typeof ContaRoute
+  '/demo': typeof DemoRoute
   '/enderecos': typeof EnderecosRouteWithChildren
   '/pedidos': typeof PedidosRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -312,6 +320,7 @@ export interface FileRoutesById {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/conta': typeof ContaRoute
+  '/demo': typeof DemoRoute
   '/enderecos': typeof EnderecosRouteWithChildren
   '/pedidos': typeof PedidosRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -352,6 +361,7 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/checkout'
     | '/conta'
+    | '/demo'
     | '/enderecos'
     | '/pedidos'
     | '/privacidade'
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/checkout'
     | '/conta'
+    | '/demo'
     | '/enderecos'
     | '/pedidos'
     | '/privacidade'
@@ -428,6 +439,7 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/checkout'
     | '/conta'
+    | '/demo'
     | '/enderecos'
     | '/pedidos'
     | '/privacidade'
@@ -467,6 +479,7 @@ export interface RootRouteChildren {
   CarrinhoRoute: typeof CarrinhoRoute
   CheckoutRoute: typeof CheckoutRoute
   ContaRoute: typeof ContaRoute
+  DemoRoute: typeof DemoRoute
   EnderecosRoute: typeof EnderecosRouteWithChildren
   PedidosRoute: typeof PedidosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
@@ -523,6 +536,13 @@ declare module '@tanstack/react-router' {
       path: '/enderecos'
       fullPath: '/enderecos'
       preLoaderRoute: typeof EnderecosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/conta': {
@@ -796,6 +816,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarrinhoRoute: CarrinhoRoute,
   CheckoutRoute: CheckoutRoute,
   ContaRoute: ContaRoute,
+  DemoRoute: DemoRoute,
   EnderecosRoute: EnderecosRouteWithChildren,
   PedidosRoute: PedidosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
@@ -826,13 +847,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
