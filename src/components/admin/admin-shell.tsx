@@ -218,16 +218,18 @@ function SidebarInner({
 }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-4">
-        <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-white">
-          <Store className="h-4 w-4" />
+      <div className="flex items-center gap-2.5 px-5 py-5">
+        <div className="grid h-9 w-9 place-items-center rounded-xl bg-white text-slate-900 font-black">
+          M
         </div>
         <div className="min-w-0">
-          <div className="truncate text-sm font-bold text-slate-900">{restaurantName}</div>
-          <div className="text-[11px] uppercase tracking-wide text-slate-500">Painel</div>
+          <div className="truncate text-sm font-bold text-white">{restaurantName}</div>
+          <div className="text-[11px] uppercase tracking-wide text-slate-400">
+            Painel administrativo
+          </div>
         </div>
       </div>
-      <nav className="flex-1 space-y-1 p-3">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
         {items.map((n) => {
           const active =
             n.to === "/admin"
@@ -240,20 +242,20 @@ function SidebarInner({
               to={n.to}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-primary/10 text-primary"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:bg-white/5 hover:text-white",
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-[18px] w-[18px]" />
               {n.label}
             </Link>
           );
         })}
       </nav>
-      <div className="border-t border-slate-200 p-3 text-[11px] text-slate-500">
-        v1 · Painel administrativo
+      <div className="border-t border-white/10 px-4 py-3 text-[11px] text-slate-500">
+        MenuAltas · v1.0
       </div>
     </div>
   );
