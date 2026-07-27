@@ -29,7 +29,8 @@ function AuthPage() {
   const nav = useNavigate();
   const search = useSearch({ from: "/auth" });
   const [mode, setMode] = React.useState<"login" | "signup">(search.mode ?? "login");
-  const [identifier, setIdentifier] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [phone, setPhone] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [name, setName] = React.useState("");
   const [show, setShow] = React.useState(false);
@@ -43,14 +44,22 @@ function AuthPage() {
     if (user) nav({ to: search.redirect || "/", replace: true });
   }, [user, nav, search.redirect]);
 
+  function formatPhone(v: string) {
+    const d = v.replace(/\D/g, "").slice(0, 11);
+    if (d.length <= 2) return d;
+    if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+    if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
     const res =
       mode === "login"
-        ? await login(identifier, password)
-        : await signup({ name, identifier, password });
+        ? await login(email, password)
+        : await signup({ name, email, phone: phone || undefined, password });
     setBusy(false);
     if (!res.ok) {
       setError(res.message ?? "Não foi possível continuar.");
@@ -184,16 +193,36 @@ function AuthPage() {
             ) : null}
 
             <div className="space-y-1.5">
-              <Label htmlFor="identifier">E-mail ou telefone</Label>
+              <Label htmlFor="email">E-mail</Label>
               <Input
-                id="identifier"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="voce@email.com ou (11) 99999-9999"
-                autoComplete="username"
+                id="email"
+                type="email"
+                inputMode="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="voce@email.com"
+                autoComplete="email"
                 required
               />
             </div>
+
+            {mode === "signup" ? (
+              <div className="space-y-1.5">
+                <Label htmlFor="phone">
+                  Telefone <span className="text-xs font-normal text-muted-foreground">(opcional)</span>
+                </Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  inputMode="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  placeholder="(11) 99999-9999"
+                  autoComplete="tel"
+                  maxLength={16}
+                />
+              </div>
+            ) : null}
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
