@@ -142,7 +142,7 @@ export function AdminShell({
 
       {/* Sidebar drawer mobile */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-64 p-0">
+        <SheetContent side="left" className="w-64 border-none bg-slate-950 p-0 text-slate-200">
           <VisuallyHidden asChild>
             <SheetTitle>Menu</SheetTitle>
           </VisuallyHidden>
