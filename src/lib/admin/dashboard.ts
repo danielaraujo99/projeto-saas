@@ -55,10 +55,13 @@ export async function getDashboardStats(restaurantId: string): Promise<Dashboard
     console.warn("[dashboard] stats:", error.message);
     return EMPTY;
   }
-  const rows = (data ?? []) as unknown as OrderRow[];
+  const rows = (data ?? []) as unknown as Array<Record<string, unknown> & OrderRow>;
   if (rows.length === 0) return EMPTY;
 
-  const paid = rows.filter((r) => r.status !== "pending_payment" && r.status !== "canceled");
+  const paid = rows.filter((r) => {
+    const s = String(r.status);
+    return s !== "pending_payment" && s !== "canceled";
+  });
   const revenue = paid.reduce((a, r) => a + Number(r.total || 0), 0);
   const ordersCount = paid.length;
   const ticket = ordersCount ? revenue / ordersCount : 0;
