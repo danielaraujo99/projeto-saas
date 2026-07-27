@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { AdminShell } from "@/components/admin/admin-shell";
-import { MENU_ITEMS, MENU_CATEGORIES } from "@/lib/admin/mock-data";
 import {
-  Search,
   Plus,
   Minus,
   Trash2,
@@ -25,7 +23,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { PdvPaymentModal } from "@/components/admin/pdv-payment-modal";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/pdv")({
   head: () => ({ meta: [{ title: "PDV — MenuAltas" }, { name: "robots", content: "noindex" }] }),
@@ -35,32 +32,29 @@ export const Route = createFileRoute("/admin/pdv")({
 type Line = { id: string; name: string; price: number; qty: number };
 
 function PdvPage() {
-  const [query, setQuery] = React.useState("");
-  const [cat, setCat] = React.useState<string>("all");
-  const [cart, setCart] = React.useState<Line[]>([
-    { id: "1", name: "X-Burger", price: 28.9, qty: 2 },
-    { id: "5", name: "Coca-Cola 350ml", price: 7.5, qty: 2 },
-  ]);
+  const [cart, setCart] = React.useState<Line[]>([]);
   const [openDialog, setOpenDialog] = React.useState<null | "open" | "close" | "sangria" | "supri">(null);
   const [cashOpen, setCashOpen] = React.useState(true);
   const [payOpen, setPayOpen] = React.useState(false);
   const [discount, setDiscount] = React.useState(0);
+  const [addForm, setAddForm] = React.useState({ name: "", price: "" });
 
-  const filtered = MENU_ITEMS.filter(
-    (i) =>
-      i.name.toLowerCase().includes(query.toLowerCase()) &&
-      (cat === "all" || i.cat === cat),
-  );
   const subtotal = cart.reduce((a, b) => a + b.price * b.qty, 0);
   const total = Math.max(0, subtotal - discount);
   const count = cart.reduce((a, b) => a + b.qty, 0);
 
-  function add(item: (typeof MENU_ITEMS)[number]) {
-    setCart((c) => {
-      const ex = c.find((x) => x.id === item.id);
-      if (ex) return c.map((x) => (x.id === item.id ? { ...x, qty: x.qty + 1 } : x));
-      return [...c, { id: item.id, name: item.name, price: item.price, qty: 1 }];
-    });
+  function addItem() {
+    const name = addForm.name.trim();
+    const price = Number(addForm.price);
+    if (!name || !price || price <= 0) {
+      toast.error("Informe nome e preço válidos.");
+      return;
+    }
+    setCart((c) => [
+      ...c,
+      { id: crypto.randomUUID(), name, price, qty: 1 },
+    ]);
+    setAddForm({ name: "", price: "" });
   }
 
   return (
@@ -72,8 +66,7 @@ function PdvPage() {
               <div>
                 <h2 className="text-lg font-bold text-slate-900">Frente de caixa</h2>
                 <p className="text-xs text-slate-500">
-                  Caixa {cashOpen ? "aberto" : "fechado"} · Turno de hoje ·{" "}
-                  <span className="font-semibold text-emerald-600">R$ 1.284,50</span> em vendas
+                  Caixa {cashOpen ? "aberto" : "fechado"} · Turno de hoje
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -96,59 +89,36 @@ function PdvPage() {
                 )}
               </div>
             </div>
-
-            <div className="relative mt-4">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder="Buscar produto por nome…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              <CatBtn active={cat === "all"} onClick={() => setCat("all")}>
-                Todos
-              </CatBtn>
-              {MENU_CATEGORIES.map((c) => (
-                <CatBtn key={c.id} active={cat === c.name} onClick={() => setCat(c.name)}>
-                  {c.name}
-                </CatBtn>
-              ))}
-            </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-            {filtered.map((it) => (
-              <button
-                key={it.id}
-                onClick={() => add(it)}
-                className="group flex flex-col items-start rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-              >
-                <span className="mb-2 grid h-12 w-12 place-items-center rounded-lg bg-slate-100 text-2xl">
-                  {it.emoji}
-                </span>
-                <span className="text-sm font-semibold text-slate-800 group-hover:text-primary">
-                  {it.name}
-                </span>
-                <span className="mt-0.5 text-xs text-slate-500">{it.cat}</span>
-                <span className="mt-2 text-sm font-bold text-slate-900">
-                  R$ {it.price.toFixed(2)}
-                </span>
-              </button>
-            ))}
-            {filtered.length === 0 && (
-              <div className="col-span-full grid place-items-center rounded-xl border border-dashed border-slate-300 py-10 text-sm text-slate-400">
-                Nenhum produto encontrado.
-              </div>
-            )}
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="text-sm font-semibold text-slate-900">Adicionar item</div>
+            <p className="text-xs text-slate-500">
+              Cadastre produtos no cardápio para ter uma grade rápida. Enquanto isso, adicione livre:
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_140px_auto]">
+              <Input
+                placeholder="Nome do produto"
+                value={addForm.name}
+                onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+              />
+              <Input
+                type="number"
+                step="0.5"
+                placeholder="Preço"
+                value={addForm.price}
+                onChange={(e) => setAddForm({ ...addForm, price: e.target.value })}
+              />
+              <Button onClick={addItem}>
+                <Plus className="h-4 w-4" /> Adicionar
+              </Button>
+            </div>
           </div>
         </section>
 
         <aside className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-6rem)]">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900">Comanda #4212</h3>
+            <h3 className="text-sm font-bold text-slate-900">Comanda</h3>
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
               {count} {count === 1 ? "item" : "itens"}
             </span>
@@ -279,30 +249,6 @@ function PdvPage() {
         </DialogContent>
       </Dialog>
     </AdminShell>
-  );
-}
-
-function CatBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "rounded-full px-3 py-1 text-xs font-medium transition",
-        active
-          ? "bg-slate-900 text-white"
-          : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300",
-      )}
-    >
-      {children}
-    </button>
   );
 }
 
