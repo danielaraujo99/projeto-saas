@@ -102,7 +102,7 @@ function KanbanDesktop({
 
   return (
     <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="grid gap-3 pb-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
         {KANBAN_COLUMNS.map((col) => (
           <KanbanColumn
             key={col.id}
