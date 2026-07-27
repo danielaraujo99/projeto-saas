@@ -3,33 +3,37 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { OrderKanban } from "@/components/admin/order-kanban";
+import { OrderList } from "@/components/admin/order-list";
 import { OrderDetailsSheet } from "@/components/admin/order-details-sheet";
 import { NewOrderForm } from "@/components/admin/new-order-form";
 import { listRestaurantOrders } from "@/lib/admin/admin-orders";
 import { useAdminSession } from "@/lib/admin/session";
 import { supabase } from "@/lib/custom-supabase";
 import type { OrderRow } from "@/lib/orders-api";
-import { Loader2, Plus, Search, Calendar } from "lucide-react";
+import { Loader2, Plus, Search, Calendar, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 
 export const Route = createFileRoute("/admin/pedidos")({
   head: () => ({
     meta: [
       { title: "Pedidos — Painel" },
-      { name: "description", content: "Kanban de pedidos em tempo real." },
+      { name: "description", content: "Kanban e lista de pedidos em tempo real." },
       { name: "robots", content: "noindex" },
     ],
   }),
   component: OrdersPage,
 });
+
+type ViewMode = "kanban" | "list";
 
 function OrdersPage() {
   const { data: session } = useAdminSession();
@@ -39,8 +43,9 @@ function OrdersPage() {
   const [openNew, setOpenNew] = React.useState(false);
   const [q, setQ] = React.useState("");
   const [period, setPeriod] = React.useState("today");
+  const [mode, setMode] = React.useState<ViewMode>("kanban");
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isFetching, refetch } = useQuery({
     queryKey: ["admin", "orders", restaurantId],
     queryFn: () => listRestaurantOrders(restaurantId!),
     enabled: !!restaurantId,
@@ -70,15 +75,13 @@ function OrdersPage() {
   }, [restaurantId, qc]);
 
   const filtered = React.useMemo(() => {
-    if (!data) return [];
+    const list = data ?? [];
     const s = q.trim().toLowerCase();
-    if (!s) return data;
-    return data.filter(
-      (o) =>
-        (o.short_id ?? "").toLowerCase().includes(s) ||
-        (o as unknown as { customer_name?: string }).customer_name?.toLowerCase().includes(s),
-    );
+    if (!s) return list;
+    return list.filter((o) => (o.short_id ?? "").toLowerCase().includes(s));
   }, [data, q]);
+
+  const initialLoading = !data && isFetching;
 
   return (
     <AdminShell title="Pedidos">
@@ -86,16 +89,40 @@ function OrdersPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">Pedidos</h2>
-            <p className="text-sm text-slate-500">Kanban em tempo real do seu operacional.</p>
+            <p className="text-sm text-slate-500">Kanban e lista em tempo real.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-sm shadow-sm">
+              <button
+                onClick={() => setMode("kanban")}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-medium transition",
+                  mode === "kanban"
+                    ? "bg-slate-900 text-white"
+                    : "text-slate-600 hover:text-slate-900",
+                )}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" /> Kanban
+              </button>
+              <button
+                onClick={() => setMode("list")}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-medium transition",
+                  mode === "list"
+                    ? "bg-slate-900 text-white"
+                    : "text-slate-600 hover:text-slate-900",
+                )}
+              >
+                <List className="h-3.5 w-3.5" /> Lista
+              </button>
+            </div>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
-                placeholder="Buscar por número ou cliente…"
+                placeholder="Buscar por número…"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                className="w-64 pl-9"
+                className="w-56 pl-9"
               />
             </div>
             <div className="relative">
@@ -117,12 +144,18 @@ function OrdersPage() {
         </div>
 
         <div className="mt-5">
-          {isLoading || !data ? (
+          {initialLoading ? (
             <div className="grid place-items-center py-20 text-slate-400">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ) : (
+          ) : mode === "kanban" ? (
             <OrderKanban
+              orders={filtered}
+              onOrderClick={setSelected}
+              onChanged={() => refetch()}
+            />
+          ) : (
+            <OrderList
               orders={filtered}
               onOrderClick={setSelected}
               onChanged={() => refetch()}
@@ -137,23 +170,24 @@ function OrdersPage() {
         onChanged={() => refetch()}
       />
 
-      <Dialog open={openNew} onOpenChange={setOpenNew}>
-        <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Novo pedido manual</DialogTitle>
-            <DialogDescription>
-              Adicione itens, dados do cliente, entrega e pagamento. O pedido entra em
-              "Recebido" no Kanban.
-            </DialogDescription>
-          </DialogHeader>
-          <NewOrderForm
-            onDone={() => {
-              setOpenNew(false);
-              refetch();
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+      <Sheet open={openNew} onOpenChange={setOpenNew}>
+        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-2xl">
+          <SheetHeader>
+            <SheetTitle>Novo pedido manual</SheetTitle>
+            <SheetDescription>
+              Adicione itens, cliente, entrega e pagamento. O pedido entra em "Pedido feito".
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-4">
+            <NewOrderForm
+              onDone={() => {
+                setOpenNew(false);
+                refetch();
+              }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </AdminShell>
   );
 }
