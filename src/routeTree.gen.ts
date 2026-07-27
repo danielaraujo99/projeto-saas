@@ -26,10 +26,13 @@ import { Route as AdminRedefinirSenhaRouteImport } from './routes/admin.redefini
 import { Route as AdminRecuperarSenhaRouteImport } from './routes/admin.recuperar-senha'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminPdvRouteImport } from './routes/admin.pdv'
+import { Route as AdminMesasRouteImport } from './routes/admin.mesas'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminGarconsRouteImport } from './routes/admin.garcons'
 import { Route as AdminFinanceiroRouteImport } from './routes/admin.financeiro'
 import { Route as AdminEstoqueRouteImport } from './routes/admin.estoque'
 import { Route as AdminEquipeRouteImport } from './routes/admin.equipe'
+import { Route as AdminEntregasRouteImport } from './routes/admin.entregas'
 import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
 import { Route as AdminCozinhaRouteImport } from './routes/admin.cozinha'
 import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
@@ -125,9 +128,19 @@ const AdminPdvRoute = AdminPdvRouteImport.update({
   path: '/admin/pdv',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminMesasRoute = AdminMesasRouteImport.update({
+  id: '/admin/mesas',
+  path: '/admin/mesas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminGarconsRoute = AdminGarconsRouteImport.update({
+  id: '/admin/garcons',
+  path: '/admin/garcons',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminFinanceiroRoute = AdminFinanceiroRouteImport.update({
@@ -143,6 +156,11 @@ const AdminEstoqueRoute = AdminEstoqueRouteImport.update({
 const AdminEquipeRoute = AdminEquipeRouteImport.update({
   id: '/admin/equipe',
   path: '/admin/equipe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminEntregasRoute = AdminEntregasRouteImport.update({
+  id: '/admin/entregas',
+  path: '/admin/entregas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminCuponsRoute = AdminCuponsRouteImport.update({
@@ -208,10 +226,13 @@ export interface FileRoutesByFullPath {
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cozinha': typeof AdminCozinhaRoute
   '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/entregas': typeof AdminEntregasRoute
   '/admin/equipe': typeof AdminEquipeRoute
   '/admin/estoque': typeof AdminEstoqueRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
+  '/admin/garcons': typeof AdminGarconsRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/mesas': typeof AdminMesasRoute
   '/admin/pdv': typeof AdminPdvRoute
   '/admin/pedidos': typeof AdminPedidosRouteWithChildren
   '/admin/recuperar-senha': typeof AdminRecuperarSenhaRoute
@@ -240,10 +261,13 @@ export interface FileRoutesByTo {
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cozinha': typeof AdminCozinhaRoute
   '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/entregas': typeof AdminEntregasRoute
   '/admin/equipe': typeof AdminEquipeRoute
   '/admin/estoque': typeof AdminEstoqueRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
+  '/admin/garcons': typeof AdminGarconsRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/mesas': typeof AdminMesasRoute
   '/admin/pdv': typeof AdminPdvRoute
   '/admin/pedidos': typeof AdminPedidosRouteWithChildren
   '/admin/recuperar-senha': typeof AdminRecuperarSenhaRoute
@@ -273,10 +297,13 @@ export interface FileRoutesById {
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cozinha': typeof AdminCozinhaRoute
   '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/entregas': typeof AdminEntregasRoute
   '/admin/equipe': typeof AdminEquipeRoute
   '/admin/estoque': typeof AdminEstoqueRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
+  '/admin/garcons': typeof AdminGarconsRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/mesas': typeof AdminMesasRoute
   '/admin/pdv': typeof AdminPdvRoute
   '/admin/pedidos': typeof AdminPedidosRouteWithChildren
   '/admin/recuperar-senha': typeof AdminRecuperarSenhaRoute
@@ -307,10 +334,13 @@ export interface FileRouteTypes {
     | '/admin/configuracoes'
     | '/admin/cozinha'
     | '/admin/cupons'
+    | '/admin/entregas'
     | '/admin/equipe'
     | '/admin/estoque'
     | '/admin/financeiro'
+    | '/admin/garcons'
     | '/admin/login'
+    | '/admin/mesas'
     | '/admin/pdv'
     | '/admin/pedidos'
     | '/admin/recuperar-senha'
@@ -339,10 +369,13 @@ export interface FileRouteTypes {
     | '/admin/configuracoes'
     | '/admin/cozinha'
     | '/admin/cupons'
+    | '/admin/entregas'
     | '/admin/equipe'
     | '/admin/estoque'
     | '/admin/financeiro'
+    | '/admin/garcons'
     | '/admin/login'
+    | '/admin/mesas'
     | '/admin/pdv'
     | '/admin/pedidos'
     | '/admin/recuperar-senha'
@@ -371,10 +404,13 @@ export interface FileRouteTypes {
     | '/admin/configuracoes'
     | '/admin/cozinha'
     | '/admin/cupons'
+    | '/admin/entregas'
     | '/admin/equipe'
     | '/admin/estoque'
     | '/admin/financeiro'
+    | '/admin/garcons'
     | '/admin/login'
+    | '/admin/mesas'
     | '/admin/pdv'
     | '/admin/pedidos'
     | '/admin/recuperar-senha'
@@ -404,10 +440,13 @@ export interface RootRouteChildren {
   AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
   AdminCozinhaRoute: typeof AdminCozinhaRoute
   AdminCuponsRoute: typeof AdminCuponsRoute
+  AdminEntregasRoute: typeof AdminEntregasRoute
   AdminEquipeRoute: typeof AdminEquipeRoute
   AdminEstoqueRoute: typeof AdminEstoqueRoute
   AdminFinanceiroRoute: typeof AdminFinanceiroRoute
+  AdminGarconsRoute: typeof AdminGarconsRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminMesasRoute: typeof AdminMesasRoute
   AdminPdvRoute: typeof AdminPdvRoute
   AdminPedidosRoute: typeof AdminPedidosRouteWithChildren
   AdminRecuperarSenhaRoute: typeof AdminRecuperarSenhaRoute
@@ -538,11 +577,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPdvRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/mesas': {
+      id: '/admin/mesas'
+      path: '/admin/mesas'
+      fullPath: '/admin/mesas'
+      preLoaderRoute: typeof AdminMesasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/admin/login'
       fullPath: '/admin/login'
       preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/garcons': {
+      id: '/admin/garcons'
+      path: '/admin/garcons'
+      fullPath: '/admin/garcons'
+      preLoaderRoute: typeof AdminGarconsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/financeiro': {
@@ -564,6 +617,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/equipe'
       fullPath: '/admin/equipe'
       preLoaderRoute: typeof AdminEquipeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/entregas': {
+      id: '/admin/entregas'
+      path: '/admin/entregas'
+      fullPath: '/admin/entregas'
+      preLoaderRoute: typeof AdminEntregasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/cupons': {
@@ -685,10 +745,13 @@ const rootRouteChildren: RootRouteChildren = {
   AdminConfiguracoesRoute: AdminConfiguracoesRoute,
   AdminCozinhaRoute: AdminCozinhaRoute,
   AdminCuponsRoute: AdminCuponsRoute,
+  AdminEntregasRoute: AdminEntregasRoute,
   AdminEquipeRoute: AdminEquipeRoute,
   AdminEstoqueRoute: AdminEstoqueRoute,
   AdminFinanceiroRoute: AdminFinanceiroRoute,
+  AdminGarconsRoute: AdminGarconsRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminMesasRoute: AdminMesasRoute,
   AdminPdvRoute: AdminPdvRoute,
   AdminPedidosRoute: AdminPedidosRouteWithChildren,
   AdminRecuperarSenhaRoute: AdminRecuperarSenhaRoute,
