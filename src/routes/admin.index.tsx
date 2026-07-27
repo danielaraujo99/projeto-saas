@@ -44,7 +44,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 function DashboardPage() {
   return (
     <AdminShell title="Dashboard">
-      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-8">
+      <div className="px-4 py-6 sm:px-8">
         {/* Page header */}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>

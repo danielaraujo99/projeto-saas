@@ -19,7 +19,7 @@ function ConfigPage() {
 
   return (
     <AdminShell title="Configurações">
-      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-8">
+      <div className="px-4 py-6 sm:px-8">
         <h2 className="text-2xl font-bold text-slate-900">Configurações</h2>
         <p className="text-sm text-slate-500">Ajustes gerais do restaurante e do painel.</p>
 
