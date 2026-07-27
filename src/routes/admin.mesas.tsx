@@ -336,6 +336,9 @@ function MesasPage() {
         onTransfer={transfer}
         onMerge={merge}
         onDelete={removeTable}
+        onReserve={reserveTable}
+        onCancelReservation={cancelReservation}
+        onArrive={arriveReservation}
       />
     </AdminShell>
   );
