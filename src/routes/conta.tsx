@@ -1,12 +1,13 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, CreditCard, LogOut, MapPin, Plus, Trash2, User2 } from "lucide-react";
+import { ChevronRight, CreditCard, FileText, LogOut, MapPin, Plus, ShieldCheck, Trash2, User2, UserX } from "lucide-react";
 import { useAuth } from "@/store/auth";
 import { useAddresses } from "@/store/addresses";
 import { useCards } from "@/store/cards";
 import { AuthGate } from "@/components/auth-gate";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsDesktop } from "@/hooks/use-media-query";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
 
 
 export const Route = createFileRoute("/conta")({
@@ -39,13 +41,28 @@ function Page() {
   const cards = useCards((s) => s.cards);
   const removeCard = useCards((s) => s.remove);
   const nav = useNavigate();
-  const [authOpen, setAuthOpen] = React.useState(!user);
+  const isDesktop = useIsDesktop();
+  const [authOpen, setAuthOpen] = React.useState(false);
   const [pendingRemove, setPendingRemove] = React.useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = React.useState(false);
   const [hydrated, setHydrated] = React.useState(false);
 
+  // Desktop: open modal login. Mobile: redirect to full /auth page so the
+  // experience matches the rest of the mobile flow instead of being stuck in
+  // a bottom sheet.
   React.useEffect(() => {
-    setAuthOpen(!user);
-  }, [user]);
+    if (!hydrated) return;
+    if (user) {
+      setAuthOpen(false);
+      return;
+    }
+    if (isDesktop) {
+      setAuthOpen(true);
+    } else {
+      setAuthOpen(false);
+      nav({ to: "/auth", search: { redirect: "/conta", mode: "login" }, replace: true });
+    }
+  }, [user, isDesktop, hydrated, nav]);
 
   React.useEffect(() => {
     const t = window.setTimeout(() => setHydrated(true), 250);
@@ -53,6 +70,21 @@ function Page() {
   }, []);
 
   const removingCard = pendingRemove ? cards.find((c) => c.id === pendingRemove) : null;
+
+  const deleteAccount = () => {
+    try {
+      ["bistro-auth", "bistro-addresses", "bistro-cards", "bistro-cart", "bistro-orders"].forEach((k) =>
+        localStorage.removeItem(k),
+      );
+    } catch {
+      /* ignore */
+    }
+    logout();
+    setPendingDelete(false);
+    toast.success("Conta e dados locais excluídos");
+    nav({ to: "/" });
+  };
+
 
 
   return (
