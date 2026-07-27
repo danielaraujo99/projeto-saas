@@ -13,6 +13,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
 import { BottomNav } from "@/components/bottom-nav";
+import { CookieBanner } from "@/components/cookie-banner";
+import { ClientOnly } from "@/components/client-only";
 
 function NotFoundComponent() {
   return (
@@ -130,6 +132,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <BottomNav />
       <Outlet />
+      <ClientOnly>
+        <CookieBanner />
+      </ClientOnly>
       <Toaster position="top-center" richColors closeButton />
     </QueryClientProvider>
   );
