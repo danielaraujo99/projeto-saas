@@ -56,13 +56,24 @@ function LoginPage() {
     <div className="grid min-h-screen bg-white lg:grid-cols-2">
       {/* Painel de identidade */}
       <div className="relative hidden overflow-hidden bg-gradient-to-br from-primary to-blue-700 p-12 text-white lg:flex lg:flex-col lg:justify-between">
-        <div className="flex items-center gap-2">
+        <video
+          className="absolute inset-0 h-full w-full object-cover opacity-25"
+          src={loginBg.url}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-blue-700/85" aria-hidden />
+        <div className="relative flex items-center gap-2">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 backdrop-blur">
             <Store className="h-5 w-5" />
           </div>
           <span className="text-lg font-bold">MenuAltas</span>
         </div>
-        <div className="max-w-md">
+        <div className="relative max-w-md">
           <h2 className="text-4xl font-black leading-tight">
             O centro de comando do seu restaurante.
           </h2>
@@ -71,7 +82,7 @@ function LoginPage() {
             desenhado para operar rápido em qualquer dispositivo.
           </p>
         </div>
-        <p className="text-sm text-white/60">© MenuAltas · Painel para restaurantes</p>
+        <p className="relative text-sm text-white/60">© MenuAltas · Painel para restaurantes</p>
       </div>
 
       {/* Formulário */}
