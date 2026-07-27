@@ -10,9 +10,8 @@ import { listRestaurantOrders } from "@/lib/admin/admin-orders";
 import { useAdminSession } from "@/lib/admin/session";
 import { supabase } from "@/lib/custom-supabase";
 import type { OrderRow } from "@/lib/orders-api";
-import { Loader2, Plus, Search, Calendar, LayoutGrid, List } from "lucide-react";
+import { Loader2, Plus, Calendar, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -41,7 +40,6 @@ function OrdersPage() {
   const qc = useQueryClient();
   const [selected, setSelected] = React.useState<OrderRow | null>(null);
   const [openNew, setOpenNew] = React.useState(false);
-  const [q, setQ] = React.useState("");
   const [period, setPeriod] = React.useState("today");
   const [mode, setMode] = React.useState<ViewMode>("kanban");
 
@@ -49,7 +47,6 @@ function OrdersPage() {
     queryKey: ["admin", "orders", restaurantId],
     queryFn: () => listRestaurantOrders(restaurantId!),
     enabled: !!restaurantId,
-    refetchInterval: 30_000,
   });
 
   React.useEffect(() => {
@@ -74,12 +71,7 @@ function OrdersPage() {
     };
   }, [restaurantId, qc]);
 
-  const filtered = React.useMemo(() => {
-    const list = data ?? [];
-    const s = q.trim().toLowerCase();
-    if (!s) return list;
-    return list.filter((o) => (o.short_id ?? "").toLowerCase().includes(s));
-  }, [data, q]);
+  const filtered = data ?? [];
 
   const initialLoading = !data && isFetching;
 
@@ -115,15 +107,6 @@ function OrdersPage() {
               >
                 <List className="h-3.5 w-3.5" /> Lista
               </button>
-            </div>
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder="Buscar por número…"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                className="w-56 pl-9"
-              />
             </div>
             <div className="relative">
               <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
