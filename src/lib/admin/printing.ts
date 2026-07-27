@@ -28,11 +28,12 @@ export const DEFAULT_PRINT: PrintSettings = {
 
 export async function loadPrintSettings(restaurantId: string): Promise<PrintSettings> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data } = await (supabase as any)
+  const { data, error } = await (supabase as any)
     .from("restaurants")
     .select("name, logo_url, settings")
     .eq("id", restaurantId)
     .maybeSingle();
+  if (error) throw error;
   const s = (data?.settings?.print ?? {}) as Partial<PrintSettings>;
   return {
     ...DEFAULT_PRINT,
@@ -45,11 +46,12 @@ export async function loadPrintSettings(restaurantId: string): Promise<PrintSett
 export async function savePrintSettings(restaurantId: string, patch: Partial<PrintSettings>) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supa = supabase as any;
-  const { data } = await supa
+  const { data, error: readErr } = await supa
     .from("restaurants")
     .select("settings")
     .eq("id", restaurantId)
     .maybeSingle();
+  if (readErr) throw readErr;
   const settings = {
     ...(data?.settings ?? {}),
     print: { ...(data?.settings?.print ?? {}), ...patch },
@@ -111,12 +113,11 @@ export function buildReceiptHtml(opts: {
   const fs = fontPx(settings.font);
   const typeLabel = order.pickup ? "RETIRADA" : "ENTREGA";
   const tag = variant === "kitchen" ? "COZINHA" : typeLabel;
-  const tagIcon = variant === "kitchen" ? "🔥" : order.pickup ? "🛍" : "🛵";
 
   const itemsHtml = order.items
     .map((it, idx) => {
-      const number = `<span class="idx">${idx + 1}</span>`;
-      const qty = `<span class="qty">${it.qty}×</span>`;
+      const number = `<span class="idx">${String(idx + 1).padStart(2, "0")}</span>`;
+      const qty = `<span class="qty">${it.qty}x</span>`;
       const name = `<span class="name">${escape(it.name)}</span>`;
       const price = showPrices
         ? `<span class="price">${brl(it.qty * it.price)}</span>`
@@ -125,14 +126,12 @@ export function buildReceiptHtml(opts: {
       const extras = (it.addOns ?? [])
         .map(
           (a) =>
-            `<div class="sub">↳ ${escape(a.name)}${
-              showPrices && a.price ? ` <span class="ex-price">+${brl(a.price)}</span>` : ""
+            `<div class="sub">+ ${escape(a.name)}${
+              showPrices && a.price ? ` <span class="ex-price">${brl(a.price)}</span>` : ""
             }</div>`,
         )
         .join("");
-      const notes = it.notes
-        ? `<div class="note">⚠ Obs: ${escape(it.notes)}</div>`
-        : "";
+      const notes = it.notes ? `<div class="note">Obs: ${escape(it.notes)}</div>` : "";
       return `${head}${extras}${notes}</div>`;
     })
     .join("");
@@ -142,21 +141,9 @@ export function buildReceiptHtml(opts: {
   const totalsHtml = showPrices
     ? `<div class="hr"></div>
        <div class="tot">
-         ${
-           order.subtotal != null
-             ? `<div class="row"><span>Subtotal</span><span>${brl(order.subtotal)}</span></div>`
-             : ""
-         }
-         ${
-           order.delivery_fee
-             ? `<div class="row"><span>Entrega</span><span>${brl(order.delivery_fee)}</span></div>`
-             : ""
-         }
-         ${
-           order.discount
-             ? `<div class="row"><span>Desconto</span><span>-${brl(order.discount)}</span></div>`
-             : ""
-         }
+         ${order.subtotal != null ? `<div class="row"><span>Subtotal</span><span>${brl(order.subtotal)}</span></div>` : ""}
+         ${order.delivery_fee ? `<div class="row"><span>Entrega</span><span>${brl(order.delivery_fee)}</span></div>` : ""}
+         ${order.discount ? `<div class="row"><span>Desconto</span><span>-${brl(order.discount)}</span></div>` : ""}
          <div class="row grand"><span>TOTAL</span><span>${brl(order.total)}</span></div>
          ${payLabel ? `<div class="row pay"><span>Pagamento</span><span>${escape(payLabel)}</span></div>` : ""}
        </div>`
@@ -167,14 +154,14 @@ export function buildReceiptHtml(opts: {
       ? `<div class="hr"></div>
          <div class="sec-title">CLIENTE</div>
          <div class="sub bold">${escape(order.customer_name ?? order.address?.recipient ?? "Cliente")}</div>
-         ${order.customer_phone ? `<div class="sub">📞 ${escape(order.customer_phone)}</div>` : ""}`
+         ${order.customer_phone ? `<div class="sub">Tel: ${escape(order.customer_phone)}</div>` : ""}`
       : "";
 
   const addr =
     variant === "delivery" && order.address && !order.pickup
       ? `<div class="hr"></div>
-         <div class="sec-title">ENDEREÇO DE ENTREGA</div>
-         <div class="sub">📍 ${escape(order.address.street ?? "")}, ${escape(order.address.number ?? "")}</div>
+         <div class="sec-title">ENDERECO DE ENTREGA</div>
+         <div class="sub">${escape(order.address.street ?? "")}, ${escape(order.address.number ?? "")}</div>
          ${order.address.complement ? `<div class="sub">${escape(order.address.complement)}</div>` : ""}
          <div class="sub">${escape(order.address.district ?? "")}</div>`
       : "";
@@ -183,15 +170,13 @@ export function buildReceiptHtml(opts: {
     variant === "delivery" && order.pickup
       ? `<div class="hr"></div>
          <div class="sec-title">RETIRADA NO LOCAL</div>
-         <div class="sub">O cliente irá buscar este pedido.</div>`
+         <div class="sub">O cliente ira buscar este pedido.</div>`
       : "";
 
   const qr =
     variant === "delivery" && settings.show_qr
       ? `<div class="qr">
-           <img alt="QR" src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=0&data=${encodeURIComponent(
-             "PED:" + order.short_id,
-           )}" />
+           <img alt="QR" src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=0&data=${encodeURIComponent("PED:" + order.short_id)}" />
            <div class="sub small">Acompanhe seu pedido</div>
            <div class="sub small mono">#${escape(order.short_id)}</div>
          </div>`
@@ -210,39 +195,39 @@ export function buildReceiptHtml(opts: {
     <style>
       @page { size: ${w} auto; margin: 3mm; }
       * { box-sizing: border-box; }
-      body { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: ${fs}px; color: #000; margin: 0; padding: 2px; line-height: 1.35; }
+      body { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: ${fs}px; color: #000; margin: 0; padding: 2px; line-height: 1.4; }
       .center { text-align: center; }
       .logo { max-width: 55%; max-height: 55px; margin: 0 auto 4px; display: block; }
       h1 { font-size: ${fs + 3}px; margin: 0; letter-spacing: 0.5px; font-weight: 900; }
-      .tag { display: inline-block; margin: 5px 0 2px; padding: 3px 10px; border: 1.5px solid #000; border-radius: 3px; font-weight: 900; font-size: ${fs + 1}px; letter-spacing: 1.5px; }
-      .oid { font-size: ${fs + 4}px; font-weight: 900; margin-top: 3px; letter-spacing: 1px; }
-      .time { font-size: ${fs - 1}px; color: #333; margin-top: 1px; }
-      .hr { border-top: 1.5px dashed #000; margin: 6px 0; }
-      .sec-title { font-size: ${fs - 1}px; font-weight: 900; letter-spacing: 1px; margin-bottom: 3px; color: #000; }
-      .item { margin-bottom: 5px; page-break-inside: avoid; }
-      .head { display: flex; align-items: flex-start; gap: 4px; font-weight: 700; }
-      .idx { display: inline-block; min-width: 16px; color: #666; font-weight: 600; }
-      .qty { min-width: 28px; font-weight: 900; }
+      .tag { display: inline-block; margin: 6px 0 2px; padding: 4px 12px; border: 1.5px solid #000; border-radius: 2px; font-weight: 900; font-size: ${fs + 1}px; letter-spacing: 2px; }
+      .oid { font-size: ${fs + 4}px; font-weight: 900; margin-top: 4px; letter-spacing: 1px; }
+      .time { font-size: ${fs - 1}px; color: #444; margin-top: 2px; }
+      .hr { border-top: 1.5px dashed #000; margin: 7px 0; }
+      .sec-title { font-size: ${fs - 1}px; font-weight: 900; letter-spacing: 1.5px; margin-bottom: 4px; color: #000; }
+      .item { margin-bottom: 6px; page-break-inside: avoid; }
+      .head { display: flex; align-items: flex-start; gap: 6px; font-weight: 700; }
+      .idx { display: inline-block; min-width: 22px; color: #555; font-weight: 600; font-variant-numeric: tabular-nums; }
+      .qty { min-width: 30px; font-weight: 900; font-variant-numeric: tabular-nums; }
       .name { flex: 1; }
-      .price { font-weight: 900; white-space: nowrap; }
-      .sub { padding-left: 22px; font-size: ${fs - 1}px; }
-      .sub.bold { font-weight: 700; }
+      .price { font-weight: 900; white-space: nowrap; font-variant-numeric: tabular-nums; }
+      .sub { padding-left: 28px; font-size: ${fs - 1}px; color: #222; margin-top: 1px; }
+      .sub.bold { font-weight: 700; color: #000; }
       .sub.small { font-size: ${fs - 2}px; padding: 0; }
       .sub.mono { font-family: ui-monospace, monospace; letter-spacing: 1px; }
-      .ex-price { color: #333; font-size: ${fs - 2}px; }
-      .note { margin-top: 2px; margin-left: 22px; padding: 3px 6px; background: #f0f0f0; border-left: 3px solid #000; font-weight: 700; font-size: ${fs - 1}px; }
-      .row { display: flex; justify-content: space-between; gap: 8px; padding: 1px 0; }
+      .ex-price { color: #555; font-size: ${fs - 2}px; }
+      .note { margin-top: 3px; margin-left: 28px; padding: 3px 6px; background: #f2f2f2; border-left: 3px solid #000; font-weight: 700; font-size: ${fs - 1}px; }
+      .row { display: flex; justify-content: space-between; gap: 8px; padding: 1px 0; font-variant-numeric: tabular-nums; }
       .tot .row { font-size: ${fs}px; }
-      .grand { font-weight: 900; font-size: ${fs + 3}px; border-top: 1px dashed #000; padding-top: 3px; margin-top: 3px; }
-      .pay { color: #000; font-weight: 700; margin-top: 2px; }
+      .grand { font-weight: 900; font-size: ${fs + 3}px; border-top: 1px dashed #000; padding-top: 4px; margin-top: 4px; }
+      .pay { color: #000; font-weight: 700; margin-top: 3px; }
       .qr { text-align: center; margin-top: 8px; }
       .qr img { display: inline-block; }
-      .foot { text-align: center; font-size: ${fs - 2}px; margin-top: 6px; color: #555; }
+      .foot { text-align: center; font-size: ${fs - 2}px; margin-top: 8px; color: #555; letter-spacing: 0.5px; }
     </style></head><body>
     <div class="center">
       ${logo}
       <h1>${escape(settings.restaurant_name ?? "MenuAltas")}</h1>
-      <div class="tag">${tagIcon} VIA ${tag}</div>
+      <div class="tag">VIA ${tag}</div>
       <div class="oid">#${escape(order.short_id)}</div>
       <div class="time">${now.toLocaleString("pt-BR")}</div>
     </div>
@@ -255,7 +240,7 @@ export function buildReceiptHtml(opts: {
     ${pickupBox}
     ${qr}
     <div class="hr"></div>
-    <div class="foot">MenuAltas · impresso ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
+    <div class="foot">MenuAltas &middot; ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
   </body></html>`;
 }
 
@@ -319,10 +304,8 @@ export function printOrder(order: OrderRow, settings: PrintSettings) {
     pickup: order.pickup,
     created_at: order.created_at,
   };
-  if (settings.kitchen)
-    printHtml(buildReceiptHtml({ order: shared, variant: "kitchen", settings }));
-  if (settings.delivery)
-    printHtml(buildReceiptHtml({ order: shared, variant: "delivery", settings }));
+  if (settings.kitchen) printHtml(buildReceiptHtml({ order: shared, variant: "kitchen", settings }));
+  if (settings.delivery) printHtml(buildReceiptHtml({ order: shared, variant: "delivery", settings }));
 }
 
 function escape(s: string | undefined | null): string {
