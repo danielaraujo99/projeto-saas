@@ -107,26 +107,121 @@ function Page() {
     );
   }
 
+  const isPix = order.payment.kind === "pix";
+  const isTerminal = phase === "success" || phase === "pix_expired";
+  const wide = isPix && !isTerminal;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-soft/40 via-background to-background">
-      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-5 py-10">
+    <div className="min-h-screen bg-[color-mix(in_oklab,var(--primary)_4%,var(--background))]">
+      <main
+        className={`mx-auto flex min-h-screen flex-col px-4 py-6 sm:px-6 sm:py-10 ${
+          wide ? "max-w-6xl" : "max-w-md items-center justify-center"
+        }`}
+      >
         {phase === "success" ? (
           <SuccessCard total={order.total} />
         ) : phase === "pix_expired" ? (
           <PixExpiredCard total={order.total} onRegenerate={regeneratePix} />
-        ) : order.payment.kind === "pix" ? (
-          <PixCard
-            key={pixCycle}
-            orderId={order.id}
-            shortId={order.short_id}
-            total={order.total}
-            onApproved={onPixApproved}
-            onExpired={() => setPhase("pix_expired")}
-          />
+        ) : isPix ? (
+          <div className="grid w-full animate-fade-in gap-5 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] lg:gap-6">
+            <OrderSummaryAside order={order} />
+            <PixCard
+              key={pixCycle}
+              orderId={order.id}
+              shortId={order.short_id}
+              total={order.total}
+              onApproved={onPixApproved}
+              onExpired={() => setPhase("pix_expired")}
+            />
+          </div>
         ) : (
           <ProcessingCard method={order.payment.kind} total={order.total} />
         )}
       </main>
+    </div>
+  );
+}
+
+function OrderSummaryAside({ order }: { order: OrderRow }) {
+  const itemsCount = order.items.reduce((n, i) => n + i.quantity, 0);
+  return (
+    <aside className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
+      <section className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-elevated)] sm:p-6">
+        <header className="flex items-center justify-between gap-3">
+          <h2 className="text-[15px] font-bold tracking-tight">Resumo do pedido</h2>
+          <span className="rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-semibold text-primary">
+            #{order.short_id}
+          </span>
+        </header>
+
+        <ul className="mt-4 space-y-2.5">
+          {order.items.slice(0, 4).map((it, idx) => (
+            <li
+              key={`${it.productId}-${idx}`}
+              className="flex items-start justify-between gap-3 text-[13px]"
+            >
+              <span className="min-w-0 flex-1 truncate text-foreground/80">
+                <span className="mr-1 font-semibold text-foreground">{it.quantity}×</span>
+                {it.name}
+              </span>
+              <span className="shrink-0 tabular-nums text-foreground/70">
+                {brl(it.subtotal)}
+              </span>
+            </li>
+          ))}
+          {order.items.length > 4 && (
+            <li className="text-[12px] text-foreground/50">
+              +{order.items.length - 4} outro(s) item(ns)
+            </li>
+          )}
+        </ul>
+
+        <div className="mt-4 space-y-1.5 border-t border-border pt-4 text-[13px]">
+          <Row label={`Itens (${itemsCount})`} value={brl(order.subtotal)} />
+          {order.delivery_fee > 0 && (
+            <Row label="Taxa de entrega" value={brl(order.delivery_fee)} />
+          )}
+          {order.discount > 0 && (
+            <Row label="Desconto" value={`− ${brl(order.discount)}`} accent="text-success" />
+          )}
+        </div>
+
+        <div className="mt-4 flex items-baseline justify-between border-t border-border pt-4">
+          <span className="text-[13px] font-semibold text-foreground/70">Total</span>
+          <span className="text-xl font-bold tabular-nums text-primary">{brl(order.total)}</span>
+        </div>
+      </section>
+
+      <section className="hidden rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-elevated)] lg:block">
+        <div className="flex items-start gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+            <ShieldCheck className="h-4 w-4" />
+          </span>
+          <div>
+            <p className="text-[13px] font-bold">Ambiente seguro</p>
+            <p className="mt-1 text-[12px] leading-relaxed text-foreground/60">
+              Seus dados e pagamentos são protegidos com criptografia de nível bancário.
+            </p>
+          </div>
+        </div>
+      </section>
+    </aside>
+  );
+}
+
+function Row({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: string;
+}) {
+  return (
+    <div className="flex items-baseline justify-between">
+      <span className="text-foreground/60">{label}</span>
+      <span className={`tabular-nums ${accent ?? "text-foreground/80"}`}>{value}</span>
     </div>
   );
 }
