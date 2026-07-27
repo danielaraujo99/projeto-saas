@@ -111,20 +111,23 @@ function SignupPage() {
         </div>
         <div className="relative max-w-md space-y-4">
           <span className="inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-white/85 backdrop-blur">
-            Cadastro do restaurante
+            Comece agora · sem mensalidade fixa
           </span>
           <h2 className="text-4xl font-black leading-tight">
-            Do forno ao pedido: seu restaurante rodando em minutos.
+            Sua cozinha lotada, seu caixa no controle.
           </h2>
+          <p className="text-white/85">
+            Cadastre seu restaurante e receba pedidos no balcão, delivery e mesa em minutos — com KDS, cardápio digital, cupons e financeiro no mesmo painel.
+          </p>
           <ul className="space-y-2 text-white/85">
             <li className="flex items-center gap-2">
-              <Check className="h-4 w-4" /> Pedidos em tempo real
+              <Check className="h-4 w-4" /> Pedidos entram direto na cozinha
             </li>
             <li className="flex items-center gap-2">
-              <Check className="h-4 w-4" /> Cozinha (KDS) dedicada
+              <Check className="h-4 w-4" /> KDS, comandas e mesas prontos para usar
             </li>
             <li className="flex items-center gap-2">
-              <Check className="h-4 w-4" /> Cardápio, cupons e financeiro
+              <Check className="h-4 w-4" /> Relatórios de vendas em tempo real
             </li>
           </ul>
         </div>
