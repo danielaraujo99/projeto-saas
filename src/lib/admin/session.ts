@@ -1,0 +1,65 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
+
+export type AdminRole = "admin" | "caixa" | "cozinha";
+
+export type AdminSession = {
+  user: User;
+  restaurantId: string;
+  restaurantName: string;
+  restaurantSlug: string;
+  role: AdminRole;
+  profileName: string;
+};
+
+async function fetchAdminSession(): Promise<AdminSession | null> {
+  const { data: userRes } = await supabase.auth.getUser();
+  const user = userRes.user;
+  if (!user) return null;
+  const { data: member } = await supabase
+    .from("restaurant_members")
+    .select("role, restaurant_id, restaurants!inner(id, name, slug)")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (!member) return null;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("name")
+    .eq("id", user.id)
+    .maybeSingle();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rest = (member as any).restaurants;
+  return {
+    user,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    role: (member as any).role as AdminRole,
+    restaurantId: rest.id,
+    restaurantName: rest.name,
+    restaurantSlug: rest.slug,
+    profileName: profile?.name || user.email || "",
+  };
+}
+
+export function useAdminSession() {
+  const qc = useQueryClient();
+  const query = useQuery({
+    queryKey: ["admin-session"],
+    queryFn: fetchAdminSession,
+    staleTime: 60_000,
+  });
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        qc.invalidateQueries({ queryKey: ["admin-session"] });
+      }
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [qc]);
+
+  return query;
+}

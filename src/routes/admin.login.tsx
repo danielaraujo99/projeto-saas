@@ -1,0 +1,154 @@
+import * as React from "react";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Eye, EyeOff, LogIn, Loader2, Store } from "lucide-react";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/admin/login")({
+  head: () => ({
+    meta: [
+      { title: "Entrar no painel — Bistrô Azul" },
+      { name: "description", content: "Acesse o painel administrativo do seu restaurante." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    redirect: typeof s.redirect === "string" ? (s.redirect as string) : undefined,
+  }),
+  component: LoginPage,
+});
+
+function LoginPage() {
+  const nav = useNavigate();
+  const search = useSearch({ from: "/admin/login" });
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [show, setShow] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) nav({ to: search.redirect || "/admin", replace: true });
+    });
+  }, [nav, search.redirect]);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setBusy(false);
+    if (error) {
+      setError("E-mail ou senha inválidos. Verifique e tente novamente.");
+      return;
+    }
+    toast.success("Bem-vindo de volta!");
+    nav({ to: search.redirect || "/admin", replace: true });
+  }
+
+  return (
+    <div className="grid min-h-screen bg-white lg:grid-cols-2">
+      {/* Painel de identidade */}
+      <div className="relative hidden overflow-hidden bg-gradient-to-br from-primary to-blue-700 p-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <div className="flex items-center gap-2">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 backdrop-blur">
+            <Store className="h-5 w-5" />
+          </div>
+          <span className="text-lg font-bold">Bistrô Painel</span>
+        </div>
+        <div className="max-w-md">
+          <h2 className="text-4xl font-black leading-tight">
+            O centro de comando do seu restaurante.
+          </h2>
+          <p className="mt-4 text-white/80">
+            Gerencie pedidos em tempo real, cardápio, equipe e finanças em um só lugar —
+            desenhado para operar rápido em qualquer dispositivo.
+          </p>
+        </div>
+        <p className="text-sm text-white/60">© Bistrô · Painel para restaurantes</p>
+      </div>
+
+      {/* Formulário */}
+      <div className="flex items-center justify-center p-6 sm:p-10">
+        <div className="w-full max-w-sm">
+          <div className="mb-6 flex items-center gap-2 lg:hidden">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-white">
+              <Store className="h-4 w-4" />
+            </div>
+            <span className="text-base font-bold">Bistrô Painel</span>
+          </div>
+          <h1 className="text-2xl font-black text-slate-900">Entrar</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Acesse com o e-mail cadastrado do restaurante.
+          </p>
+
+          <form onSubmit={submit} className="mt-6 space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                autoComplete="email"
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Senha</Label>
+                <Link
+                  to="/admin/recuperar-senha"
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={show ? "text" : "password"}
+                  value={password}
+                  autoComplete="current-password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                  onClick={() => setShow((s) => !s)}
+                  aria-label={show ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <label className="flex items-center gap-2 text-sm text-slate-600">
+              <Checkbox defaultChecked /> Manter-me conectado
+            </label>
+
+            {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+
+            <Button type="submit" className="h-11 w-full text-base font-semibold" disabled={busy}>
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
+              Entrar
+            </Button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-slate-500">
+            Ainda não tem conta?{" "}
+            <Link to="/admin/cadastro" className="font-semibold text-primary hover:underline">
+              Cadastrar restaurante
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

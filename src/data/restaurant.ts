@@ -1,7 +1,11 @@
 import type { Restaurant } from "@/types";
 
+// ID do Bistrô Azul como primeiro tenant no banco (registrado na migração).
+export const BISTRO_AZUL_ID = "11111111-1111-1111-1111-111111111111";
+export const BISTRO_AZUL_SLUG = "bistro-azul";
+
 export const restaurant: Restaurant = {
-  id: "r_1",
+  id: BISTRO_AZUL_ID,
   name: "Bistrô Azul",
   tagline: "Hambúrgueres artesanais e pratos rápidos",
   logo: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=200&h=200&fit=crop",
