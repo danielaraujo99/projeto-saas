@@ -57,7 +57,7 @@ function LoginPage() {
       {/* Painel de identidade */}
       <div className="relative hidden overflow-hidden bg-slate-900 p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <video
-          className="absolute inset-0 h-full w-full object-cover opacity-90 brightness-110 contrast-105"
+          className="absolute inset-0 h-full w-full object-cover opacity-80 brightness-110 contrast-105"
           src={loginBg.url}
           autoPlay
           loop
