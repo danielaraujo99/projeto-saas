@@ -125,7 +125,7 @@ function CheckoutPage() {
     if (!pickup && !selectedAddress) return toast.error("Escolha um endereço de entrega.");
     setPlacing(true);
     try {
-      const order = await apiCreateOrder({
+      const order = await createOrderRecordFn({
         data: {
           deviceId: getDeviceId(),
           items,
