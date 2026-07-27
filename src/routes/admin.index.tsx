@@ -5,7 +5,6 @@ import { SmoothArea, Sparkline } from "@/components/admin/charts";
 import {
   METRICS,
   REVENUE_7D,
-  ORDER_STATUS_BREAKDOWN,
   HEATMAP,
   HEATMAP_COLS,
   HEATMAP_ROWS,
