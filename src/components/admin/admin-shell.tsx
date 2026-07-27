@@ -9,6 +9,15 @@ import {
   LogOut,
   Loader2,
   Store,
+  Calculator,
+  UtensilsCrossed,
+  Boxes,
+  Ticket,
+  Users,
+  Star,
+  Wallet,
+  Shield,
+  Settings,
 } from "lucide-react";
 import { supabase } from "@/lib/custom-supabase";
 import { useAdminSession, type AdminRole } from "@/lib/admin/session";
