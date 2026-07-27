@@ -73,6 +73,7 @@ function ConfigPage() {
         {tab === "restaurante" && <RestauranteTab />}
         {tab === "operacao" && <OperacaoTab />}
         {tab === "notificacoes" && <NotificacoesTab />}
+        {tab === "impressao" && <ImpressaoTab />}
         {tab === "integracoes" && <IntegracoesTab />}
       </div>
     </AdminShell>
