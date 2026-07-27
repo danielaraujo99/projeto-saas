@@ -15,23 +15,28 @@ import { CartLines, CouponBox, OrderSummary } from "@/components/cart-parts";
 import { AuthGate } from "@/components/auth-gate";
 import { brl } from "@/lib/format";
 
+import { ComingSoon } from "@/components/coming-soon";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Restaurante Demo — Cardápio digital" },
+      { title: "MenuAtlas — Em breve" },
       {
         name: "description",
         content:
-          "Hambúrgueres artesanais, acompanhamentos e bebidas. Peça pelo cardápio digital e receba em casa.",
+          "MenuAtlas está chegando. A nova plataforma de cardápio digital, pedidos e gestão para restaurantes modernos.",
       },
-      { property: "og:title", content: "Restaurante Demo — Cardápio digital" },
+      { property: "og:title", content: "MenuAtlas — Em breve" },
       {
         property: "og:description",
-        content: "Hambúrgueres artesanais, acompanhamentos e bebidas para levar até você.",
+        content:
+          "A nova plataforma de cardápio digital, pedidos e gestão para restaurantes modernos.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: HomePage,
+  component: ComingSoon,
 });
 
 export function HomePage() {
