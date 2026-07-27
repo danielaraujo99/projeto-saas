@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,14 @@ import { cn } from "@/lib/utils";
 import { MercadoPagoModal } from "@/components/admin/mercado-pago-modal";
 import { getMpConfig } from "@/lib/admin/mercadopago";
 import { useAdminSession } from "@/lib/admin/session";
-import { Upload, CheckCircle2 } from "lucide-react";
+import {
+  getRestaurant,
+  updateRestaurantInfo,
+  updateRestaurantSettings,
+  type OperationSettings,
+} from "@/lib/admin/restaurant";
+import { CheckCircle2, Loader2 } from "lucide-react";
+import mpLogo from "@/assets/mercado-pago.webp.asset.json";
 
 export const Route = createFileRoute("/admin/configuracoes")({
   head: () => ({
@@ -42,7 +50,6 @@ function ConfigPage() {
           <p className="text-sm text-slate-500">Ajustes gerais do restaurante e do painel.</p>
         </div>
 
-        {/* Tabs horizontais no topo */}
         <div className="mb-5 border-b border-slate-200">
           <nav className="-mb-px flex flex-wrap gap-1">
             {TABS.map((t) => (
@@ -73,78 +80,269 @@ function ConfigPage() {
 
 /* ---------- Restaurante ---------- */
 function RestauranteTab() {
+  const { data: session } = useAdminSession();
+  const restaurantId = session?.restaurantId;
+  const qc = useQueryClient();
+  const { data: rest, isLoading } = useQuery({
+    queryKey: ["restaurant", restaurantId],
+    queryFn: () => getRestaurant(restaurantId!),
+    enabled: !!restaurantId,
+  });
+
+  const [form, setForm] = React.useState({
+    name: "",
+    slug: "",
+    category: "",
+    phone: "",
+    address: "",
+    description: "",
+    logo_url: "",
+    cover_url: "",
+  });
+  const [saving, setSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    if (rest) {
+      setForm({
+        name: rest.name ?? "",
+        slug: rest.slug ?? "",
+        category: rest.category ?? "",
+        phone: rest.phone ?? "",
+        address: rest.address ?? "",
+        description: rest.description ?? "",
+        logo_url: rest.logo_url ?? "",
+        cover_url: rest.cover_url ?? "",
+      });
+    }
+  }, [rest]);
+
+  async function save() {
+    if (!restaurantId) return;
+    if (!form.name || !form.slug) {
+      toast.error("Nome e slug são obrigatórios.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateRestaurantInfo(restaurantId, form);
+      await qc.invalidateQueries({ queryKey: ["restaurant", restaurantId] });
+      await qc.invalidateQueries({ queryKey: ["admin-session"] });
+      toast.success("Restaurante atualizado.");
+    } catch (e) {
+      toast.error(
+        e instanceof Error
+          ? e.message
+          : "Falha ao salvar. Rode o SQL 'restaurant-settings.sql' no seu Supabase.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (isLoading) return <LoadingBlock />;
+
   return (
     <Section title="Dados do restaurante" description="Como o cliente vê seu restaurante.">
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Nome"><Input defaultValue="Restaurante Demo" /></Field>
-        <Field label="Slug (URL pública)"><Input defaultValue="demo" /></Field>
-        <Field label="Categoria" hint="Ex.: Hambúrgueres • Lanches">
-          <Input defaultValue="Hambúrgueres • Lanches" />
+        <Field label="Nome">
+          <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         </Field>
-        <Field label="Telefone / WhatsApp"><Input defaultValue="(11) 99999-9999" /></Field>
+        <Field label="Slug (URL pública)" hint={form.slug ? `menualtas.app/${form.slug}` : undefined}>
+          <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+        </Field>
+        <Field label="Categoria" hint="Ex.: Hambúrgueres • Lanches">
+          <Input
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+          />
+        </Field>
+        <Field label="Telefone / WhatsApp">
+          <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+        </Field>
         <div className="md:col-span-2">
-          <Field label="Endereço"><Input defaultValue="Av. Paulista, 1500 — São Paulo" /></Field>
+          <Field label="Endereço">
+            <Input
+              value={form.address}
+              onChange={(e) => setForm({ ...form, address: e.target.value })}
+            />
+          </Field>
         </div>
         <div className="md:col-span-2">
           <Field label="Descrição">
-            <Textarea rows={3} defaultValue="Comida caseira com entrega rápida." />
+            <Textarea
+              rows={3}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
           </Field>
         </div>
-        <Field label="Logo (quadrada, 512x512)">
-          <UploadBox label="Enviar logo" />
+        <Field label="URL do logo (quadrado, 512x512)">
+          <Input
+            placeholder="https://…"
+            value={form.logo_url}
+            onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
+          />
         </Field>
-        <Field label="Imagem de capa (1600x600)">
-          <UploadBox label="Enviar capa" />
+        <Field label="URL da capa (1600x600)">
+          <Input
+            placeholder="https://…"
+            value={form.cover_url}
+            onChange={(e) => setForm({ ...form, cover_url: e.target.value })}
+          />
         </Field>
       </div>
       <div className="flex justify-end">
-        <Button onClick={() => toast.success("Alterações salvas")}>Salvar</Button>
+        <Button onClick={save} disabled={saving}>
+          {saving && <Loader2 className="h-4 w-4 animate-spin" />} Salvar
+        </Button>
       </div>
     </Section>
   );
 }
 
 /* ---------- Operação ---------- */
-const DAYS = [
-  "Segunda",
-  "Terça",
-  "Quarta",
-  "Quinta",
-  "Sexta",
-  "Sábado",
-  "Domingo",
-] as const;
+const DAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"] as const;
+
+const defaultSettings: OperationSettings = {
+  hours: DAYS.map((d, i) => ({ day: d, open: i < 6, from: "11:00", to: "23:00" })),
+  auto_close: true,
+  prep_time_min: 25,
+  delivery_time_min: 35,
+  delivery_radius_km: 5,
+  delivery_fee: 7.9,
+  min_order: 20,
+  accept_pickup: true,
+};
 
 function OperacaoTab() {
+  const { data: session } = useAdminSession();
+  const restaurantId = session?.restaurantId;
+  const qc = useQueryClient();
+  const { data: rest, isLoading } = useQuery({
+    queryKey: ["restaurant", restaurantId],
+    queryFn: () => getRestaurant(restaurantId!),
+    enabled: !!restaurantId,
+  });
+
+  const [cfg, setCfg] = React.useState<OperationSettings>(defaultSettings);
+  const [saving, setSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    if (rest) {
+      const merged = { ...defaultSettings, ...(rest.settings ?? {}) };
+      if (!merged.hours || merged.hours.length !== 7) merged.hours = defaultSettings.hours;
+      setCfg(merged);
+    }
+  }, [rest]);
+
+  async function save() {
+    if (!restaurantId) return;
+    setSaving(true);
+    try {
+      await updateRestaurantSettings(restaurantId, cfg);
+      await qc.invalidateQueries({ queryKey: ["restaurant", restaurantId] });
+      toast.success("Operação atualizada.");
+    } catch (e) {
+      toast.error(
+        e instanceof Error
+          ? e.message
+          : "Falha ao salvar. Rode o SQL 'restaurant-settings.sql' no seu Supabase.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (isLoading) return <LoadingBlock />;
+
   return (
     <div className="space-y-4">
       <Section title="Horário de funcionamento" description="Defina abertura e fechamento por dia.">
         <div className="divide-y divide-slate-100 rounded-lg border border-slate-100">
-          {DAYS.map((d, i) => (
-            <div key={d} className="grid grid-cols-[110px_auto_1fr_1fr] items-center gap-3 px-3 py-2.5">
-              <div className="text-sm font-medium text-slate-700">{d}</div>
-              <Switch defaultChecked={i < 6} />
-              <Input type="time" defaultValue="11:00" />
-              <Input type="time" defaultValue="23:00" />
+          {(cfg.hours ?? []).map((h, i) => (
+            <div
+              key={h.day}
+              className="grid grid-cols-[110px_auto_1fr_1fr] items-center gap-3 px-3 py-2.5"
+            >
+              <div className="text-sm font-medium text-slate-700">{h.day}</div>
+              <Switch
+                checked={h.open}
+                onCheckedChange={(v) => {
+                  const hours = [...(cfg.hours ?? [])];
+                  hours[i] = { ...hours[i], open: v };
+                  setCfg({ ...cfg, hours });
+                }}
+              />
+              <Input
+                type="time"
+                value={h.from}
+                onChange={(e) => {
+                  const hours = [...(cfg.hours ?? [])];
+                  hours[i] = { ...hours[i], from: e.target.value };
+                  setCfg({ ...cfg, hours });
+                }}
+              />
+              <Input
+                type="time"
+                value={h.to}
+                onChange={(e) => {
+                  const hours = [...(cfg.hours ?? [])];
+                  hours[i] = { ...hours[i], to: e.target.value };
+                  setCfg({ ...cfg, hours });
+                }}
+              />
             </div>
           ))}
         </div>
-        <Toggle label="Fechamento automático fora do horário" defaultChecked />
+        <Toggle
+          label="Fechamento automático fora do horário"
+          checked={!!cfg.auto_close}
+          onChange={(v) => setCfg({ ...cfg, auto_close: v })}
+        />
       </Section>
 
       <Section title="Entrega e preparo">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <Field label="Tempo médio de preparo (min)"><Input type="number" defaultValue={25} /></Field>
-          <Field label="Tempo médio de entrega (min)"><Input type="number" defaultValue={35} /></Field>
-          <Field label="Raio de entrega (km)"><Input type="number" step="0.5" defaultValue={5} /></Field>
-          <Field label="Taxa de entrega padrão (R$)"><Input type="number" step="0.5" defaultValue={7.9} /></Field>
-          <Field label="Pedido mínimo (R$)"><Input type="number" step="0.5" defaultValue={20} /></Field>
+          <NumField
+            label="Tempo médio de preparo (min)"
+            value={cfg.prep_time_min ?? 0}
+            onChange={(v) => setCfg({ ...cfg, prep_time_min: v })}
+          />
+          <NumField
+            label="Tempo médio de entrega (min)"
+            value={cfg.delivery_time_min ?? 0}
+            onChange={(v) => setCfg({ ...cfg, delivery_time_min: v })}
+          />
+          <NumField
+            label="Raio de entrega (km)"
+            step={0.5}
+            value={cfg.delivery_radius_km ?? 0}
+            onChange={(v) => setCfg({ ...cfg, delivery_radius_km: v })}
+          />
+          <NumField
+            label="Taxa de entrega (R$)"
+            step={0.5}
+            value={cfg.delivery_fee ?? 0}
+            onChange={(v) => setCfg({ ...cfg, delivery_fee: v })}
+          />
+          <NumField
+            label="Pedido mínimo (R$)"
+            step={0.5}
+            value={cfg.min_order ?? 0}
+            onChange={(v) => setCfg({ ...cfg, min_order: v })}
+          />
         </div>
-        <Toggle label="Aceitar retirada no local" defaultChecked />
+        <Toggle
+          label="Aceitar retirada no local"
+          checked={!!cfg.accept_pickup}
+          onChange={(v) => setCfg({ ...cfg, accept_pickup: v })}
+        />
       </Section>
 
       <div className="flex justify-end">
-        <Button onClick={() => toast.success("Operação atualizada")}>Salvar</Button>
+        <Button onClick={save} disabled={saving}>
+          {saving && <Loader2 className="h-4 w-4 animate-spin" />} Salvar
+        </Button>
       </div>
     </div>
   );
@@ -206,38 +404,23 @@ function IntegracoesTab() {
 
   return (
     <>
-      <Section
-        title="Integrações"
-        description="Conecte gateways de pagamento e outros serviços."
-      >
+      <Section title="Integrações" description="Conecte gateways de pagamento.">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           <IntegrationCard
             name="Mercado Pago"
             logo={
-              <img
-                src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/6.6.94/mercadopago/logo-large.png"
-                alt="Mercado Pago"
-                className="h-6 w-auto"
-                loading="lazy"
-              />
+              <div className="grid h-12 w-20 place-items-center rounded-lg bg-white ring-1 ring-slate-100">
+                <img
+                  src={mpLogo.url}
+                  alt="Mercado Pago"
+                  className="max-h-9 w-auto"
+                  loading="lazy"
+                />
+              </div>
             }
             description="Aceite PIX (QR automático) e cartão via maquininha Point."
             status={mpEnabled === null ? "carregando…" : mpEnabled ? "conectado" : "não conectado"}
             onConfigure={() => setOpenMp(true)}
-          />
-          <IntegrationCard
-            name="WhatsApp Business"
-            logo={<Placeholder label="WA" className="bg-emerald-500" />}
-            description="Confirmações e status de pedido pelo WhatsApp."
-            status="em breve"
-            disabled
-          />
-          <IntegrationCard
-            name="iFood"
-            logo={<Placeholder label="iF" className="bg-rose-500" />}
-            description="Importe pedidos direto do iFood."
-            status="em breve"
-            disabled
           />
         </div>
       </Section>
@@ -286,35 +469,50 @@ function Field({
   );
 }
 
-function Toggle({ label, defaultChecked }: { label: string; defaultChecked?: boolean }) {
+function NumField({
+  label,
+  value,
+  step = 1,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  step?: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <Field label={label}>
+      <Input
+        type="number"
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+    </Field>
+  );
+}
+
+function Toggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <div className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2.5">
       <span className="text-sm text-slate-700">{label}</span>
-      <Switch defaultChecked={defaultChecked} />
+      <Switch checked={checked} onCheckedChange={onChange} />
     </div>
   );
 }
 
-function UploadBox({ label }: { label: string }) {
+function LoadingBlock() {
   return (
-    <button
-      type="button"
-      className="flex h-24 w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 text-sm text-slate-500 hover:border-slate-300 hover:bg-slate-50"
-    >
-      <Upload className="h-4 w-4" /> {label}
-    </button>
-  );
-}
-
-function Placeholder({ label, className }: { label: string; className?: string }) {
-  return (
-    <div
-      className={cn(
-        "grid h-8 w-8 place-items-center rounded-md text-xs font-bold text-white",
-        className,
-      )}
-    >
-      {label}
+    <div className="grid h-40 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-400">
+      <Loader2 className="h-5 w-5 animate-spin" />
     </div>
   );
 }
@@ -325,45 +523,39 @@ function IntegrationCard({
   description,
   status,
   onConfigure,
-  disabled,
 }: {
   name: string;
   logo: React.ReactNode;
   description: string;
   status: string;
   onConfigure?: () => void;
-  disabled?: boolean;
 }) {
   const tone =
     status === "conectado"
       ? "bg-emerald-50 text-emerald-700"
       : status === "não conectado"
         ? "bg-slate-100 text-slate-600"
-        : status === "em breve"
-          ? "bg-slate-100 text-slate-500"
-          : "bg-amber-50 text-amber-700";
+        : "bg-amber-50 text-amber-700";
   return (
     <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          {logo}
-          <div>
-            <div className="text-sm font-bold text-slate-900">{name}</div>
-            <span
-              className={cn(
-                "mt-0.5 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium",
-                tone,
-              )}
-            >
-              {status === "conectado" ? <CheckCircle2 className="h-3 w-3" /> : null}
-              {status}
-            </span>
-          </div>
+      <div className="flex items-start gap-3">
+        {logo}
+        <div>
+          <div className="text-sm font-bold text-slate-900">{name}</div>
+          <span
+            className={cn(
+              "mt-0.5 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium",
+              tone,
+            )}
+          >
+            {status === "conectado" ? <CheckCircle2 className="h-3 w-3" /> : null}
+            {status}
+          </span>
         </div>
       </div>
       <p className="text-xs text-slate-500">{description}</p>
       <div className="flex justify-end">
-        <Button size="sm" variant={status === "conectado" ? "outline" : "default"} onClick={onConfigure} disabled={disabled}>
+        <Button size="sm" variant={status === "conectado" ? "outline" : "default"} onClick={onConfigure}>
           {status === "conectado" ? "Gerenciar" : "Configurar"}
         </Button>
       </div>
