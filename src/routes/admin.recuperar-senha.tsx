@@ -36,6 +36,7 @@ function ForgotPage() {
       <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <Link
           to="/admin/login"
+          search={{}}
           className="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"
         >
           <ArrowLeft className="h-4 w-4" /> Voltar
