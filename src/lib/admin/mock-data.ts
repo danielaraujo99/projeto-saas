@@ -21,7 +21,20 @@ export function makeSpark(base: number, variance = 0.25, points = 14) {
   return out;
 }
 
-export const METRICS = [
+type Metric = {
+  key: string;
+  label: string;
+  value: string;
+  delta: number;
+  deltaSuffix?: string;
+  inverse?: boolean;
+  color: string;
+  tint: string;
+  icon: string;
+  spark: { i: number; v: number }[];
+};
+
+export const METRICS: Metric[] = [
   {
     key: "revenue",
     label: "Faturamento",
