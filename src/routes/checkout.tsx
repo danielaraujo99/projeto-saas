@@ -1,5 +1,6 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate, useBlocker } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft,
   Bike,
@@ -18,7 +19,8 @@ import {
 import { useCart } from "@/store/cart";
 import { useAddresses } from "@/store/addresses";
 import { useAuth } from "@/store/auth";
-import { createOrder as apiCreateOrder } from "@/lib/orders-api";
+import { createOrderRecord } from "@/lib/orders.functions";
+import { getDeviceId } from "@/lib/device-id";
 import { BISTRO_AZUL_SLUG, restaurant } from "@/data/restaurant";
 import { brl } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -68,6 +70,7 @@ function CheckoutPage() {
   const select = useAddresses((s) => s.select);
   
   const nav = useNavigate();
+  const createOrderRecordFn = useServerFn(createOrderRecord);
 
   const [authOpen, setAuthOpen] = React.useState(!user);
   React.useEffect(() => {
@@ -123,22 +126,27 @@ function CheckoutPage() {
     setPlacing(true);
     try {
       const order = await apiCreateOrder({
-        items,
-        subtotal,
-        deliveryFee: fee,
-        discount,
-        total,
-        couponCode: coupon?.code,
-        address: pickup ? undefined : selectedAddress,
-        pickup,
-        payment,
-        etaMinutes: etaMax,
-        restaurantId: restaurant.id,
-        restaurantSlug: BISTRO_AZUL_SLUG,
+        data: {
+          deviceId: getDeviceId(),
+          items,
+          subtotal,
+          deliveryFee: fee,
+          discount,
+          total,
+          couponCode: coupon?.code,
+          address: pickup ? undefined : selectedAddress,
+          pickup,
+          payment,
+          etaMinutes: etaMax,
+          restaurantId: restaurant.id,
+          restaurantSlug: BISTRO_AZUL_SLUG,
+        },
       });
+      const orderId = typeof order.id === "string" ? order.id : null;
+      if (!orderId) throw new Error("Pedido criado sem identificador.");
       orderCreatedRef.current = true;
       clear();
-      nav({ to: "/pagamento/$id", params: { id: order.id }, replace: true });
+      nav({ to: "/pagamento/$id", params: { id: orderId }, replace: true });
     } catch (e) {
       console.error(e);
       toast.error("Falha de conexão", {
