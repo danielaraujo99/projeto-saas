@@ -25,7 +25,10 @@ export const createPixCharge = createServerFn({ method: "POST" })
     const token = process.env.MERCADOPAGO_ACCESS_TOKEN?.trim();
     if (!token) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado.");
 
-    const expiresAt = new Date(Date.now() + data.expirationMinutes * 60_000);
+    // Mercado Pago cancela automaticamente Pix com expiração <= ~5 min.
+    // Enviamos 30 min ao MP e retornamos um `expiresAt` separado para o timer visual.
+    const mpExpiresAt = new Date(Date.now() + 30 * 60_000);
+    const displayExpiresAt = new Date(Date.now() + data.expirationMinutes * 60_000);
 
     const res = await fetch("https://api.mercadopago.com/v1/payments", {
       method: "POST",
@@ -39,7 +42,7 @@ export const createPixCharge = createServerFn({ method: "POST" })
         description: data.description,
         payment_method_id: "pix",
         external_reference: data.externalReference,
-        date_of_expiration: expiresAt.toISOString().replace("Z", "-00:00"),
+        date_of_expiration: mpExpiresAt.toISOString().replace("Z", "-00:00"),
         payer: {
           email: data.payerEmail ?? "cliente@menualtas.com.br",
           first_name: "Cliente",
@@ -58,7 +61,7 @@ export const createPixCharge = createServerFn({ method: "POST" })
       qrCode: p.point_of_interaction?.transaction_data?.qr_code ?? "",
       status: p.status,
       ticketUrl: p.point_of_interaction?.transaction_data?.ticket_url ?? "",
-      expiresAt: expiresAt.toISOString(),
+      expiresAt: displayExpiresAt.toISOString(),
     };
   });
 
