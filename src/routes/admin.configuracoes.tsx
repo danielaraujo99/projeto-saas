@@ -111,9 +111,14 @@ function RestauranteTab() {
     cover_url: "",
   });
   const [saving, setSaving] = React.useState(false);
+  const originalSlugRef = React.useRef<string>("");
+  const [slugCheck, setSlugCheck] = React.useState<
+    { kind: "idle" | "checking" | "available" | "taken" | "invalid" }
+  >({ kind: "idle" });
 
   React.useEffect(() => {
     if (rest) {
+      originalSlugRef.current = rest.slug ?? "";
       setForm({
         name: rest.name ?? "",
         slug: rest.slug ?? "",
@@ -127,15 +132,51 @@ function RestauranteTab() {
     }
   }, [rest]);
 
+  const cleanSlug = slugify(form.slug);
+  const slugChanged = cleanSlug !== originalSlugRef.current;
+
+  React.useEffect(() => {
+    if (!slugChanged) {
+      setSlugCheck({ kind: "idle" });
+      return;
+    }
+    if (!cleanSlug) {
+      setSlugCheck({ kind: "invalid" });
+      return;
+    }
+    setSlugCheck({ kind: "checking" });
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const { data, error } = await supabase.rpc("is_slug_available", { _slug: cleanSlug });
+      if (cancelled) return;
+      if (error) return setSlugCheck({ kind: "idle" });
+      setSlugCheck({ kind: data ? "available" : "taken" });
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [cleanSlug, slugChanged]);
+
   async function save() {
     if (!restaurantId) return;
-    if (!form.name || !form.slug) {
-      toast.error("Nome e slug são obrigatórios.");
+    if (!form.name || !cleanSlug) {
+      toast.error("Nome e link público são obrigatórios.");
+      return;
+    }
+    if (slugChanged && slugCheck.kind === "taken") {
+      toast.error("Este link já está em uso.");
+      return;
+    }
+    if (slugChanged && !window.confirm(
+      "Ao mudar o link público, QR codes e links já compartilhados com clientes deixarão de funcionar. Deseja continuar?",
+    )) {
       return;
     }
     setSaving(true);
     try {
-      await updateRestaurantInfo(restaurantId, form);
+      await updateRestaurantInfo(restaurantId, { ...form, slug: cleanSlug });
+      originalSlugRef.current = cleanSlug;
       await qc.invalidateQueries({ queryKey: ["restaurant", restaurantId] });
       await qc.invalidateQueries({ queryKey: ["admin-session"] });
       toast.success("Restaurante atualizado.");
@@ -158,8 +199,39 @@ function RestauranteTab() {
         <Field label="Nome">
           <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         </Field>
-        <Field label="Slug (URL pública)" hint={form.slug ? `menualtas.app/${form.slug}` : undefined}>
-          <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+        <Field
+          label="Slug (URL pública)"
+          hint={cleanSlug ? `menualtas.com.br/${cleanSlug}` : undefined}
+        >
+          <div className="relative">
+            <Input
+              value={form.slug}
+              onChange={(e) =>
+                setForm({ ...form, slug: e.target.value.toLowerCase().replace(/\s+/g, "-") })
+              }
+            />
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+              {slugCheck.kind === "checking" ? (
+                <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+              ) : slugCheck.kind === "available" ? (
+                <Check className="h-4 w-4 text-emerald-600" />
+              ) : slugCheck.kind === "taken" || slugCheck.kind === "invalid" ? (
+                <X className="h-4 w-4 text-rose-600" />
+              ) : null}
+            </span>
+          </div>
+          {slugChanged ? (
+            <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-2.5 text-[11px] text-amber-900">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
+              <span>
+                Alterar o link muda o endereço público do cardápio. QR codes de mesa e links já
+                compartilhados com clientes deixarão de funcionar.
+              </span>
+            </div>
+          ) : null}
+          {slugCheck.kind === "taken" ? (
+            <p className="mt-1 text-[11px] text-rose-600">Este link já está em uso.</p>
+          ) : null}
         </Field>
         <Field label="Categoria" hint="Ex.: Hambúrgueres • Lanches">
           <Input
