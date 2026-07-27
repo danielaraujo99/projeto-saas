@@ -134,9 +134,12 @@ export async function getDashboardStats(restaurantId: string): Promise<Dashboard
     .sort((a, b) => b.value - a.value);
 
   // Avg preparation time (received/confirmed -> delivering) approximation: use created_at -> status_updated_at when delivered/concluded
-  const deliveredRows = rows.filter((r) => r.status === "delivered" || r.status === "concluded");
+  const deliveredRows = rows.filter((r) => {
+    const s = String(r.status);
+    return s === "delivered" || s === "concluded";
+  });
   const prepMs = deliveredRows.reduce(
-    (a, r) => a + (new Date(r.status_updated_at).getTime() - new Date(r.created_at).getTime()),
+    (a, r) => a + (new Date(String(r.status_updated_at)).getTime() - new Date(r.created_at).getTime()),
     0,
   );
   const prepTimeMin = deliveredRows.length ? Math.round(prepMs / deliveredRows.length / 60000) : 0;
