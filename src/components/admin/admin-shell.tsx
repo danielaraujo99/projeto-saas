@@ -16,6 +16,9 @@ import {
   Wallet,
   Shield,
   Settings,
+  UserRound,
+  Grid3x3,
+  Truck,
 } from "lucide-react";
 import { supabase } from "@/lib/custom-supabase";
 import { useAdminSession, type AdminRole } from "@/lib/admin/session";
