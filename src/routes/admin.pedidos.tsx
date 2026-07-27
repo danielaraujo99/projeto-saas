@@ -6,7 +6,7 @@ import { OrderKanban } from "@/components/admin/order-kanban";
 import { OrderDetailsSheet } from "@/components/admin/order-details-sheet";
 import { listRestaurantOrders } from "@/lib/admin/admin-orders";
 import { useAdminSession } from "@/lib/admin/session";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/custom-supabase";
 import type { OrderRow } from "@/lib/orders-api";
 import { Loader2 } from "lucide-react";
 

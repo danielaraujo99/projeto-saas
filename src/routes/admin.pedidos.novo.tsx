@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { products } from "@/data/menu";
 import { brl } from "@/lib/format";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/custom-supabase";
 import { useAdminSession } from "@/lib/admin/session";
 import { getDeviceId } from "@/lib/device-id";
 import { Bike, Loader2, Minus, Plus, ShoppingBag, Wallet } from "lucide-react";

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/custom-supabase";
 import { HomePage } from "./index";
 import { Loader2 } from "lucide-react";
 

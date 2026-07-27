@@ -5,7 +5,7 @@ import { AdminShell } from "@/components/admin/admin-shell";
 import { KdsCard } from "@/components/admin/kds-card";
 import { useAdminSession } from "@/lib/admin/session";
 import { listRestaurantOrders } from "@/lib/admin/admin-orders";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/custom-supabase";
 import { ChefHat, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/cozinha")({
