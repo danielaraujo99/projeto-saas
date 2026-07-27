@@ -57,7 +57,7 @@ export type Database = {
           rating_comment?: string | null
           rating_delivery?: number | null
           rating_food?: number | null
-          restaurant_id: string
+          restaurant_id?: string
           short_id: string
           status?: string
           status_updated_at?: string
@@ -90,6 +90,100 @@ export type Database = {
           total?: number
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "orders_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          name?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      restaurant_members: {
+        Row: {
+          created_at: string
+          id: string
+          restaurant_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          restaurant_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          restaurant_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_members_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restaurants: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          phone: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          phone?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          slug?: string
+          updated_at?: string
+        }
         Relationships: []
       }
     }
@@ -97,10 +191,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_restaurant_for_current_user: {
+        Args: { _name: string }
+        Returns: {
+          restaurant_id: string
+          slug: string
+        }[]
+      }
+      current_restaurant_id: { Args: never; Returns: string }
+      has_restaurant_role: {
+        Args: {
+          _restaurant_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_restaurant_member: {
+        Args: { _restaurant_id: string; _user_id: string }
+        Returns: boolean
+      }
+      slugify: { Args: { _input: string }; Returns: string }
+      unaccent_safe: { Args: { _input: string }; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "caixa" | "cozinha"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -227,6 +342,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "caixa", "cozinha"],
+    },
   },
 } as const
