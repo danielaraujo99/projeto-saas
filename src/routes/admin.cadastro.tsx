@@ -93,7 +93,7 @@ function SignupPage() {
     <div className="grid min-h-screen bg-white lg:grid-cols-2">
       <div className="relative hidden overflow-hidden bg-slate-900 p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <video
-          className="absolute inset-0 h-full w-full object-cover opacity-80 brightness-110 contrast-105"
+          className="absolute inset-0 h-full w-full object-cover"
           src={cadastroBg.url}
           autoPlay
           loop
@@ -102,7 +102,7 @@ function SignupPage() {
           preload="auto"
           aria-hidden
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/45 via-slate-800/30 to-black/55" aria-hidden />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/70 via-slate-900/45 to-black/70" aria-hidden />
         <div className="relative flex items-center gap-2">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/20 backdrop-blur">
             <Store className="h-5 w-5" />
@@ -111,23 +111,23 @@ function SignupPage() {
         </div>
         <div className="relative max-w-md space-y-4">
           <span className="inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-white/85 backdrop-blur">
-            Comece agora · sem mensalidade fixa
+            Setup em 3 minutos · sem cartão de crédito
           </span>
           <h2 className="text-4xl font-black leading-tight">
-            Sua cozinha lotada, seu caixa no controle.
+            A fatia sai quente. O pedido já caiu no KDS.
           </h2>
           <p className="text-white/85">
-            Cadastre seu restaurante e receba pedidos no balcão, delivery e mesa em minutos — com KDS, cardápio digital, cupons e financeiro no mesmo painel.
+            Do primeiro clique ao primeiro pedido impresso na cozinha: monte o cardápio, ligue o delivery e abra as mesas hoje. Sem instalação, sem taxa por pedido, sem enrolação.
           </p>
           <ul className="space-y-2 text-white/85">
             <li className="flex items-center gap-2">
-              <Check className="h-4 w-4" /> Pedidos entram direto na cozinha
+              <Check className="h-4 w-4" /> Cardápio digital com QR Code por mesa
             </li>
             <li className="flex items-center gap-2">
-              <Check className="h-4 w-4" /> KDS, comandas e mesas prontos para usar
+              <Check className="h-4 w-4" /> Impressão automática cozinha + balcão
             </li>
             <li className="flex items-center gap-2">
-              <Check className="h-4 w-4" /> Relatórios de vendas em tempo real
+              <Check className="h-4 w-4" /> Fechamento de caixa em 1 clique
             </li>
           </ul>
         </div>
