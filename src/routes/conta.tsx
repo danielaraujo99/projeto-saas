@@ -169,30 +169,75 @@ function Page() {
             </SectionCard>
 
 
+            {/* Legal / privacy links — required for LGPD/GDPR */}
+            <SectionCard title="Privacidade e termos">
+              <ul className="divide-y divide-border/60">
+                <li>
+                  <Link
+                    to="/termos"
+                    className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-surface"
+                  >
+                    <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-primary">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <span className="flex-1 text-sm font-semibold text-foreground">Termos de Uso</span>
+                    <ChevronRight className="h-4 w-4 text-foreground/40" />
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/privacidade"
+                    className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-surface"
+                  >
+                    <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-primary">
+                      <ShieldCheck className="h-4 w-4" />
+                    </div>
+                    <span className="flex-1 text-sm font-semibold text-foreground">Política de Privacidade</span>
+                    <ChevronRight className="h-4 w-4 text-foreground/40" />
+                  </Link>
+                </li>
+              </ul>
+            </SectionCard>
+
             {user ? (
-              <button
-                onClick={() => {
-                  logout();
-                  toast.success("Sessão encerrada");
-                  nav({ to: "/" });
-                }}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-4 text-sm font-semibold text-destructive shadow-[var(--shadow-card)]"
-              >
-                <LogOut className="h-4 w-4" /> Sair da conta
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    logout();
+                    toast.success("Sessão encerrada");
+                    nav({ to: "/" });
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-4 text-sm font-semibold text-destructive shadow-[var(--shadow-card)]"
+                >
+                  <LogOut className="h-4 w-4" /> Sair da conta
+                </button>
+                <button
+                  onClick={() => setPendingDelete(true)}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
+                >
+                  <UserX className="h-4 w-4" /> Excluir minha conta e dados
+                </button>
+                <p className="px-2 text-center text-[11px] leading-relaxed text-foreground/55">
+                  Direito garantido pela LGPD (art. 18). Remove seu perfil, endereços, cartões, carrinho e histórico local
+                  deste dispositivo.
+                </p>
+              </div>
             ) : null}
           </>
         )}
       </main>
 
-      <AuthGate
-        open={authOpen}
-        onOpenChange={(o) => {
-          setAuthOpen(o);
-          if (!o && !user) nav({ to: "/" });
-        }}
-        onSuccess={() => setAuthOpen(false)}
-      />
+      {isDesktop ? (
+        <AuthGate
+          open={authOpen}
+          onOpenChange={(o) => {
+            setAuthOpen(o);
+            if (!o && !user) nav({ to: "/" });
+          }}
+          onSuccess={() => setAuthOpen(false)}
+        />
+      ) : null}
+
 
       <AlertDialog open={!!pendingRemove} onOpenChange={(o) => !o && setPendingRemove(null)}>
         <AlertDialogContent>
