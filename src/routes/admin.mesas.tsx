@@ -164,6 +164,40 @@ function MesasPage() {
     setSelectedId(null);
   }
 
+  function reserveTable(id: string, name: string, time: string) {
+    updateTable(id, {
+      status: "reserved",
+      reservation_name: name || null,
+      reservation_time: time || null,
+      waiter_id: null,
+      opened_at: null,
+    });
+    toast.success("Mesa reservada");
+    setSelectedId(null);
+  }
+
+  function cancelReservation(id: string) {
+    updateTable(id, {
+      status: "free",
+      reservation_name: null,
+      reservation_time: null,
+    });
+    toast.info("Reserva cancelada");
+    setSelectedId(null);
+  }
+
+  function arriveReservation(id: string, waiterId: string | null) {
+    updateTable(id, {
+      status: "occupied",
+      waiter_id: waiterId,
+      opened_at: new Date().toISOString(),
+      reservation_name: null,
+      reservation_time: null,
+    });
+    toast.success("Cliente chegou · comanda aberta");
+    setSelectedId(null);
+  }
+
   function addItem(tableId: string, name: string, qty: number, price: number) {
     setItems((prev) => ({
       ...prev,
@@ -302,6 +336,9 @@ function MesasPage() {
         onTransfer={transfer}
         onMerge={merge}
         onDelete={removeTable}
+        onReserve={reserveTable}
+        onCancelReservation={cancelReservation}
+        onArrive={arriveReservation}
       />
     </AdminShell>
   );
@@ -563,6 +600,9 @@ function TableActionSheet({
   onTransfer,
   onMerge,
   onDelete,
+  onReserve,
+  onCancelReservation,
+  onArrive,
 }: {
   table: MockTable | null;
   allTables: MockTable[];
@@ -576,6 +616,9 @@ function TableActionSheet({
   onTransfer: (from: string, to: string) => void;
   onMerge: (from: string, to: string) => void;
   onDelete: (id: string) => void;
+  onReserve: (id: string, name: string, time: string) => void;
+  onCancelReservation: (id: string) => void;
+  onArrive: (id: string, waiterId: string | null) => void;
 }) {
   const [waiterId, setWaiterId] = React.useState("");
   const [name, setName] = React.useState("");
@@ -583,6 +626,9 @@ function TableActionSheet({
   const [price, setPrice] = React.useState(0);
   const [transferTo, setTransferTo] = React.useState("");
   const [mergeTo, setMergeTo] = React.useState("");
+  const [mode, setMode] = React.useState<"open" | "reserve">("open");
+  const [reserveName, setReserveName] = React.useState("");
+  const [reserveTime, setReserveTime] = React.useState("");
 
   const isOpen = !!table;
   const occupied = table?.status === "occupied";
@@ -596,6 +642,9 @@ function TableActionSheet({
     setPrice(0);
     setTransferTo("");
     setMergeTo("");
+    setMode("open");
+    setReserveName("");
+    setReserveTime("");
   }, [table]);
 
   if (!table) return null;
@@ -621,16 +670,25 @@ function TableActionSheet({
               ? `Reservada${table.reservation_name ? " · " + table.reservation_name : ""}`
               : occupied
                 ? `Ocupada há ${elapsed} min${waiter ? " · " + waiter.name : ""}`
-                : "Mesa livre — pronta para abrir uma comanda."}
+                : "Mesa livre — abra uma comanda ou registre uma reserva."}
           </SheetDescription>
         </SheetHeader>
 
         {reserved ? (
-          <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-800">
-            {table.reservation_name ?? "Reservada"}
-          </div>
-        ) : !occupied ? (
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-4">
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-blue-700">
+                Reserva confirmada
+              </div>
+              <div className="mt-1 text-base font-semibold">
+                {table.reservation_name ?? "Sem nome"}
+              </div>
+              {table.reservation_time && (
+                <div className="mt-0.5 inline-flex items-center gap-1 text-xs text-blue-700">
+                  <Clock className="h-3.5 w-3.5" /> Chegada prevista: {table.reservation_time}
+                </div>
+              )}
+            </div>
             <label className="grid gap-1.5 text-xs font-medium text-slate-600">
               <span>Garçom responsável</span>
               <Select value={waiterId} onValueChange={setWaiterId}>
@@ -648,12 +706,108 @@ function TableActionSheet({
                 </SelectContent>
               </Select>
             </label>
-            <div className="flex justify-between gap-2 pt-2">
-              <Button variant="ghost" onClick={() => onDelete(table.id)}>
-                <Trash2 className="h-4 w-4 text-red-500" /> Remover mesa
+            <div className="flex flex-wrap justify-between gap-2 pt-2">
+              <Button variant="ghost" onClick={() => onCancelReservation(table.id)}>
+                <X className="h-4 w-4 text-red-500" /> Cancelar reserva
               </Button>
-              <Button onClick={() => onOpen(table.id, waiterId || null)}>Abrir comanda</Button>
+              <Button onClick={() => onArrive(table.id, waiterId || null)}>
+                Cliente chegou · abrir comanda
+              </Button>
             </div>
+          </div>
+        ) : !occupied ? (
+          <div className="mt-4 space-y-3">
+            <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setMode("open")}
+                className={cn(
+                  "rounded-md px-3 py-1.5 font-medium transition",
+                  mode === "open"
+                    ? "bg-slate-900 text-white"
+                    : "text-slate-600 hover:text-slate-900",
+                )}
+              >
+                Abrir comanda
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("reserve")}
+                className={cn(
+                  "rounded-md px-3 py-1.5 font-medium transition",
+                  mode === "reserve"
+                    ? "bg-slate-900 text-white"
+                    : "text-slate-600 hover:text-slate-900",
+                )}
+              >
+                Reservar
+              </button>
+            </div>
+
+            {mode === "open" ? (
+              <>
+                <label className="grid gap-1.5 text-xs font-medium text-slate-600">
+                  <span>Garçom responsável</span>
+                  <Select value={waiterId} onValueChange={setWaiterId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecionar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {waiters
+                        .filter((w) => w.active)
+                        .map((w) => (
+                          <SelectItem key={w.id} value={w.id}>
+                            {w.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </label>
+                <div className="flex justify-between gap-2 pt-2">
+                  <Button variant="ghost" onClick={() => onDelete(table.id)}>
+                    <Trash2 className="h-4 w-4 text-red-500" /> Remover mesa
+                  </Button>
+                  <Button onClick={() => onOpen(table.id, waiterId || null)}>
+                    Abrir comanda
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <label className="grid gap-1.5 text-xs font-medium text-slate-600">
+                  <span>Nome do cliente</span>
+                  <Input
+                    value={reserveName}
+                    onChange={(e) => setReserveName(e.target.value)}
+                    placeholder="Ex.: Família Silva"
+                  />
+                </label>
+                <label className="grid gap-1.5 text-xs font-medium text-slate-600">
+                  <span>Horário previsto</span>
+                  <Input
+                    type="time"
+                    value={reserveTime}
+                    onChange={(e) => setReserveTime(e.target.value)}
+                  />
+                </label>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setMode("open")}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if (!reserveName.trim()) {
+                        toast.error("Informe o nome do cliente");
+                        return;
+                      }
+                      onReserve(table.id, reserveName.trim(), reserveTime);
+                    }}
+                  >
+                    <CalendarDays className="h-4 w-4" /> Confirmar reserva
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <div className="mt-4 space-y-4">

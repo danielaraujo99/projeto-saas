@@ -102,7 +102,7 @@ function KanbanDesktop({
 
   return (
     <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="grid gap-3 pb-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
         {KANBAN_COLUMNS.map((col) => (
           <KanbanColumn
             key={col.id}
@@ -136,12 +136,12 @@ function KanbanColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex w-72 shrink-0 flex-col rounded-2xl border border-slate-200 bg-slate-100/70 p-3 transition-colors",
+        "flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-slate-100/70 p-3 transition-colors",
         isOver && "border-primary/50 bg-primary/5",
       )}
     >
       <div className="mb-3 flex items-center justify-between px-1">
-        <h3 className="text-sm font-bold text-slate-900">{label}</h3>
+        <h3 className="truncate text-sm font-bold text-slate-900">{label}</h3>
         <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-slate-600 tabular-nums shadow-sm">
           {orders.length}
         </span>
