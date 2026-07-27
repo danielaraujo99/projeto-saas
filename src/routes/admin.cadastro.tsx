@@ -87,7 +87,9 @@ function SignupPage() {
   const [show2, setShow2] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [catOpen, setCatOpen] = React.useState(false);
   const strength = passwordStrength(password);
+  const selectedCat = CATEGORIES.find((c) => c.id === category);
 
   // slug: auto-derived from name; user can edit
   const [slug, setSlug] = React.useState("");
