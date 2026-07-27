@@ -37,13 +37,12 @@ export const Route = createFileRoute("/admin/configuracoes")({
   component: ConfigPage,
 });
 
-type TabId = "restaurante" | "operacao" | "notificacoes" | "impressao" | "integracoes";
+type TabId = "restaurante" | "operacao" | "notificacoes" | "integracoes";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "restaurante", label: "Restaurante" },
   { id: "operacao", label: "Operação" },
   { id: "notificacoes", label: "Notificações" },
-  { id: "impressao", label: "Impressão" },
   { id: "integracoes", label: "Integrações" },
 ];
 
@@ -80,7 +79,6 @@ function ConfigPage() {
         {tab === "restaurante" && <RestauranteTab />}
         {tab === "operacao" && <OperacaoTab />}
         {tab === "notificacoes" && <NotificacoesTab />}
-        {tab === "impressao" && <ImpressaoTab />}
         {tab === "integracoes" && <IntegracoesTab />}
       </div>
     </AdminShell>

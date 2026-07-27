@@ -67,6 +67,7 @@ const NAV: NavItem[] = [
   { to: "/admin/avaliacoes", label: "Avaliações", icon: Star, roles: ["admin"] },
   { to: "/admin/financeiro", label: "Financeiro", icon: Wallet, roles: ["admin"] },
   { to: "/admin/equipe", label: "Equipe e Permissões", icon: Shield, roles: ["admin"] },
+  { to: "/admin/impressao", label: "Impressão", icon: Printer, roles: ["admin"] },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings, roles: ["admin"] },
 ];
 

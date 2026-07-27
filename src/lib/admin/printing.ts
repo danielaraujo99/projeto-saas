@@ -50,7 +50,10 @@ export async function savePrintSettings(restaurantId: string, patch: Partial<Pri
     .select("settings")
     .eq("id", restaurantId)
     .maybeSingle();
-  const settings = { ...(data?.settings ?? {}), print: { ...(data?.settings?.print ?? {}), ...patch } };
+  const settings = {
+    ...(data?.settings ?? {}),
+    print: { ...(data?.settings?.print ?? {}), ...patch },
+  };
   const { error } = await supa.from("restaurants").update({ settings }).eq("id", restaurantId);
   if (error) throw error;
 }
@@ -62,18 +65,42 @@ function widthMm(p: PrintSettings["paper"]) {
   return p === "58mm" ? "58mm" : "80mm";
 }
 
+const PAY_LABEL: Record<string, string> = {
+  pix: "PIX",
+  credit: "Cartão de Crédito",
+  debit: "Cartão de Débito",
+  cash: "Dinheiro",
+  card: "Cartão",
+};
+
 type ReceiptVariant = "kitchen" | "delivery";
 
 export function buildReceiptHtml(opts: {
   order: {
     short_id: string;
-    items: Array<{ name: string; qty: number; price: number; addOns?: Array<{ name: string; price?: number }>; notes?: string | null }>;
+    items: Array<{
+      name: string;
+      qty: number;
+      price: number;
+      addOns?: Array<{ name: string; price?: number }>;
+      notes?: string | null;
+    }>;
     total: number;
     subtotal?: number;
     delivery_fee?: number;
+    discount?: number;
     payment?: string;
-    address?: { street?: string; number?: string; district?: string; recipient?: string } | null;
+    customer_name?: string;
+    customer_phone?: string;
+    address?: {
+      street?: string;
+      number?: string;
+      district?: string;
+      complement?: string;
+      recipient?: string;
+    } | null;
     pickup?: boolean;
+    created_at?: string;
   };
   variant: ReceiptVariant;
   settings: PrintSettings;
@@ -83,57 +110,90 @@ export function buildReceiptHtml(opts: {
   const w = widthMm(settings.paper);
   const fs = fontPx(settings.font);
   const typeLabel = order.pickup ? "RETIRADA" : "ENTREGA";
-  const tag = variant === "kitchen" ? "VIA COZINHA" : "VIA " + typeLabel;
+  const tag = variant === "kitchen" ? "COZINHA" : typeLabel;
+  const tagIcon = variant === "kitchen" ? "🔥" : order.pickup ? "🛍" : "🛵";
 
   const itemsHtml = order.items
-    .map((it) => {
-      const line = `<div class="row"><span>${it.qty}× ${escape(it.name)}</span>${
-        showPrices ? `<span>${brl(it.qty * it.price)}</span>` : ""
-      }</div>`;
+    .map((it, idx) => {
+      const number = `<span class="idx">${idx + 1}</span>`;
+      const qty = `<span class="qty">${it.qty}×</span>`;
+      const name = `<span class="name">${escape(it.name)}</span>`;
+      const price = showPrices
+        ? `<span class="price">${brl(it.qty * it.price)}</span>`
+        : "";
+      const head = `<div class="item"><div class="head">${number}${qty}${name}${price}</div>`;
       const extras = (it.addOns ?? [])
         .map(
           (a) =>
-            `<div class="sub">+ ${escape(a.name)}${
-              showPrices && a.price ? ` (${brl(a.price)})` : ""
+            `<div class="sub">↳ ${escape(a.name)}${
+              showPrices && a.price ? ` <span class="ex-price">+${brl(a.price)}</span>` : ""
             }</div>`,
         )
         .join("");
-      const notes = it.notes ? `<div class="sub note">Obs: ${escape(it.notes)}</div>` : "";
-      return line + extras + notes;
+      const notes = it.notes
+        ? `<div class="note">⚠ Obs: ${escape(it.notes)}</div>`
+        : "";
+      return `${head}${extras}${notes}</div>`;
     })
     .join("");
 
+  const payLabel = order.payment ? PAY_LABEL[order.payment] ?? order.payment.toUpperCase() : "";
+
   const totalsHtml = showPrices
-    ? `<div class="line"></div>
-       ${
-         order.subtotal != null
-           ? `<div class="row"><span>Subtotal</span><span>${brl(order.subtotal)}</span></div>`
-           : ""
-       }
-       ${
-         order.delivery_fee
-           ? `<div class="row"><span>Entrega</span><span>${brl(order.delivery_fee)}</span></div>`
-           : ""
-       }
-       <div class="row total"><span>TOTAL</span><span>${brl(order.total)}</span></div>
-       ${order.payment ? `<div class="row"><span>Pagamento</span><span>${escape(order.payment)}</span></div>` : ""}`
+    ? `<div class="hr"></div>
+       <div class="tot">
+         ${
+           order.subtotal != null
+             ? `<div class="row"><span>Subtotal</span><span>${brl(order.subtotal)}</span></div>`
+             : ""
+         }
+         ${
+           order.delivery_fee
+             ? `<div class="row"><span>Entrega</span><span>${brl(order.delivery_fee)}</span></div>`
+             : ""
+         }
+         ${
+           order.discount
+             ? `<div class="row"><span>Desconto</span><span>-${brl(order.discount)}</span></div>`
+             : ""
+         }
+         <div class="row grand"><span>TOTAL</span><span>${brl(order.total)}</span></div>
+         ${payLabel ? `<div class="row pay"><span>Pagamento</span><span>${escape(payLabel)}</span></div>` : ""}
+       </div>`
     : "";
+
+  const customerBlock =
+    variant === "delivery" && (order.customer_name || order.address?.recipient || order.customer_phone)
+      ? `<div class="hr"></div>
+         <div class="sec-title">CLIENTE</div>
+         <div class="sub bold">${escape(order.customer_name ?? order.address?.recipient ?? "Cliente")}</div>
+         ${order.customer_phone ? `<div class="sub">📞 ${escape(order.customer_phone)}</div>` : ""}`
+      : "";
 
   const addr =
     variant === "delivery" && order.address && !order.pickup
-      ? `<div class="line"></div>
-         <div class="sub"><b>${escape(order.address.recipient ?? "Cliente")}</b></div>
-         <div class="sub">${escape(order.address.street ?? "")}, ${escape(order.address.number ?? "")}</div>
+      ? `<div class="hr"></div>
+         <div class="sec-title">ENDEREÇO DE ENTREGA</div>
+         <div class="sub">📍 ${escape(order.address.street ?? "")}, ${escape(order.address.number ?? "")}</div>
+         ${order.address.complement ? `<div class="sub">${escape(order.address.complement)}</div>` : ""}
          <div class="sub">${escape(order.address.district ?? "")}</div>`
+      : "";
+
+  const pickupBox =
+    variant === "delivery" && order.pickup
+      ? `<div class="hr"></div>
+         <div class="sec-title">RETIRADA NO LOCAL</div>
+         <div class="sub">O cliente irá buscar este pedido.</div>`
       : "";
 
   const qr =
     variant === "delivery" && settings.show_qr
       ? `<div class="qr">
-           <img alt="QR" src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
+           <img alt="QR" src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=0&data=${encodeURIComponent(
              "PED:" + order.short_id,
            )}" />
-           <div class="sub">Acompanhe seu pedido</div>
+           <div class="sub small">Acompanhe seu pedido</div>
+           <div class="sub small mono">#${escape(order.short_id)}</div>
          </div>`
       : "";
 
@@ -142,38 +202,60 @@ export function buildReceiptHtml(opts: {
       ? `<img class="logo" src="${escape(settings.logo_url)}" alt="logo" />`
       : "";
 
+  const now = order.created_at ? new Date(order.created_at) : new Date();
+
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escape(
     settings.restaurant_name ?? "Comanda",
   )} - ${escape(order.short_id)}</title>
     <style>
-      @page { size: ${w} auto; margin: 4mm; }
+      @page { size: ${w} auto; margin: 3mm; }
       * { box-sizing: border-box; }
-      body { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: ${fs}px; color: #000; margin: 0; padding: 4px; }
+      body { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: ${fs}px; color: #000; margin: 0; padding: 2px; line-height: 1.35; }
       .center { text-align: center; }
-      .logo { max-width: 60%; max-height: 60px; margin: 0 auto 4px; display: block; }
-      .tag { border: 1px dashed #000; padding: 2px 6px; display: inline-block; margin: 4px 0; font-weight: 900; letter-spacing: 1px; }
-      .line { border-top: 1px dashed #000; margin: 6px 0; }
-      .row { display: flex; justify-content: space-between; gap: 8px; }
-      .total { font-weight: 900; font-size: ${fs + 2}px; margin-top: 4px; }
-      .sub { font-size: ${fs - 1}px; padding-left: 8px; }
-      .note { font-weight: 700; }
-      .qr { text-align: center; margin-top: 6px; }
+      .logo { max-width: 55%; max-height: 55px; margin: 0 auto 4px; display: block; }
+      h1 { font-size: ${fs + 3}px; margin: 0; letter-spacing: 0.5px; font-weight: 900; }
+      .tag { display: inline-block; margin: 5px 0 2px; padding: 3px 10px; border: 1.5px solid #000; border-radius: 3px; font-weight: 900; font-size: ${fs + 1}px; letter-spacing: 1.5px; }
+      .oid { font-size: ${fs + 4}px; font-weight: 900; margin-top: 3px; letter-spacing: 1px; }
+      .time { font-size: ${fs - 1}px; color: #333; margin-top: 1px; }
+      .hr { border-top: 1.5px dashed #000; margin: 6px 0; }
+      .sec-title { font-size: ${fs - 1}px; font-weight: 900; letter-spacing: 1px; margin-bottom: 3px; color: #000; }
+      .item { margin-bottom: 5px; page-break-inside: avoid; }
+      .head { display: flex; align-items: flex-start; gap: 4px; font-weight: 700; }
+      .idx { display: inline-block; min-width: 16px; color: #666; font-weight: 600; }
+      .qty { min-width: 28px; font-weight: 900; }
+      .name { flex: 1; }
+      .price { font-weight: 900; white-space: nowrap; }
+      .sub { padding-left: 22px; font-size: ${fs - 1}px; }
+      .sub.bold { font-weight: 700; }
+      .sub.small { font-size: ${fs - 2}px; padding: 0; }
+      .sub.mono { font-family: ui-monospace, monospace; letter-spacing: 1px; }
+      .ex-price { color: #333; font-size: ${fs - 2}px; }
+      .note { margin-top: 2px; margin-left: 22px; padding: 3px 6px; background: #f0f0f0; border-left: 3px solid #000; font-weight: 700; font-size: ${fs - 1}px; }
+      .row { display: flex; justify-content: space-between; gap: 8px; padding: 1px 0; }
+      .tot .row { font-size: ${fs}px; }
+      .grand { font-weight: 900; font-size: ${fs + 3}px; border-top: 1px dashed #000; padding-top: 3px; margin-top: 3px; }
+      .pay { color: #000; font-weight: 700; margin-top: 2px; }
+      .qr { text-align: center; margin-top: 8px; }
       .qr img { display: inline-block; }
-      h1 { font-size: ${fs + 2}px; margin: 0; }
+      .foot { text-align: center; font-size: ${fs - 2}px; margin-top: 6px; color: #555; }
     </style></head><body>
     <div class="center">
       ${logo}
       <h1>${escape(settings.restaurant_name ?? "MenuAltas")}</h1>
-      <div class="tag">${tag}</div>
-      <div>Pedido #${escape(order.short_id)}</div>
+      <div class="tag">${tagIcon} VIA ${tag}</div>
+      <div class="oid">#${escape(order.short_id)}</div>
+      <div class="time">${now.toLocaleString("pt-BR")}</div>
     </div>
-    <div class="line"></div>
+    <div class="hr"></div>
+    <div class="sec-title">ITENS (${order.items.reduce((s, i) => s + i.qty, 0)})</div>
     ${itemsHtml}
     ${totalsHtml}
+    ${customerBlock}
     ${addr}
+    ${pickupBox}
     ${qr}
-    <div class="line"></div>
-    <div class="center sub">${new Date().toLocaleString("pt-BR")}</div>
+    <div class="hr"></div>
+    <div class="foot">MenuAltas · impresso ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
   </body></html>`;
 }
 
@@ -197,8 +279,6 @@ export function buildTableCheckHtml(opts: {
 }
 
 export function printHtml(html: string) {
-  // Abre janela dedicada; navegadores mostram diálogo de confirmação nativo.
-  // Para impressão 100% silenciosa, ver aviso do agente local.
   const win = window.open("", "_blank", "width=380,height=640");
   if (!win) return;
   win.document.open();
@@ -224,19 +304,25 @@ export function printOrder(order: OrderRow, settings: PrintSettings) {
     total: order.total,
     subtotal: order.subtotal,
     delivery_fee: order.delivery_fee,
+    discount: order.discount,
     payment: order.payment?.kind,
+    customer_name: order.address?.label,
     address: order.address
       ? {
           street: order.address.street,
           number: order.address.number,
           district: order.address.neighborhood,
+          complement: order.address.complement,
           recipient: order.address.label,
         }
       : null,
     pickup: order.pickup,
+    created_at: order.created_at,
   };
-  if (settings.kitchen) printHtml(buildReceiptHtml({ order: shared, variant: "kitchen", settings }));
-  if (settings.delivery) printHtml(buildReceiptHtml({ order: shared, variant: "delivery", settings }));
+  if (settings.kitchen)
+    printHtml(buildReceiptHtml({ order: shared, variant: "kitchen", settings }));
+  if (settings.delivery)
+    printHtml(buildReceiptHtml({ order: shared, variant: "delivery", settings }));
 }
 
 function escape(s: string | undefined | null): string {
