@@ -19,6 +19,7 @@ import {
   UserRound,
   Grid3x3,
   Truck,
+  Printer,
 } from "lucide-react";
 import { supabase } from "@/lib/custom-supabase";
 import { useAdminSession, type AdminRole } from "@/lib/admin/session";
@@ -66,6 +67,7 @@ const NAV: NavItem[] = [
   { to: "/admin/avaliacoes", label: "Avaliações", icon: Star, roles: ["admin"] },
   { to: "/admin/financeiro", label: "Financeiro", icon: Wallet, roles: ["admin"] },
   { to: "/admin/equipe", label: "Equipe e Permissões", icon: Shield, roles: ["admin"] },
+  { to: "/admin/impressao", label: "Impressão", icon: Printer, roles: ["admin"] },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings, roles: ["admin"] },
 ];
 

@@ -72,15 +72,19 @@ function OrdersPage() {
   }, [restaurantId, qc]);
 
   const filtered = data ?? [];
-
-  const initialLoading = !data && isFetching;
+  const showInlineSpinner = !data && isFetching;
 
   return (
     <AdminShell title="Pedidos">
       <div className="px-4 py-6 sm:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Pedidos</h2>
+            <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+              Pedidos
+              {showInlineSpinner && (
+                <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+              )}
+            </h2>
             <p className="text-sm text-slate-500">Kanban e lista em tempo real.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -127,11 +131,7 @@ function OrdersPage() {
         </div>
 
         <div className="mt-5">
-          {initialLoading ? (
-            <div className="grid place-items-center py-20 text-slate-400">
-              <Loader2 className="h-6 w-6 animate-spin" />
-            </div>
-          ) : mode === "kanban" ? (
+          {mode === "kanban" ? (
             <OrderKanban
               orders={filtered}
               onOrderClick={setSelected}

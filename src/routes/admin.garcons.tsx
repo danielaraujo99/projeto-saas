@@ -91,13 +91,13 @@ function WaitersPage() {
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          {isLoading ? (
-            <div className="grid h-40 place-items-center">
-              <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-            </div>
-          ) : !waiters || waiters.length === 0 ? (
+          {!waiters || waiters.length === 0 ? (
             <div className="grid h-48 place-items-center text-sm text-slate-500">
-              Nenhum garçom cadastrado.
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+              ) : (
+                "Nenhum garçom cadastrado."
+              )}
             </div>
           ) : (
             <table className="w-full text-sm">

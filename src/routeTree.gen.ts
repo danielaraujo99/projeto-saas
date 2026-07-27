@@ -28,6 +28,7 @@ import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminPdvRouteImport } from './routes/admin.pdv'
 import { Route as AdminMesasRouteImport } from './routes/admin.mesas'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminImpressaoRouteImport } from './routes/admin.impressao'
 import { Route as AdminGarconsRouteImport } from './routes/admin.garcons'
 import { Route as AdminFinanceiroRouteImport } from './routes/admin.financeiro'
 import { Route as AdminEstoqueRouteImport } from './routes/admin.estoque'
@@ -138,6 +139,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminImpressaoRoute = AdminImpressaoRouteImport.update({
+  id: '/admin/impressao',
+  path: '/admin/impressao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminGarconsRoute = AdminGarconsRouteImport.update({
   id: '/admin/garcons',
   path: '/admin/garcons',
@@ -231,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/admin/estoque': typeof AdminEstoqueRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/garcons': typeof AdminGarconsRoute
+  '/admin/impressao': typeof AdminImpressaoRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/mesas': typeof AdminMesasRoute
   '/admin/pdv': typeof AdminPdvRoute
@@ -266,6 +273,7 @@ export interface FileRoutesByTo {
   '/admin/estoque': typeof AdminEstoqueRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/garcons': typeof AdminGarconsRoute
+  '/admin/impressao': typeof AdminImpressaoRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/mesas': typeof AdminMesasRoute
   '/admin/pdv': typeof AdminPdvRoute
@@ -302,6 +310,7 @@ export interface FileRoutesById {
   '/admin/estoque': typeof AdminEstoqueRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/garcons': typeof AdminGarconsRoute
+  '/admin/impressao': typeof AdminImpressaoRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/mesas': typeof AdminMesasRoute
   '/admin/pdv': typeof AdminPdvRoute
@@ -339,6 +348,7 @@ export interface FileRouteTypes {
     | '/admin/estoque'
     | '/admin/financeiro'
     | '/admin/garcons'
+    | '/admin/impressao'
     | '/admin/login'
     | '/admin/mesas'
     | '/admin/pdv'
@@ -374,6 +384,7 @@ export interface FileRouteTypes {
     | '/admin/estoque'
     | '/admin/financeiro'
     | '/admin/garcons'
+    | '/admin/impressao'
     | '/admin/login'
     | '/admin/mesas'
     | '/admin/pdv'
@@ -409,6 +420,7 @@ export interface FileRouteTypes {
     | '/admin/estoque'
     | '/admin/financeiro'
     | '/admin/garcons'
+    | '/admin/impressao'
     | '/admin/login'
     | '/admin/mesas'
     | '/admin/pdv'
@@ -445,6 +457,7 @@ export interface RootRouteChildren {
   AdminEstoqueRoute: typeof AdminEstoqueRoute
   AdminFinanceiroRoute: typeof AdminFinanceiroRoute
   AdminGarconsRoute: typeof AdminGarconsRoute
+  AdminImpressaoRoute: typeof AdminImpressaoRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMesasRoute: typeof AdminMesasRoute
   AdminPdvRoute: typeof AdminPdvRoute
@@ -589,6 +602,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/login'
       fullPath: '/admin/login'
       preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/impressao': {
+      id: '/admin/impressao'
+      path: '/admin/impressao'
+      fullPath: '/admin/impressao'
+      preLoaderRoute: typeof AdminImpressaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/garcons': {
@@ -750,6 +770,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminEstoqueRoute: AdminEstoqueRoute,
   AdminFinanceiroRoute: AdminFinanceiroRoute,
   AdminGarconsRoute: AdminGarconsRoute,
+  AdminImpressaoRoute: AdminImpressaoRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminMesasRoute: AdminMesasRoute,
   AdminPdvRoute: AdminPdvRoute,

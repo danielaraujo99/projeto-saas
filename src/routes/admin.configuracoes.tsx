@@ -19,13 +19,6 @@ import {
 } from "@/lib/admin/restaurant";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import mpLogo from "@/assets/mercado-pago.webp.asset.json";
-import {
-  DEFAULT_PRINT,
-  buildReceiptHtml,
-  loadPrintSettings,
-  savePrintSettings,
-  type PrintSettings,
-} from "@/lib/admin/printing";
 
 export const Route = createFileRoute("/admin/configuracoes")({
   head: () => ({
@@ -37,13 +30,12 @@ export const Route = createFileRoute("/admin/configuracoes")({
   component: ConfigPage,
 });
 
-type TabId = "restaurante" | "operacao" | "notificacoes" | "impressao" | "integracoes";
+type TabId = "restaurante" | "operacao" | "notificacoes" | "integracoes";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "restaurante", label: "Restaurante" },
   { id: "operacao", label: "Operação" },
   { id: "notificacoes", label: "Notificações" },
-  { id: "impressao", label: "Impressão" },
   { id: "integracoes", label: "Integrações" },
 ];
 
@@ -80,7 +72,6 @@ function ConfigPage() {
         {tab === "restaurante" && <RestauranteTab />}
         {tab === "operacao" && <OperacaoTab />}
         {tab === "notificacoes" && <NotificacoesTab />}
-        {tab === "impressao" && <ImpressaoTab />}
         {tab === "integracoes" && <IntegracoesTab />}
       </div>
     </AdminShell>
@@ -394,194 +385,9 @@ function NotificacoesTab() {
   );
 }
 
-/* ---------- Impressão ---------- */
-function ImpressaoTab() {
-  const { data: session } = useAdminSession();
-  const rid = session?.restaurantId;
-  const [cfg, setCfg] = React.useState<PrintSettings>(DEFAULT_PRINT);
-  const [loading, setLoading] = React.useState(true);
-  const [saving, setSaving] = React.useState(false);
+/* ---------- Impressão movida para /admin/impressao ---------- */
 
-  React.useEffect(() => {
-    if (!rid) return;
-    loadPrintSettings(rid).then((s) => {
-      setCfg(s);
-      setLoading(false);
-    });
-  }, [rid]);
 
-  async function save() {
-    if (!rid) return;
-    setSaving(true);
-    try {
-      await savePrintSettings(rid, cfg);
-      toast.success("Preferências de impressão salvas");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao salvar");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  if (loading) return <LoadingBlock />;
-
-  return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      {/* Coluna esquerda: configuração */}
-      <div className="space-y-4">
-        <Section
-          title="Impressão via navegador (KDS)"
-          description="A impressão automática sai direto na Cozinha (KDS) pela impressora térmica conectada àquele computador/cliente."
-        >
-          <Toggle
-            label="Ativar impressão via navegador"
-            checked={cfg.enabled}
-            onChange={(v) => setCfg({ ...cfg, enabled: v })}
-          />
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-800">
-            Para impressão 100% silenciosa (sem diálogo do navegador), é necessário instalar o
-            agente local <b>MenuAltas Print Bridge</b> no computador conectado à impressora
-            térmica. Sem ele, o navegador exibirá a caixa de confirmação padrão a cada impressão.
-          </div>
-        </Section>
-
-        <Section title="Vias">
-          <Toggle
-            label="Imprimir comanda da cozinha"
-            checked={cfg.kitchen}
-            onChange={(v) => setCfg({ ...cfg, kitchen: v })}
-          />
-          <Toggle
-            label="Imprimir comanda de entrega"
-            checked={cfg.delivery}
-            onChange={(v) => setCfg({ ...cfg, delivery: v })}
-          />
-        </Section>
-
-        <Section title="Exibição">
-          <Toggle
-            label="Mostrar logo"
-            checked={cfg.show_logo}
-            onChange={(v) => setCfg({ ...cfg, show_logo: v })}
-          />
-          <Toggle
-            label="Mostrar QR Code (cliente)"
-            checked={cfg.show_qr}
-            onChange={(v) => setCfg({ ...cfg, show_qr: v })}
-          />
-          <Toggle
-            label="Mostrar valores na cozinha"
-            checked={cfg.show_prices_kitchen}
-            onChange={(v) => setCfg({ ...cfg, show_prices_kitchen: v })}
-          />
-        </Section>
-
-        <Section title="Papel e tipografia">
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Tamanho do papel">
-              <select
-                className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm"
-                value={cfg.paper}
-                onChange={(e) =>
-                  setCfg({ ...cfg, paper: e.target.value as "58mm" | "80mm" })
-                }
-              >
-                <option value="58mm">58mm (térmica pequena)</option>
-                <option value="80mm">80mm</option>
-              </select>
-            </Field>
-            <Field label="Tamanho da fonte">
-              <select
-                className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm"
-                value={cfg.font}
-                onChange={(e) =>
-                  setCfg({ ...cfg, font: e.target.value as "small" | "medium" | "large" })
-                }
-              >
-                <option value="small">Pequena</option>
-                <option value="medium">Média</option>
-                <option value="large">Grande</option>
-              </select>
-            </Field>
-          </div>
-        </Section>
-
-        <div className="flex justify-end">
-          <Button onClick={save} disabled={saving}>
-            {saving && <Loader2 className="h-4 w-4 animate-spin" />} Salvar
-          </Button>
-        </div>
-      </div>
-
-      {/* Coluna direita: preview */}
-      <div className="space-y-4">
-        <Section
-          title="Pré-visualização"
-          description="Atualiza em tempo real conforme você altera as opções."
-        >
-          <div className="flex flex-wrap gap-4">
-            <ReceiptPreview variant="kitchen" cfg={cfg} />
-            <ReceiptPreview variant="delivery" cfg={cfg} />
-          </div>
-        </Section>
-      </div>
-    </div>
-  );
-}
-
-function ReceiptPreview({
-  variant,
-  cfg,
-}: {
-  variant: "kitchen" | "delivery";
-  cfg: PrintSettings;
-}) {
-  const html = React.useMemo(() => {
-    const sample = {
-      short_id: "PED123456",
-      items: [
-        {
-          name: "X-Burger",
-          qty: 2,
-          price: 32,
-          addOns: [{ name: "Bacon", price: 4 }],
-          notes: "Sem cebola",
-        },
-        { name: "Batata frita", qty: 1, price: 18 },
-        { name: "Coca-Cola 350ml", qty: 2, price: 8 },
-      ],
-      subtotal: 96,
-      delivery_fee: 8,
-      total: 104,
-      payment: "pix",
-      address: {
-        street: "Rua das Flores",
-        number: "123",
-        district: "Centro",
-        recipient: "Maria Silva",
-      },
-      pickup: false,
-    };
-    return buildReceiptHtml({ order: sample, variant, settings: cfg });
-  }, [variant, cfg]);
-  const label = variant === "kitchen" ? "Via Cozinha" : "Via Entrega/Cliente";
-  const width = cfg.paper === "58mm" ? 220 : 300;
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</div>
-      <div
-        className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-inner"
-        style={{ width }}
-      >
-        <iframe
-          title={label}
-          srcDoc={html}
-          style={{ width: "100%", height: 460, border: 0, background: "white" }}
-        />
-      </div>
-    </div>
-  );
-}
 
 
 /* ---------- Integrações ---------- */

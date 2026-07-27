@@ -153,13 +153,13 @@ function EntregasPage() {
         </div>
 
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          {isLoading ? (
-            <div className="grid h-40 place-items-center">
-              <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-            </div>
-          ) : !data || data.length === 0 ? (
+          {!data || data.length === 0 ? (
             <div className="grid h-40 place-items-center text-sm text-slate-500">
-              Nenhuma entrega no período.
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+              ) : (
+                "Nenhuma entrega no período."
+              )}
             </div>
           ) : (
             <table className="w-full text-sm">
