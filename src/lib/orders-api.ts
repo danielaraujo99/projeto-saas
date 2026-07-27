@@ -29,10 +29,6 @@ export type OrderRow = {
   updated_at: string;
 };
 
-function shortId() {
-  return "PED" + Math.floor(100000 + Math.random() * 900000);
-}
-
 /** Parse a DB row (jsonb columns arrive typed as unknown) into our OrderRow shape. */
 function parseRow(row: Record<string, unknown>): OrderRow {
   return {
