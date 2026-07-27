@@ -165,7 +165,7 @@ function OrderSummaryAside({ order }: { order: OrderRow }) {
                 {it.name}
               </span>
               <span className="shrink-0 tabular-nums text-foreground/70">
-                {brl(it.subtotal)}
+                {brl(it.unitPrice * it.quantity)}
               </span>
             </li>
           ))}
