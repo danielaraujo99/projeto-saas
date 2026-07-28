@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Copy,
-  RefreshCw,
   TimerOff,
   AlertCircle,
   ChevronLeft,
@@ -49,7 +48,6 @@ function Page() {
     queryFn: () => getOrderById(id),
   });
   const [phase, setPhase] = React.useState<Phase>("loading");
-  const [pixCycle, setPixCycle] = React.useState(0);
   const confirmedRef = React.useRef(false);
 
   React.useEffect(() => {
