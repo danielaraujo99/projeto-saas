@@ -1,6 +1,11 @@
 import * as React from "react";
 import { createFileRoute, Link, Outlet, useParams, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { ShoppingBag } from "lucide-react";
+import { restaurant } from "@/data/restaurant";
+import { useCart } from "@/store/cart";
+
 import {
   ArrowLeft,
   Bike,
@@ -156,10 +161,8 @@ function Page() {
   const nextOffset = nextStep ? STEP_OFFSETS_MS[nextStep] : currentOffset;
   const segmentSpan = Math.max(1, nextOffset - currentOffset);
   const segmentElapsed = paymentAt ? Date.now() - paymentAt.getTime() - currentOffset : 0;
-  const segmentRatio =
-    order.status === "delivered"
-      ? 1
-      : Math.max(0, Math.min(1, segmentElapsed / segmentSpan));
+  const segmentRatio = Math.max(0, Math.min(1, segmentElapsed / segmentSpan));
+
 
   return (
     <div className="min-h-screen bg-background pb-16">
@@ -180,30 +183,22 @@ function Page() {
         {/* HERO STATUS + TIMELINE */}
         <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
           <div className="border-b border-border/60 bg-gradient-to-b from-primary-soft/60 to-transparent px-5 py-6 sm:px-6">
-            {order.status === "delivered" ? (
-              <DeliveredHero
-                rated={order.rated}
-                onRate={() => nav({ to: "/pedido/$id/avaliar", params: { id: order.id } })}
-              />
-            ) : (
-              <>
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
-                  Chegada estimada
-                </p>
-                <p className="mt-1 text-4xl font-bold tabular-nums text-foreground">
-                  {etaLeft > 0 ? `${etaLeft} min` : "a qualquer momento"}
-                </p>
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-                  </span>
-                  <p className="text-sm font-medium text-primary">
-                    {statusLabel[order.status as OrderStatus]}
-                  </p>
-                </div>
-              </>
-            )}
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
+              Chegada estimada
+            </p>
+            <p className="mt-1 text-4xl font-bold tabular-nums text-foreground">
+              {etaLeft > 0 ? `${etaLeft} min` : "a qualquer momento"}
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+              </span>
+              <p className="text-sm font-medium text-primary">
+                {statusLabel[order.status as OrderStatus]}
+              </p>
+            </div>
+
           </div>
 
           <ol className="relative px-5 py-6 sm:px-6">
