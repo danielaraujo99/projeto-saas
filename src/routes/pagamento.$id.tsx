@@ -16,9 +16,9 @@ import { createPixCharge, getPixStatus } from "@/lib/mercadopago.functions";
 import { useAuth } from "@/store/auth";
 import { brl } from "@/lib/format";
 import { toast } from "sonner";
-import bankLottie from "@/assets/3d-bank-icon.lottie.asset.json";
+import pixLogo from "@/assets/pix-logo.png.asset.json";
 
-const { useState, useEffect } = React;
+
 
 
 
