@@ -107,9 +107,10 @@ function Page() {
   const isPix = order.payment.kind === "pix";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background flex flex-col">
       <TopBar orderId={order.id} />
-      <main className="mx-auto flex w-full max-w-[440px] flex-col px-5 pb-10 pt-4 sm:px-6">
+      <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col px-5 pb-8 pt-6 sm:px-6">
+
         {phase === "success" ? (
           <SuccessCard total={order.total} />
         ) : phase === "pix_expired" ? (
@@ -131,20 +132,25 @@ function Page() {
 
 function TopBar({ orderId }: { orderId: string }) {
   return (
-    <header className="sticky top-0 z-10 border-b border-border/60 bg-background/85 backdrop-blur">
-      <div className="mx-auto grid h-14 w-full max-w-[440px] grid-cols-[auto_1fr_auto] items-center px-3 sm:px-4">
+    <header className="sticky top-0 z-10 border-b border-border/60 bg-background/90 backdrop-blur">
+      <div className="mx-auto grid h-14 w-full max-w-[520px] grid-cols-[auto_1fr_auto] items-center px-4">
         <Link
           to="/pedido/$id"
           params={{ id: orderId }}
-          className="grid h-10 w-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-muted"
+          className="grid h-10 w-10 -ml-2 place-items-center rounded-full text-primary transition-colors hover:bg-primary-soft"
           aria-label="Voltar"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-5 w-5" strokeWidth={2.5} />
         </Link>
-        <h1 className="text-center text-[13px] font-semibold uppercase tracking-[0.18em] text-foreground/80">
+        <h1 className="text-center text-[13px] font-bold uppercase tracking-[0.22em] text-foreground/70">
           Pagamento
         </h1>
-        <div className="w-10" />
+        <button
+          type="button"
+          className="text-right text-[13px] font-semibold text-primary hover:underline"
+        >
+          Ajuda
+        </button>
       </div>
     </header>
   );
@@ -296,53 +302,54 @@ function PixView({
     }
   };
 
-  const preview = state.code.length > 28 ? `${state.code.slice(0, 26)}…` : state.code;
+  const preview = state.code.length > 26 ? `${state.code.slice(0, 24)}…` : state.code;
 
   return (
-    <div className="flex flex-col items-center animate-fade-in">
+    <div className="flex flex-1 flex-col animate-fade-in pb-24 sm:pb-8">
       <PixHeroIllustration />
 
-      <h1 className="mt-6 text-center text-[22px] font-bold leading-snug tracking-tight text-foreground sm:text-[24px]">
-        Pedido aguardando pagamento
-      </h1>
-      <p className="mt-2 max-w-[36ch] text-center text-[14px] leading-relaxed text-foreground/60">
-        Copie o código abaixo e utilize o <span className="font-semibold text-foreground/80">Pix Copia e Cola</span> no app do seu banco.
-      </p>
+      <div className="mt-8 text-center">
+        <h1 className="text-[22px] font-bold leading-snug tracking-tight text-foreground/85">
+          Pedido aguardando pagamento
+        </h1>
+        <p className="mx-auto mt-3 max-w-[36ch] text-[14px] leading-relaxed text-foreground/60">
+          Copie o código abaixo e utilize o <span className="font-semibold text-foreground/80">Pix Copia e Cola</span> no aplicativo que você vai fazer o pagamento:
+        </p>
+      </div>
 
       <button
         onClick={copy}
-        className="mt-6 flex w-full items-center gap-3 rounded-2xl border border-dashed border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/60 hover:bg-primary-soft/30"
+        className="mt-6 flex w-full items-center gap-3 rounded-2xl border border-dashed border-border bg-transparent px-5 py-4 text-left transition-colors hover:border-primary/60 hover:bg-primary-soft/30"
         aria-label="Copiar código Pix"
       >
-        <span className="min-w-0 flex-1 truncate font-mono text-[14px] tracking-tight text-foreground/85">
+        <span className="min-w-0 flex-1 truncate font-mono text-[15px] tracking-tight text-foreground/85">
           {preview}
         </span>
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-primary transition-transform active:scale-90">
-          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        <span className="grid h-8 w-8 shrink-0 place-items-center text-primary transition-transform active:scale-90">
+          {copied ? <Check className="h-5 w-5" strokeWidth={2.5} /> : <Copy className="h-5 w-5" strokeWidth={2} />}
         </span>
       </button>
 
-      <div className="mt-6 w-full">
-        <p className="text-[13px] text-foreground/60">O tempo para você pagar acaba em:</p>
-        <div className="mt-1.5 flex items-baseline justify-between">
-          <span
-            className={`text-[34px] font-bold tabular-nums leading-none tracking-tight transition-colors ${urgent ? "text-destructive" : "text-foreground"}`}
-          >
-            {mm}:{ss}
-          </span>
-          <span className="text-[13px] font-semibold tabular-nums text-foreground/50">
-            {brl(order.total)}
-          </span>
-        </div>
-        <div className="mt-3 h-[3px] w-full overflow-hidden rounded-full bg-border/70">
+      <div className="mt-8">
+        <p className="text-[14px] text-foreground/70">O tempo para você pagar acaba em:</p>
+        <p
+          className={`mt-2 text-[44px] font-bold tabular-nums leading-none tracking-tight transition-colors ${
+            urgent ? "text-destructive" : "text-foreground"
+          }`}
+        >
+          {mm}:{ss}
+        </p>
+        <div className="mt-3 h-[3px] w-full overflow-hidden rounded-full bg-border/60">
           <div
-            className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${urgent ? "bg-destructive" : "bg-primary"}`}
+            className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${
+              urgent ? "bg-destructive" : "bg-primary"
+            }`}
             style={{ width: `${progress * 100}%` }}
           />
         </div>
       </div>
 
-      <div className="mt-6 w-full divide-y divide-border/70 border-y border-border/70">
+      <div className="mt-6 divide-y divide-border/70">
         <Disclosure open={howOpen} onToggle={() => setHowOpen((v) => !v)} label="Como funciona">
           <ol className="space-y-3 pb-4 text-[13.5px] leading-relaxed text-foreground/75">
             {[
@@ -370,25 +377,24 @@ function PixView({
         </Disclosure>
       </div>
 
-      <button
-        onClick={copy}
-        className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
-      >
-        {copied ? (
-          <>
-            <Check className="h-4 w-4" /> Código copiado
-          </>
-        ) : (
-          <>
-            <Copy className="h-4 w-4" /> Copiar código
-          </>
-        )}
-      </button>
-
-      <p className="mt-4 inline-flex items-center gap-1.5 text-[11px] text-foreground/45">
-        <ShieldCheck className="h-3.5 w-3.5" />
-        Pagamento processado com segurança · Mercado Pago
-      </p>
+      <div className="mt-auto pt-10 sm:pt-8">
+        <button
+          onClick={copy}
+          className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-[15px] font-bold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
+        >
+          {copied ? (
+            <>
+              <Check className="h-5 w-5" strokeWidth={2.5} /> Código copiado
+            </>
+          ) : (
+            <>Copiar código</>
+          )}
+        </button>
+        <p className="mt-3 inline-flex w-full items-center justify-center gap-1.5 text-[11px] text-foreground/45">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          Pagamento processado com segurança · Mercado Pago
+        </p>
+      </div>
     </div>
   );
 }
@@ -474,32 +480,78 @@ function Row({ label, value, accent }: { label: string; value: string; accent?: 
 
 function PixHeroIllustration() {
   return (
-    <div className="relative mt-2 grid h-40 w-full place-items-center sm:h-44">
-      <div className="pointer-events-none absolute inset-0 grid place-items-center">
-        <div className="h-40 w-40 rounded-full bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--primary)_16%,transparent),transparent_70%)]" />
-      </div>
-      <span className="pointer-events-none absolute h-24 w-24 rounded-full border border-primary/25 animate-[pixring_2.8s_ease-out_infinite]" />
+    <div className="relative mt-4 grid h-52 w-full place-items-center sm:h-56">
+      {/* soft tinted circle backdrop */}
+      <div className="absolute h-44 w-44 rounded-full bg-primary-soft/70 sm:h-48 sm:w-48" />
+      <div className="pointer-events-none absolute h-44 w-44 rounded-full bg-[radial-gradient(circle_at_30%_25%,color-mix(in_oklab,var(--primary)_18%,transparent),transparent_65%)] sm:h-48 sm:w-48" />
+
+      {/* subtle expanding rings */}
+      <span className="pointer-events-none absolute h-32 w-32 rounded-full border border-primary/20 animate-[pixring_3s_ease-out_infinite]" />
       <span
-        className="pointer-events-none absolute h-24 w-24 rounded-full border border-primary/20 animate-[pixring_2.8s_ease-out_infinite]"
-        style={{ animationDelay: "1s" }}
+        className="pointer-events-none absolute h-32 w-32 rounded-full border border-primary/15 animate-[pixring_3s_ease-out_infinite]"
+        style={{ animationDelay: "1.2s" }}
       />
-      <div className="relative grid h-[88px] w-[88px] place-items-center rounded-[26%] bg-gradient-to-br from-primary to-[color-mix(in_oklab,var(--primary)_55%,black)] shadow-[0_18px_40px_-14px_color-mix(in_oklab,var(--primary)_55%,transparent)] animate-[pixpop_500ms_cubic-bezier(.2,.9,.3,1.2)_both]">
-        <svg viewBox="0 0 64 64" className="h-10 w-10 text-primary-foreground">
-          <g fill="currentColor">
-            <path d="M32 6 L46 20 L40 20 L32 12 L24 20 L18 20 Z" opacity="0.95" />
-            <path d="M6 32 L20 18 L20 24 L12 32 L20 40 L20 46 Z" opacity="0.9" />
-            <path d="M58 32 L44 46 L44 40 L52 32 L44 24 L44 18 Z" opacity="0.9" />
-            <path d="M32 58 L18 44 L24 44 L32 52 L40 44 L46 44 Z" opacity="0.95" />
+
+      {/* stylized phone with Pix diamond */}
+      <svg
+        viewBox="0 0 200 200"
+        className="relative h-40 w-40 animate-[pixpop_600ms_cubic-bezier(.2,.9,.3,1.2)_both] sm:h-44 sm:w-44"
+      >
+        <defs>
+          <linearGradient id="phoneGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="color-mix(in oklab, var(--primary) 92%, black)" />
+            <stop offset="100%" stopColor="color-mix(in oklab, var(--primary) 65%, black)" />
+          </linearGradient>
+          <linearGradient id="screenGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="color-mix(in oklab, var(--primary) 30%, white)" />
+            <stop offset="100%" stopColor="white" />
+          </linearGradient>
+        </defs>
+
+        {/* phone body */}
+        <g style={{ transformOrigin: "100px 100px", animation: "pixtilt 5s ease-in-out infinite" }}>
+          <rect x="62" y="32" width="76" height="140" rx="16" fill="url(#phoneGrad)" />
+          <rect x="70" y="42" width="60" height="118" rx="8" fill="url(#screenGrad)" />
+          {/* speaker slit */}
+          <rect x="90" y="38" width="20" height="2.5" rx="1.25" fill="color-mix(in oklab, var(--primary) 40%, black)" opacity="0.5" />
+
+          {/* Pix diamond on screen */}
+          <g transform="translate(100 95)">
+            <g style={{ transformOrigin: "0 0", animation: "pixslowspin 12s linear infinite" }} fill="var(--primary)">
+              <path d="M0 -22 L14 -8 L10 -8 L0 -18 L-10 -8 L-14 -8 Z" opacity="0.95" />
+              <path d="M-22 0 L-8 -14 L-8 -10 L-18 0 L-8 10 L-8 14 Z" opacity="0.9" />
+              <path d="M22 0 L8 14 L8 10 L18 0 L8 -10 L8 -14 Z" opacity="0.9" />
+              <path d="M0 22 L-14 8 L-10 8 L0 18 L10 8 L14 8 Z" opacity="0.95" />
+            </g>
+            <circle cx="0" cy="0" r="3" fill="var(--primary)" style={{ animation: "pixdot 1.8s ease-in-out infinite" }} />
           </g>
-        </svg>
-        <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-[26%]">
-          <span className="absolute -inset-y-6 -left-1/2 w-1/2 rotate-12 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-[pixsweep_3.4s_ease-in-out_infinite]" />
-        </span>
-      </div>
+
+          {/* thin scan line */}
+          <rect x="72" y="120" width="56" height="1" fill="var(--primary)" opacity="0.35" />
+          <rect x="72" y="128" width="40" height="1" fill="var(--primary)" opacity="0.25" />
+          <rect x="72" y="136" width="48" height="1" fill="var(--primary)" opacity="0.2" />
+        </g>
+
+        {/* floating clock badge */}
+        <g style={{ transformOrigin: "156px 60px", animation: "pixfloat 3.6s ease-in-out infinite" }}>
+          <circle cx="156" cy="60" r="18" fill="white" stroke="var(--primary)" strokeWidth="2" />
+          <line x1="156" y1="60" x2="156" y2="50" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
+          <line x1="156" y1="60" x2="163" y2="60" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="156" cy="60" r="1.5" fill="var(--primary)" />
+        </g>
+
+        {/* small floating dot */}
+        <circle cx="44" cy="140" r="4" fill="var(--primary)" opacity="0.6" style={{ animation: "pixfloat 4.2s ease-in-out infinite", animationDelay: "0.6s" }} />
+        <circle cx="52" cy="60" r="2.5" fill="var(--primary)" opacity="0.5" style={{ animation: "pixfloat 3.8s ease-in-out infinite", animationDelay: "1.2s" }} />
+      </svg>
+
       <style>{`
-        @keyframes pixring { 0% { transform: scale(0.7); opacity: 0.8; } 100% { transform: scale(1.8); opacity: 0; } }
-        @keyframes pixpop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes pixsweep { 0% { transform: translateX(-40%) rotate(12deg); } 60%,100% { transform: translateX(320%) rotate(12deg); } }
+        @keyframes pixring { 0% { transform: scale(0.7); opacity: 0.7; } 100% { transform: scale(1.7); opacity: 0; } }
+        @keyframes pixpop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pixtilt { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+        @keyframes pixslowspin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pixdot { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.6); opacity: 0.5; } }
+        @keyframes pixfloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
       `}</style>
     </div>
   );
