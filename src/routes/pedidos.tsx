@@ -136,50 +136,168 @@ function TabButton({
   );
 }
 
+function usePixTick(active: boolean) {
+  const [, force] = React.useReducer((x: number) => x + 1, 0);
+  React.useEffect(() => {
+    if (!active) return;
+    const t = window.setInterval(force, 1000);
+    return () => window.clearInterval(t);
+  }, [active]);
+}
+
 function OrderCard({ order }: { order: OrderRow }) {
   const nav = useNavigate();
-  const Icon = icons[order.status as OrderStatus];
+  const [session, setSession] = React.useState<PixSession | null>(null);
+  const isPending = order.status === "pending_payment";
+
+  React.useEffect(() => {
+    if (!isPending) return;
+    setSession(getPixSession(order.id));
+  }, [isPending, order.id]);
+
+  usePixTick(isPending && !!session);
+
+  const expired = isPixExpired(session);
+  const livePix = session && !expired ? session : null;
+
+  const Icon = expired ? TimerOff : icons[order.status as OrderStatus];
   const isActive =
-    order.status !== "delivered" && ACTIVE_STATUSES.concat("pending_payment").includes(order.status as OrderStatus);
-  const target = order.status === "pending_payment" ? "/pagamento/$id" : "/pedido/$id";
+    !expired &&
+    order.status !== "delivered" &&
+    ACTIVE_STATUSES.concat("pending_payment").includes(order.status as OrderStatus);
+  const target = isPending && !expired ? "/pagamento/$id" : "/pedido/$id";
+
+  const statusText = expired
+    ? "Pagamento expirado · Pedido cancelado"
+    : statusLabel[order.status as OrderStatus];
+
+  const remaining = livePix ? pixRemainingMs(livePix) : 0;
+  const progress = livePix ? remaining / pixTotalMs(livePix) : 0;
+  const urgent = remaining <= 60_000;
+
   return (
     <li>
-      <button
-        onClick={() => nav({ to: target, params: { id: order.id } })}
-        className="w-full rounded-2xl border border-border bg-card p-4 text-left shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-elevated)]"
+      <div
+        className={cn(
+          "w-full rounded-2xl border bg-card shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-elevated)]",
+          expired ? "border-destructive/25" : "border-border",
+        )}
       >
-        <div className="flex items-start gap-3">
-          <div
-            className={cn(
-              "grid h-11 w-11 shrink-0 place-items-center rounded-full",
-              isActive ? "bg-primary text-primary-foreground" : "bg-success/15 text-success",
-            )}
-          >
-            <Icon className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-2">
-              <div className="text-sm font-bold text-foreground">Pedido {order.short_id}</div>
-              <div className="text-sm font-bold tabular-nums text-foreground">
-                {brl(order.total)}
+        <button
+          onClick={() => nav({ to: target, params: { id: order.id } })}
+          className="w-full p-4 text-left"
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className={cn(
+                "grid h-11 w-11 shrink-0 place-items-center rounded-full",
+                expired
+                  ? "bg-destructive/12 text-destructive"
+                  : isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-success/15 text-success",
+              )}
+            >
+              <Icon className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-sm font-bold text-foreground">Pedido {order.short_id}</div>
+                <div
+                  className={cn(
+                    "text-sm font-bold tabular-nums",
+                    expired ? "text-foreground/50 line-through" : "text-foreground",
+                  )}
+                >
+                  {brl(order.total)}
+                </div>
               </div>
-            </div>
-            <div className={cn("mt-0.5 text-xs font-medium", isActive ? "text-primary" : "text-foreground/60")}>
-              {statusLabel[order.status as OrderStatus]}
-            </div>
-            <div className="mt-1 line-clamp-1 text-xs text-foreground/55">
-              {order.items.map((i) => `${i.quantity}× ${i.name}`).join(" · ")}
-            </div>
-            {order.status === "delivered" && !order.rated ? (
-              <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-semibold text-primary">
-                <Star className="h-3 w-3" /> Avaliar pedido
+              <div
+                className={cn(
+                  "mt-0.5 text-xs font-medium",
+                  expired
+                    ? "text-destructive"
+                    : isActive
+                      ? "text-primary"
+                      : "text-foreground/60",
+                )}
+              >
+                {statusText}
               </div>
-            ) : null}
+              <div className="mt-1 line-clamp-1 text-xs text-foreground/55">
+                {order.items.map((i) => `${i.quantity}× ${i.name}`).join(" · ")}
+              </div>
+              {order.status === "delivered" && !order.rated ? (
+                <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-semibold text-primary">
+                  <Star className="h-3 w-3" /> Avaliar pedido
+                </div>
+              ) : null}
+            </div>
           </div>
-        </div>
-      </button>
+        </button>
+
+        {livePix ? (
+          <div className="border-t border-border/70 px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground/50">
+                Pix aguardando pagamento
+              </span>
+              <span
+                className={cn(
+                  "text-sm font-bold tabular-nums",
+                  urgent ? "text-destructive" : "text-foreground",
+                )}
+              >
+                {formatCountdown(remaining)}
+              </span>
+            </div>
+            <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full bg-border/60">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-[width] duration-1000 ease-linear",
+                  urgent ? "bg-destructive" : "bg-primary",
+                )}
+                style={{ width: `${Math.max(0, Math.min(1, progress)) * 100}%` }}
+              />
+            </div>
+            <div className="mt-3 flex gap-2">
+              <button
+                onClick={() => nav({ to: "/pagamento/$id", params: { id: order.id } })}
+                className="inline-flex h-10 flex-1 items-center justify-center rounded-xl bg-primary px-4 text-[12px] font-bold uppercase tracking-[0.12em] text-primary-foreground transition-transform active:scale-[0.98]"
+              >
+                Efetuar pagamento
+              </button>
+              <CopyPixButton code={livePix.code} />
+            </div>
+          </div>
+        ) : null}
+      </div>
     </li>
   );
+}
+
+function CopyPixButton({ code }: { code: string }) {
+  const [copied, setCopied] = React.useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  };
+  return (
+    <button
+      onClick={copy}
+      aria-label="Copiar código Pix"
+      className="inline-flex h-10 w-11 items-center justify-center rounded-xl border border-border text-primary transition-colors hover:bg-primary-soft/50"
+    >
+      {copied ? <Check className="h-4 w-4" strokeWidth={2.5} /> : <Copy className="h-4 w-4" />}
+    </button>
+  );
+}
+
 }
 
 function OrdersSkeleton() {
