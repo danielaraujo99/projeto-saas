@@ -41,7 +41,7 @@ function AuthPage() {
   const user = useAuth((s) => s.user);
 
   React.useEffect(() => {
-    if (user) nav({ to: search.redirect || "/", replace: true });
+    if (user) nav({ to: search.redirect || "/demo", replace: true });
   }, [user, nav, search.redirect]);
 
   function formatPhone(v: string) {
@@ -66,7 +66,7 @@ function AuthPage() {
       return;
     }
     toast.success(mode === "login" ? "Bem-vindo de volta!" : "Conta criada com sucesso!");
-    nav({ to: search.redirect || "/", replace: true });
+    nav({ to: search.redirect || "/demo", replace: true });
   }
 
   return (
@@ -130,7 +130,7 @@ function AuthPage() {
       {/* Formulário */}
       <div className="relative flex items-center justify-center p-6 sm:p-10">
         <Link
-          to="/"
+          to="/demo"
           aria-label="Voltar ao cardápio"
           className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground hover:bg-surface hover:text-foreground"
         >

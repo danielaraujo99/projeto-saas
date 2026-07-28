@@ -107,6 +107,7 @@ export function BottomNav() {
 
             <Link
               to={user ? "/conta" : "/auth"}
+              search={user ? undefined : ({ redirect: "/conta", mode: "login" } as never)}
               className="inline-flex h-9 max-w-[160px] items-center gap-2 rounded-full border border-border px-3 text-sm font-medium text-foreground/80 hover:bg-surface hover:text-foreground"
             >
               <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-soft text-[11px] font-bold text-primary">
