@@ -273,8 +273,7 @@ function AuthPage() {
             ) : null}
 
             <Button
-              type="button"
-              onClick={() => void submit()}
+              type="submit"
               className="h-12 w-full rounded-full text-base font-semibold"
               disabled={busy}
             >
