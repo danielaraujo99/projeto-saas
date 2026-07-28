@@ -1,7 +1,16 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bike, ChefHat, CheckCircle2, PackageCheck, Receipt, RefreshCw, Star, WifiOff } from "lucide-react";
+import { Bike, ChefHat, Check, CheckCircle2, Copy, PackageCheck, Receipt, RefreshCw, Star, TimerOff, WifiOff } from "lucide-react";
+import {
+  getPixSession,
+  isPixExpired,
+  pixRemainingMs,
+  pixTotalMs,
+  formatCountdown,
+  type PixSession,
+} from "@/lib/pix-session";
+
 import { listMyOrders, type OrderRow } from "@/lib/orders-api";
 import { statusLabel, type OrderStatus, ACTIVE_STATUSES } from "@/lib/order-status";
 import { brl } from "@/lib/format";
