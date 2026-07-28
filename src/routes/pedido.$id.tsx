@@ -321,26 +321,61 @@ function Page() {
                 <Row bold label="Total" value={brl(order.total)} />
               </div>
             </div>
-            {order.address ? (
-              <div className="flex items-start gap-3 border-t border-border px-5 py-4">
-                <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
-                  <MapPin className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 text-sm">
-                  <div className="text-[11px] font-semibold uppercase tracking-wide text-foreground/50">
-                    {order.pickup ? "Retirada em" : "Entregar em"}
-                  </div>
-                  <div className="mt-0.5 font-medium text-foreground">
-                    {order.address.street}, {order.address.number}
-                  </div>
-                  <div className="text-xs text-foreground/60">
-                    {order.address.neighborhood} · {order.address.city}
-                  </div>
-                </div>
-              </div>
-            ) : null}
           </CollapsibleContent>
         </Collapsible>
+
+        {/* DELIVERY / PICKUP DATA */}
+        <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
+          <h3 className="border-b border-border/60 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-foreground/45">
+            {order.pickup ? "Retirada" : "Entrega"}
+          </h3>
+          <div className="flex items-start gap-3 px-5 py-4">
+            <div className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+              <MapPin className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 text-sm">
+              {order.pickup ? (
+                <>
+                  <div className="font-semibold text-foreground">Retirada no balcão</div>
+                  <div className="mt-0.5 text-xs text-foreground/60">
+                    Apresente o número {order.short_id} no caixa.
+                  </div>
+                </>
+              ) : order.address ? (
+                <>
+                  <div className="font-semibold text-foreground">
+                    {order.address.street}, {order.address.number}
+                    {order.address.complement ? ` — ${order.address.complement}` : ""}
+                  </div>
+                  <div className="mt-0.5 text-xs text-foreground/60">
+                    {order.address.neighborhood} · {order.address.city}
+                    {order.address.state ? ` - ${order.address.state}` : ""}
+                  </div>
+                  {order.address.reference ? (
+                    <div className="mt-1 text-xs text-foreground/50">
+                      Referência: {order.address.reference}
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <div className="text-foreground/60">Endereço não informado.</div>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-3 border-t border-border/60 px-5 py-3">
+            <span className="text-xs font-medium text-foreground/55">Forma de pagamento</span>
+            <span className="text-sm font-semibold text-foreground">
+              {PAYMENT_LABEL[order.payment?.kind as string] ?? "Pagamento"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-3 border-t border-border/60 bg-surface/40 px-5 py-3">
+            <span className="text-xs font-medium text-foreground/55">Total</span>
+            <span className="text-sm font-bold tabular-nums text-foreground">
+              {brl(order.total)}
+            </span>
+          </div>
+        </section>
+
 
         {/* SUPPORT — reduced */}
         <div className="flex items-center justify-center pt-2">
