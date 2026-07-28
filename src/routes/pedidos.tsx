@@ -298,7 +298,7 @@ function CopyPixButton({ code }: { code: string }) {
   );
 }
 
-}
+
 
 function OrdersSkeleton() {
   return (
