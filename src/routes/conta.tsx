@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ChevronRight, CreditCard, FileText, LogOut, MapPin, Plus, ShieldCheck, Trash2, User2, UserX } from "lucide-react";
-import { useAuth } from "@/store/auth";
+import { useAuth, useAuthHydrated } from "@/store/auth";
 import { useAddresses } from "@/store/addresses";
 import { useCards } from "@/store/cards";
 import { AuthGate } from "@/components/auth-gate";
@@ -45,7 +45,7 @@ function Page() {
   const [authOpen, setAuthOpen] = React.useState(false);
   const [pendingRemove, setPendingRemove] = React.useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = React.useState(false);
-  const [hydrated, setHydrated] = React.useState(false);
+  const hydrated = useAuthHydrated();
 
   // Desktop: open modal login. Mobile: redirect to full /auth page so the
   // experience matches the rest of the mobile flow instead of being stuck in
@@ -63,11 +63,6 @@ function Page() {
       nav({ to: "/auth", search: { redirect: "/conta", mode: "login" }, replace: true });
     }
   }, [user, isDesktop, hydrated, nav]);
-
-  React.useEffect(() => {
-    const t = window.setTimeout(() => setHydrated(true), 250);
-    return () => window.clearTimeout(t);
-  }, []);
 
   const removingCard = pendingRemove ? cards.find((c) => c.id === pendingRemove) : null;
 

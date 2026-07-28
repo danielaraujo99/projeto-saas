@@ -1,3 +1,4 @@
+import * as React from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -22,7 +23,6 @@ export const useAuth = create<AuthState>()(
     (set) => ({
       user: null,
       login: async (email, password) => {
-        await new Promise((r) => setTimeout(r, 400));
         if (!emailRe.test(email.trim()))
           return { ok: false, message: "Informe um e-mail válido." };
         if (password.length < 4)
@@ -37,7 +37,6 @@ export const useAuth = create<AuthState>()(
         return { ok: true };
       },
       signup: async ({ name, email, phone, password }) => {
-        await new Promise((r) => setTimeout(r, 500));
         if (!name.trim()) return { ok: false, message: "Informe seu nome completo." };
         if (!emailRe.test(email.trim()))
           return { ok: false, message: "Informe um e-mail válido." };
@@ -60,3 +59,15 @@ export const useAuth = create<AuthState>()(
     { name: "bistro-auth" },
   ),
 );
+
+/** True once zustand finished reading the persisted session from storage. */
+export function useAuthHydrated() {
+  const [hydrated, setHydrated] = React.useState(() => useAuth.persist.hasHydrated());
+  React.useEffect(() => {
+    if (hydrated) return;
+    const unsubFinish = useAuth.persist.onFinishHydration(() => setHydrated(true));
+    if (useAuth.persist.hasHydrated()) setHydrated(true);
+    return unsubFinish;
+  }, [hydrated]);
+  return hydrated;
+}
