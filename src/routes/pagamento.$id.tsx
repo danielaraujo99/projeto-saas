@@ -131,20 +131,25 @@ function Page() {
 
 function TopBar({ orderId }: { orderId: string }) {
   return (
-    <header className="sticky top-0 z-10 border-b border-border/60 bg-background/85 backdrop-blur">
-      <div className="mx-auto grid h-14 w-full max-w-[440px] grid-cols-[auto_1fr_auto] items-center px-3 sm:px-4">
+    <header className="sticky top-0 z-10 border-b border-border/60 bg-background/90 backdrop-blur">
+      <div className="mx-auto grid h-14 w-full max-w-[520px] grid-cols-[auto_1fr_auto] items-center px-4">
         <Link
           to="/pedido/$id"
           params={{ id: orderId }}
-          className="grid h-10 w-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-muted"
+          className="grid h-10 w-10 -ml-2 place-items-center rounded-full text-primary transition-colors hover:bg-primary-soft"
           aria-label="Voltar"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-5 w-5" strokeWidth={2.5} />
         </Link>
-        <h1 className="text-center text-[13px] font-semibold uppercase tracking-[0.18em] text-foreground/80">
+        <h1 className="text-center text-[13px] font-bold uppercase tracking-[0.22em] text-foreground/70">
           Pagamento
         </h1>
-        <div className="w-10" />
+        <button
+          type="button"
+          className="text-right text-[13px] font-semibold text-primary hover:underline"
+        >
+          Ajuda
+        </button>
       </div>
     </header>
   );
@@ -296,53 +301,54 @@ function PixView({
     }
   };
 
-  const preview = state.code.length > 28 ? `${state.code.slice(0, 26)}…` : state.code;
+  const preview = state.code.length > 26 ? `${state.code.slice(0, 24)}…` : state.code;
 
   return (
-    <div className="flex flex-col items-center animate-fade-in">
+    <div className="flex flex-1 flex-col animate-fade-in pb-24 sm:pb-8">
       <PixHeroIllustration />
 
-      <h1 className="mt-6 text-center text-[22px] font-bold leading-snug tracking-tight text-foreground sm:text-[24px]">
-        Pedido aguardando pagamento
-      </h1>
-      <p className="mt-2 max-w-[36ch] text-center text-[14px] leading-relaxed text-foreground/60">
-        Copie o código abaixo e utilize o <span className="font-semibold text-foreground/80">Pix Copia e Cola</span> no app do seu banco.
-      </p>
+      <div className="mt-8 text-center">
+        <h1 className="text-[22px] font-bold leading-snug tracking-tight text-foreground/85">
+          Pedido aguardando pagamento
+        </h1>
+        <p className="mx-auto mt-3 max-w-[36ch] text-[14px] leading-relaxed text-foreground/60">
+          Copie o código abaixo e utilize o <span className="font-semibold text-foreground/80">Pix Copia e Cola</span> no aplicativo que você vai fazer o pagamento:
+        </p>
+      </div>
 
       <button
         onClick={copy}
-        className="mt-6 flex w-full items-center gap-3 rounded-2xl border border-dashed border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/60 hover:bg-primary-soft/30"
+        className="mt-6 flex w-full items-center gap-3 rounded-2xl border border-dashed border-border bg-transparent px-5 py-4 text-left transition-colors hover:border-primary/60 hover:bg-primary-soft/30"
         aria-label="Copiar código Pix"
       >
-        <span className="min-w-0 flex-1 truncate font-mono text-[14px] tracking-tight text-foreground/85">
+        <span className="min-w-0 flex-1 truncate font-mono text-[15px] tracking-tight text-foreground/85">
           {preview}
         </span>
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-primary transition-transform active:scale-90">
-          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        <span className="grid h-8 w-8 shrink-0 place-items-center text-primary transition-transform active:scale-90">
+          {copied ? <Check className="h-5 w-5" strokeWidth={2.5} /> : <Copy className="h-5 w-5" strokeWidth={2} />}
         </span>
       </button>
 
-      <div className="mt-6 w-full">
-        <p className="text-[13px] text-foreground/60">O tempo para você pagar acaba em:</p>
-        <div className="mt-1.5 flex items-baseline justify-between">
-          <span
-            className={`text-[34px] font-bold tabular-nums leading-none tracking-tight transition-colors ${urgent ? "text-destructive" : "text-foreground"}`}
-          >
-            {mm}:{ss}
-          </span>
-          <span className="text-[13px] font-semibold tabular-nums text-foreground/50">
-            {brl(order.total)}
-          </span>
-        </div>
-        <div className="mt-3 h-[3px] w-full overflow-hidden rounded-full bg-border/70">
+      <div className="mt-8">
+        <p className="text-[14px] text-foreground/70">O tempo para você pagar acaba em:</p>
+        <p
+          className={`mt-2 text-[44px] font-bold tabular-nums leading-none tracking-tight transition-colors ${
+            urgent ? "text-destructive" : "text-foreground"
+          }`}
+        >
+          {mm}:{ss}
+        </p>
+        <div className="mt-3 h-[3px] w-full overflow-hidden rounded-full bg-border/60">
           <div
-            className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${urgent ? "bg-destructive" : "bg-primary"}`}
+            className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${
+              urgent ? "bg-destructive" : "bg-primary"
+            }`}
             style={{ width: `${progress * 100}%` }}
           />
         </div>
       </div>
 
-      <div className="mt-6 w-full divide-y divide-border/70 border-y border-border/70">
+      <div className="mt-6 divide-y divide-border/70">
         <Disclosure open={howOpen} onToggle={() => setHowOpen((v) => !v)} label="Como funciona">
           <ol className="space-y-3 pb-4 text-[13.5px] leading-relaxed text-foreground/75">
             {[
@@ -370,25 +376,24 @@ function PixView({
         </Disclosure>
       </div>
 
-      <button
-        onClick={copy}
-        className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
-      >
-        {copied ? (
-          <>
-            <Check className="h-4 w-4" /> Código copiado
-          </>
-        ) : (
-          <>
-            <Copy className="h-4 w-4" /> Copiar código
-          </>
-        )}
-      </button>
-
-      <p className="mt-4 inline-flex items-center gap-1.5 text-[11px] text-foreground/45">
-        <ShieldCheck className="h-3.5 w-3.5" />
-        Pagamento processado com segurança · Mercado Pago
-      </p>
+      <div className="mt-auto pt-10 sm:pt-8">
+        <button
+          onClick={copy}
+          className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-[15px] font-bold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
+        >
+          {copied ? (
+            <>
+              <Check className="h-5 w-5" strokeWidth={2.5} /> Código copiado
+            </>
+          ) : (
+            <>Copiar código</>
+          )}
+        </button>
+        <p className="mt-3 inline-flex w-full items-center justify-center gap-1.5 text-[11px] text-foreground/45">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          Pagamento processado com segurança · Mercado Pago
+        </p>
+      </div>
     </div>
   );
 }
