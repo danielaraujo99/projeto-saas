@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Copy,
-  RefreshCw,
   TimerOff,
   AlertCircle,
   ChevronLeft,
@@ -17,6 +16,8 @@ import { useAuth } from "@/store/auth";
 import { brl } from "@/lib/format";
 import { toast } from "sonner";
 import pixLogo from "@/assets/pix-logo.png.asset.json";
+import { getPixSession, savePixSession, isPixExpired } from "@/lib/pix-session";
+
 
 
 
@@ -47,7 +48,6 @@ function Page() {
     queryFn: () => getOrderById(id),
   });
   const [phase, setPhase] = React.useState<Phase>("loading");
-  const [pixCycle, setPixCycle] = React.useState(0);
   const confirmedRef = React.useRef(false);
 
   React.useEffect(() => {
@@ -94,12 +94,6 @@ function Page() {
     }
   }, [order, nav]);
 
-  const regeneratePix = () => {
-    confirmedRef.current = false;
-    setPhase("awaiting_pix");
-    setPixCycle((c) => c + 1);
-  };
-
   if (isLoading || !order) {
     return (
       <div className="grid min-h-screen place-items-center bg-background">
@@ -118,10 +112,9 @@ function Page() {
         {phase === "success" ? (
           <SuccessCard total={order.total} />
         ) : phase === "pix_expired" ? (
-          <PixExpiredCard total={order.total} onRegenerate={regeneratePix} />
+          <PixExpiredCard orderId={order.id} total={order.total} />
         ) : isPix ? (
           <PixView
-            key={pixCycle}
             order={order}
             onApproved={onPixApproved}
             onExpired={() => setPhase("pix_expired")}
@@ -129,6 +122,7 @@ function Page() {
         ) : (
           <ProcessingCard method={order.payment.kind as "credit" | "debit" | "cash"} total={order.total} />
         )}
+
       </main>
     </div>
   );
@@ -193,10 +187,24 @@ function PixView({
   const [remaining, setRemaining] = React.useState(5 * 60_000);
   const [copied, setCopied] = React.useState(false);
 
-
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Uma única cobrança Pix por pedido: reaproveita a sessão salva.
+      const existing = getPixSession(order.id);
+      if (existing) {
+        if (isPixExpired(existing)) {
+          onExpired();
+          return;
+        }
+        setState({
+          phase: "ready",
+          paymentId: existing.paymentId,
+          code: existing.code,
+          deadline: existing.expiresAt,
+        });
+        return;
+      }
       try {
         const res = await createFn({
           data: {
@@ -212,11 +220,19 @@ function PixView({
           setState({ phase: "error", message: "Mercado Pago não retornou o código Pix." });
           return;
         }
+        const deadline = new Date(res.expiresAt).getTime();
+        savePixSession({
+          orderId: order.id,
+          paymentId: res.id,
+          code: res.qrCode,
+          createdAt: Date.now(),
+          expiresAt: deadline,
+        });
         setState({
           phase: "ready",
           paymentId: res.id,
           code: res.qrCode,
-          deadline: new Date(res.expiresAt).getTime(),
+          deadline,
         });
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Falha ao gerar Pix.";
@@ -228,6 +244,7 @@ function PixView({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   React.useEffect(() => {
     if (state.phase !== "ready") return;
@@ -444,26 +461,38 @@ function PixHeroIllustration() {
 }
 
 
-function PixExpiredCard({ total, onRegenerate }: { total: number; onRegenerate: () => void }) {
+function PixExpiredCard({ orderId, total }: { orderId: string; total: number }) {
   return (
     <div className="mt-10 flex flex-col items-center text-center animate-fade-in">
-      <div className="grid h-16 w-16 place-items-center rounded-full bg-warning/15 text-warning">
+      <div className="grid h-16 w-16 place-items-center rounded-full bg-destructive/12 text-destructive">
         <TimerOff className="h-7 w-7" />
       </div>
-      <h1 className="mt-5 text-xl font-bold">Código Pix expirado</h1>
+      <h1 className="mt-5 text-xl font-bold">Pix expirado</h1>
       <p className="mt-2 max-w-[36ch] text-sm text-foreground/60">
-        Este código não foi pago a tempo. Gere um novo para tentar novamente — nenhum valor foi cobrado.
+        O tempo para pagar acabou e este pedido foi cancelado. Nenhum valor foi cobrado — faça um
+        novo pedido para tentar de novo.
       </p>
-      <p className="mt-5 text-2xl font-bold tabular-nums text-foreground">{brl(total)}</p>
-      <button
-        onClick={onRegenerate}
-        className="mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.02]"
+      <p className="mt-5 text-2xl font-bold tabular-nums text-foreground/70 line-through">
+        {brl(total)}
+      </p>
+      <Link
+        to="/pedido/$id"
+        params={{ id: orderId }}
+        replace
+        className="mt-6 inline-flex h-12 items-center gap-2 rounded-2xl bg-primary px-6 text-[13px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
       >
-        <RefreshCw className="h-4 w-4" /> Gerar novo código
-      </button>
+        Ver detalhes do pedido
+      </Link>
+      <Link
+        to="/pedidos"
+        className="mt-3 text-sm font-semibold text-primary hover:underline"
+      >
+        Meus pedidos
+      </Link>
     </div>
   );
 }
+
 
 function ProcessingCard({ method, total }: { method: "credit" | "debit" | "cash"; total: number }) {
   const label =

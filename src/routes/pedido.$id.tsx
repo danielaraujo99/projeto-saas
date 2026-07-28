@@ -13,6 +13,7 @@ import {
   PackageCheck,
   Phone,
   RefreshCw,
+  TimerOff,
   Sparkles,
   Star,
   WifiOff,
@@ -29,6 +30,8 @@ import {
 } from "@/components/ui/collapsible";
 import { brl } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { getPixSession, isPixExpired } from "@/lib/pix-session";
+import type { OrderRow } from "@/lib/orders-api";
 
 export const Route = createFileRoute("/pedido/$id")({
   head: () => ({
@@ -129,6 +132,12 @@ function Page() {
       </div>
     );
   }
+
+  if (order.status === "pending_payment" && isPixExpired(getPixSession(order.id))) {
+    return <CanceledOrderView order={order} />;
+  }
+
+
 
   const currentIdx = TIMELINE.indexOf(order.status as OrderStatus);
   const paymentAt = order.payment_confirmed_at ? new Date(order.payment_confirmed_at) : null;
@@ -578,6 +587,85 @@ function OrderTrackingSkeleton() {
             </div>
           </div>
         </section>
+      </main>
+    </div>
+  );
+}
+
+const PAYMENT_LABEL: Record<string, string> = {
+  pix: "Pix",
+  credit: "Cartão de crédito",
+  debit: "Cartão de débito",
+  cash: "Dinheiro",
+};
+
+function CanceledOrderView({ order }: { order: OrderRow }) {
+  return (
+    <div className="min-h-screen bg-background pb-24 md:pt-20">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/95 px-4 py-3 backdrop-blur sm:px-6 md:static md:border-0">
+        <div className="mx-auto flex max-w-2xl items-center gap-3">
+          <Link
+            to="/pedidos"
+            className="grid h-10 w-10 -ml-2 place-items-center rounded-full text-foreground/70 transition-colors hover:bg-surface"
+            aria-label="Voltar"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <h1 className="text-base font-bold">Pedido {order.short_id}</h1>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-2xl px-4 py-5 sm:px-6">
+        <section className="rounded-2xl border border-destructive/25 bg-card p-5 shadow-[var(--shadow-card)]">
+          <div className="flex items-start gap-3">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-destructive/12 text-destructive">
+              <TimerOff className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-destructive">Pedido cancelado</h2>
+              <p className="mt-1 text-xs leading-relaxed text-foreground/60">
+                O código Pix expirou antes do pagamento. Nenhum valor foi cobrado e este pedido não
+                será preparado.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.16em] text-foreground/45">
+            Forma de pagamento
+          </h3>
+          <div className="mt-2 flex items-center justify-between text-sm">
+            <span className="font-semibold text-foreground">
+              {PAYMENT_LABEL[order.payment?.kind as string] ?? "Pagamento"}
+            </span>
+            <span className="rounded-full bg-destructive/10 px-2.5 py-1 text-[11px] font-semibold text-destructive">
+              Não pago
+            </span>
+          </div>
+
+          <div className="mt-5 space-y-2 border-t border-border/70 pt-4 text-sm">
+            {order.items.map((i, idx) => (
+              <div key={idx} className="flex justify-between gap-3 text-foreground/70">
+                <span className="min-w-0 truncate">
+                  {i.quantity}× {i.name}
+                </span>
+                <span className="tabular-nums">{brl(i.unitPrice * i.quantity)}</span>
+              </div>
+            ))}
+            <div className="flex justify-between border-t border-border/70 pt-3 font-bold text-foreground">
+              <span>Total</span>
+              <span className="tabular-nums line-through text-foreground/50">{brl(order.total)}</span>
+            </div>
+          </div>
+        </section>
+
+        <Link
+          to="/pedidos"
+          className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-primary text-[13px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
+        >
+          Meus pedidos
+        </Link>
       </main>
     </div>
   );
