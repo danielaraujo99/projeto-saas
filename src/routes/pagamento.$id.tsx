@@ -262,6 +262,7 @@ function PixView({
         console.warn("[pix poll]", e);
       }
     };
+    void poll();
     const t = window.setInterval(poll, POLL_INTERVAL_MS);
     return () => {
       stopped = true;
