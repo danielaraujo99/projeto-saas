@@ -187,10 +187,24 @@ function PixView({
   const [remaining, setRemaining] = React.useState(5 * 60_000);
   const [copied, setCopied] = React.useState(false);
 
-
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Uma única cobrança Pix por pedido: reaproveita a sessão salva.
+      const existing = getPixSession(order.id);
+      if (existing) {
+        if (isPixExpired(existing)) {
+          onExpired();
+          return;
+        }
+        setState({
+          phase: "ready",
+          paymentId: existing.paymentId,
+          code: existing.code,
+          deadline: existing.expiresAt,
+        });
+        return;
+      }
       try {
         const res = await createFn({
           data: {
@@ -206,11 +220,19 @@ function PixView({
           setState({ phase: "error", message: "Mercado Pago não retornou o código Pix." });
           return;
         }
+        const deadline = new Date(res.expiresAt).getTime();
+        savePixSession({
+          orderId: order.id,
+          paymentId: res.id,
+          code: res.qrCode,
+          createdAt: Date.now(),
+          expiresAt: deadline,
+        });
         setState({
           phase: "ready",
           paymentId: res.id,
           code: res.qrCode,
-          deadline: new Date(res.expiresAt).getTime(),
+          deadline,
         });
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Falha ao gerar Pix.";
@@ -222,6 +244,7 @@ function PixView({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   React.useEffect(() => {
     if (state.phase !== "ready") return;
