@@ -650,7 +650,7 @@ function CanceledOrderView({ order }: { order: OrderRow }) {
                 <span className="min-w-0 truncate">
                   {i.quantity}× {i.name}
                 </span>
-                <span className="tabular-nums">{brl(i.price * i.quantity)}</span>
+                <span className="tabular-nums">{brl(i.unitPrice * i.quantity)}</span>
               </div>
             ))}
             <div className="flex justify-between border-t border-border/70 pt-3 font-bold text-foreground">
