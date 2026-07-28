@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { Search as SearchIcon, SearchX, Star, Clock, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { restaurant } from "@/data/restaurant";
@@ -109,8 +109,8 @@ function Page() {
             <ul className="mt-3 space-y-3">
               {results.map((c) => (
                 <li key={c.id}>
-                  <a
-                    href="/"
+                  <Link
+                    to="/demo"
                     className="flex gap-3 overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-elevated)]"
                   >
                     <div
@@ -132,7 +132,7 @@ function Page() {
                         </span>
                       </div>
                     </div>
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

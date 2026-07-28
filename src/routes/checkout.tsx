@@ -94,7 +94,7 @@ function CheckoutPage() {
   const etaMin = pickup ? 15 : restaurant.deliveryMinutes[0];
 
   React.useEffect(() => {
-    if (items.length === 0 && !orderCreatedRef.current) nav({ to: "/" });
+    if (items.length === 0 && !orderCreatedRef.current) nav({ to: "/demo" });
   }, [items.length]);
 
   React.useEffect(() => {
