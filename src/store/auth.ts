@@ -62,11 +62,19 @@ export const useAuth = create<AuthState>()(
 
 /** True once zustand finished reading the persisted session from storage. */
 export function useAuthHydrated() {
-  const [hydrated, setHydrated] = React.useState(() => useAuth.persist.hasHydrated());
+  const [hydrated, setHydrated] = React.useState(() => {
+    if (typeof window === "undefined") return false;
+    return useAuth.persist?.hasHydrated?.() ?? true;
+  });
   React.useEffect(() => {
     if (hydrated) return;
-    const unsubFinish = useAuth.persist.onFinishHydration(() => setHydrated(true));
-    if (useAuth.persist.hasHydrated()) setHydrated(true);
+    const persistApi = useAuth.persist;
+    if (!persistApi) {
+      setHydrated(true);
+      return;
+    }
+    const unsubFinish = persistApi.onFinishHydration(() => setHydrated(true));
+    if (persistApi.hasHydrated()) setHydrated(true);
     return unsubFinish;
   }, [hydrated]);
   return hydrated;

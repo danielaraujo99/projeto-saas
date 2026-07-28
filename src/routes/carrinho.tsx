@@ -60,8 +60,8 @@ function CarrinhoPage() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3 sm:px-6">
-          <Link
-            to="/"
+            <Link
+            to="/demo"
             aria-label="Voltar"
             className="grid h-10 w-10 place-items-center rounded-full hover:bg-surface"
           >
@@ -79,7 +79,7 @@ function CarrinhoPage() {
             description="Volte ao cardápio e adicione seus itens favoritos."
             action={
               <Link
-                to="/"
+                to="/demo"
                 className="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
               >
                 Explorar cardápio
@@ -134,7 +134,7 @@ function CarrinhoPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Continuar comprando</AlertDialogCancel>
-            <AlertDialogAction onClick={() => navigate({ to: "/" })}>
+            <AlertDialogAction onClick={() => navigate({ to: "/demo" })}>
               Ver cardápio
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -156,7 +156,7 @@ function CarrinhoPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Entendi</AlertDialogCancel>
-            <AlertDialogAction onClick={() => navigate({ to: "/" })}>
+            <AlertDialogAction onClick={() => navigate({ to: "/demo" })}>
               Ver cardápio
             </AlertDialogAction>
           </AlertDialogFooter>

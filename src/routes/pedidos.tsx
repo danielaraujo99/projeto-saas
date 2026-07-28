@@ -144,7 +144,7 @@ function Page() {
             }
             action={
               <Link
-                to="/"
+                to="/demo"
                 className="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
               >
                 Ver cardápio

@@ -6,7 +6,7 @@ import { useCart } from "@/store/cart";
 import { useAuth } from "@/store/auth";
 
 const ITEMS = [
-  { to: "/", label: "Início", icon: Home },
+  { to: "/demo", label: "Início", icon: Home },
   { to: "/buscar", label: "Buscar", icon: Search },
   { to: "/pedidos", label: "Pedidos", icon: ClipboardList },
   { to: "/conta", label: "Conta", icon: User2 },
@@ -39,7 +39,7 @@ export function BottomNav() {
             <li key={it.to} className="flex-1">
               <Link
                 to={it.to}
-                activeOptions={{ exact: it.to === "/" }}
+                activeOptions={{ exact: it.to === "/demo" }}
                 className="group flex flex-col items-center gap-0.5 rounded-xl px-2 py-2 text-[11px] font-medium text-foreground/55 transition-colors data-[status=active]:text-primary"
               >
                 <it.icon className="h-5 w-5 transition-transform group-data-[status=active]:scale-110" />
@@ -56,7 +56,7 @@ export function BottomNav() {
         className="fixed inset-x-0 top-0 z-40 hidden border-b border-border bg-background/90 backdrop-blur md:block"
       >
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-6">
-          <Link to="/" className="flex shrink-0 items-center gap-2 text-sm font-extrabold tracking-tight text-primary">
+          <Link to="/demo" className="flex shrink-0 items-center gap-2 text-sm font-extrabold tracking-tight text-primary">
             <span
               aria-hidden
               className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground text-xs font-bold"
@@ -71,7 +71,7 @@ export function BottomNav() {
               <Link
                 key={it.to}
                 to={it.to}
-                activeOptions={{ exact: it.to === "/" }}
+                activeOptions={{ exact: it.to === "/demo" }}
                 className={cn(
                   "relative inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-foreground/60 transition-colors hover:text-foreground",
                   "data-[status=active]:text-primary",

@@ -28,6 +28,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const nav = useNavigate();
   const search = useSearch({ from: "/auth" });
+  const safeRedirect = search.redirect?.startsWith("/") ? search.redirect : undefined;
   const [mode, setMode] = React.useState<"login" | "signup">(search.mode ?? "login");
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
@@ -35,14 +36,19 @@ function AuthPage() {
   const [name, setName] = React.useState("");
   const [show, setShow] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
+  const [ready, setReady] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    setReady(true);
+  }, []);
+
   const login = useAuth((s) => s.login);
   const signup = useAuth((s) => s.signup);
   const user = useAuth((s) => s.user);
 
   React.useEffect(() => {
-    if (user) nav({ to: search.redirect || "/demo", replace: true });
-  }, [user, nav, search.redirect]);
+    if (user) nav({ to: safeRedirect || "/demo", replace: true });
+  }, [user, nav, safeRedirect]);
 
   function formatPhone(v: string) {
     const d = v.replace(/\D/g, "").slice(0, 11);
@@ -52,8 +58,8 @@ function AuthPage() {
     return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
   }
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function submit() {
+    if (busy) return;
     setError(null);
     setBusy(true);
     const res =
@@ -66,7 +72,7 @@ function AuthPage() {
       return;
     }
     toast.success(mode === "login" ? "Bem-vindo de volta!" : "Conta criada com sucesso!");
-    nav({ to: search.redirect || "/demo", replace: true });
+    nav({ to: safeRedirect || "/demo", replace: true });
   }
 
   return (
@@ -177,7 +183,17 @@ function AuthPage() {
             ))}
           </div>
 
-          <form onSubmit={submit} className="mt-5 space-y-4">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void submit();
+            }}
+            action={`/auth?mode=${mode}${safeRedirect ? `&redirect=${encodeURIComponent(safeRedirect)}` : ""}`}
+            method="get"
+            className="mt-5 space-y-4"
+          >
+            <input type="hidden" name="mode" value={mode} />
+            {safeRedirect ? <input type="hidden" name="redirect" value={safeRedirect} /> : null}
             {mode === "signup" ? (
               <div className="space-y-1.5">
                 <Label htmlFor="name">Nome completo</Label>
@@ -267,7 +283,7 @@ function AuthPage() {
             <Button
               type="submit"
               className="h-12 w-full rounded-full text-base font-semibold"
-              disabled={busy}
+              disabled={busy || !ready}
             >
               {busy ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -278,6 +294,8 @@ function AuthPage() {
               )}
               {busy
                 ? "Aguarde…"
+                : !ready
+                  ? "Carregando…"
                 : mode === "login"
                   ? "Entrar"
                   : "Criar conta e continuar"}

@@ -77,7 +77,7 @@ function Page() {
     logout();
     setPendingDelete(false);
     toast.success("Conta e dados locais excluídos");
-    nav({ to: "/" });
+    nav({ to: "/demo" });
   };
 
 
@@ -200,7 +200,7 @@ function Page() {
                   onClick={() => {
                     logout();
                     toast.success("Sessão encerrada");
-                    nav({ to: "/" });
+                    nav({ to: "/demo" });
                   }}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-4 text-sm font-semibold text-destructive shadow-[var(--shadow-card)]"
                 >
@@ -227,7 +227,7 @@ function Page() {
           open={authOpen}
           onOpenChange={(o) => {
             setAuthOpen(o);
-            if (!o && !user) nav({ to: "/" });
+            if (!o && !user) nav({ to: "/demo" });
           }}
           onSuccess={() => setAuthOpen(false)}
         />

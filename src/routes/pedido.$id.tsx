@@ -121,7 +121,7 @@ function Page() {
             description="Pode ter sido removido ou o link está incorreto."
             action={
               <Link
-                to="/"
+                to="/demo"
                 className="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
               >
                 Voltar ao cardápio
