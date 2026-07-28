@@ -301,44 +301,44 @@ function PixView({
     }
   };
 
-  const preview = state.code.length > 26 ? `${state.code.slice(0, 24)}…` : state.code;
+  const preview = state.code.length > 22 ? `${state.code.slice(0, 20)}…` : state.code;
 
   return (
     <div className="flex flex-1 flex-col animate-fade-in pb-24 sm:pb-8">
       <PixHeroIllustration />
 
-      <div className="mt-8 text-center">
-        <h1 className="text-[22px] font-bold leading-snug tracking-tight text-foreground/85">
+      <div className="mt-6 text-center">
+        <h1 className="text-[20px] font-bold leading-snug tracking-tight text-foreground/85">
           Pedido aguardando pagamento
         </h1>
-        <p className="mx-auto mt-3 max-w-[36ch] text-[14px] leading-relaxed text-foreground/60">
-          Copie o código abaixo e utilize o <span className="font-semibold text-foreground/80">Pix Copia e Cola</span> no aplicativo que você vai fazer o pagamento:
+        <p className="mx-auto mt-2 max-w-[36ch] text-[13.5px] leading-relaxed text-foreground/60">
+          Copie o código e use o <span className="font-semibold text-foreground/80">Pix Copia e Cola</span> no app do seu banco.
         </p>
       </div>
 
       <button
         onClick={copy}
-        className="mt-6 flex w-full items-center gap-3 rounded-2xl border border-dashed border-border bg-transparent px-5 py-4 text-left transition-colors hover:border-primary/60 hover:bg-primary-soft/30"
+        className="mx-auto mt-5 flex w-full max-w-[340px] items-center justify-between gap-3 rounded-2xl border border-dashed border-border bg-transparent px-4 py-3 text-left transition-colors hover:border-primary/60 hover:bg-primary-soft/30"
         aria-label="Copiar código Pix"
       >
-        <span className="min-w-0 flex-1 truncate font-mono text-[15px] tracking-tight text-foreground/85">
+        <span className="min-w-0 flex-1 truncate font-mono text-[14px] tracking-tight text-foreground/85">
           {preview}
         </span>
-        <span className="grid h-8 w-8 shrink-0 place-items-center text-primary transition-transform active:scale-90">
-          {copied ? <Check className="h-5 w-5" strokeWidth={2.5} /> : <Copy className="h-5 w-5" strokeWidth={2} />}
+        <span className="grid h-7 w-7 shrink-0 place-items-center text-primary transition-transform active:scale-90">
+          {copied ? <Check className="h-4.5 w-4.5" strokeWidth={2.5} /> : <Copy className="h-4.5 w-4.5" strokeWidth={2} />}
         </span>
       </button>
 
-      <div className="mt-8">
-        <p className="text-[14px] text-foreground/70">O tempo para você pagar acaba em:</p>
+      <div className="mt-6 text-center">
+        <p className="text-[13px] text-foreground/60">O tempo para pagar acaba em</p>
         <p
-          className={`mt-2 text-[44px] font-bold tabular-nums leading-none tracking-tight transition-colors ${
+          className={`mt-1 text-[28px] font-bold tabular-nums leading-none tracking-tight transition-colors ${
             urgent ? "text-destructive" : "text-foreground"
           }`}
         >
           {mm}:{ss}
         </p>
-        <div className="mt-3 h-[3px] w-full overflow-hidden rounded-full bg-border/60">
+        <div className="mx-auto mt-3 h-[3px] w-full max-w-[220px] overflow-hidden rounded-full bg-border/60">
           <div
             className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${
               urgent ? "bg-destructive" : "bg-primary"
@@ -348,38 +348,10 @@ function PixView({
         </div>
       </div>
 
-      <div className="mt-6 divide-y divide-border/70">
-        <Disclosure open={howOpen} onToggle={() => setHowOpen((v) => !v)} label="Como funciona">
-          <ol className="space-y-3 pb-4 text-[13.5px] leading-relaxed text-foreground/75">
-            {[
-              "Copie o código Pix acima.",
-              "Abra o app do seu banco e escolha Pix Copia e Cola.",
-              "Cole o código, confira o valor e confirme.",
-              "A confirmação é automática — você será redirecionado.",
-            ].map((step, i) => (
-              <li key={i} className="flex items-start gap-3">
-                <span className="mt-[2px] grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
-                  {i + 1}
-                </span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
-        </Disclosure>
-        <Disclosure
-          open={summaryOpen}
-          onToggle={() => setSummaryOpen((v) => !v)}
-          label="Resumo do pedido"
-          hint={`#${order.short_id}`}
-        >
-          <OrderSummary order={order} />
-        </Disclosure>
-      </div>
-
-      <div className="mt-auto pt-10 sm:pt-8">
+      <div className="mt-auto pt-8">
         <button
           onClick={copy}
-          className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-[15px] font-bold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
+          className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-[15px] font-bold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
         >
           {copied ? (
             <>
@@ -397,6 +369,7 @@ function PixView({
     </div>
   );
 }
+
 
 function Disclosure({
   open,
