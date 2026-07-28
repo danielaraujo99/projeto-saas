@@ -53,8 +53,8 @@ function AuthPage() {
     return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
   }
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function submit() {
+    if (busy) return;
     setError(null);
     setBusy(true);
     const res =
@@ -179,7 +179,10 @@ function AuthPage() {
           </div>
 
           <form
-            onSubmit={submit}
+            onSubmit={(event) => {
+              event.preventDefault();
+              void submit();
+            }}
             action={`/auth?mode=${mode}${safeRedirect ? `&redirect=${encodeURIComponent(safeRedirect)}` : ""}`}
             className="mt-5 space-y-4"
           >
@@ -270,7 +273,8 @@ function AuthPage() {
             ) : null}
 
             <Button
-              type="submit"
+              type="button"
+              onClick={() => void submit()}
               className="h-12 w-full rounded-full text-base font-semibold"
               disabled={busy}
             >
