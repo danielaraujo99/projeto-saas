@@ -461,26 +461,38 @@ function PixHeroIllustration() {
 }
 
 
-function PixExpiredCard({ total, onRegenerate }: { total: number; onRegenerate: () => void }) {
+function PixExpiredCard({ orderId, total }: { orderId: string; total: number }) {
   return (
     <div className="mt-10 flex flex-col items-center text-center animate-fade-in">
-      <div className="grid h-16 w-16 place-items-center rounded-full bg-warning/15 text-warning">
+      <div className="grid h-16 w-16 place-items-center rounded-full bg-destructive/12 text-destructive">
         <TimerOff className="h-7 w-7" />
       </div>
-      <h1 className="mt-5 text-xl font-bold">Código Pix expirado</h1>
+      <h1 className="mt-5 text-xl font-bold">Pix expirado</h1>
       <p className="mt-2 max-w-[36ch] text-sm text-foreground/60">
-        Este código não foi pago a tempo. Gere um novo para tentar novamente — nenhum valor foi cobrado.
+        O tempo para pagar acabou e este pedido foi cancelado. Nenhum valor foi cobrado — faça um
+        novo pedido para tentar de novo.
       </p>
-      <p className="mt-5 text-2xl font-bold tabular-nums text-foreground">{brl(total)}</p>
-      <button
-        onClick={onRegenerate}
-        className="mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.02]"
+      <p className="mt-5 text-2xl font-bold tabular-nums text-foreground/70 line-through">
+        {brl(total)}
+      </p>
+      <Link
+        to="/pedido/$id"
+        params={{ id: orderId }}
+        replace
+        className="mt-6 inline-flex h-12 items-center gap-2 rounded-2xl bg-primary px-6 text-[13px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
       >
-        <RefreshCw className="h-4 w-4" /> Gerar novo código
-      </button>
+        Ver detalhes do pedido
+      </Link>
+      <Link
+        to="/pedidos"
+        className="mt-3 text-sm font-semibold text-primary hover:underline"
+      >
+        Meus pedidos
+      </Link>
     </div>
   );
 }
+
 
 function ProcessingCard({ method, total }: { method: "credit" | "debit" | "cash"; total: number }) {
   const label =
