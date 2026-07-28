@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -7,12 +7,10 @@ import {
   RefreshCw,
   TimerOff,
   AlertCircle,
-  ShieldCheck,
-  Info,
-  Clock,
-  Lock,
-  ChevronRight,
+  ChevronLeft,
+  ChevronDown,
   Check,
+  ShieldCheck,
 } from "lucide-react";
 import { getOrderById, confirmPayment, type OrderRow } from "@/lib/orders-api";
 import { createPixCharge, getPixStatus } from "@/lib/mercadopago.functions";
@@ -23,9 +21,9 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/pagamento/$id")({
   head: () => ({
     meta: [
-      { title: "Confirmando pagamento — Restaurante Demo" },
+      { title: "Confirmando pagamento — MenuAtlas" },
       { name: "description", content: "Confirmação do pagamento do seu pedido." },
-      { property: "og:title", content: "Confirmando pagamento — Restaurante Demo" },
+      { property: "og:title", content: "Confirmando pagamento — MenuAtlas" },
       { property: "og:description", content: "Confirmação do pagamento do seu pedido." },
     ],
   }),
@@ -57,7 +55,6 @@ function Page() {
     setPhase(order.payment.kind === "pix" ? "awaiting_pix" : "processing");
   }, [order, nav]);
 
-  // Card / cash: manter simulação existente
   React.useEffect(() => {
     if (!order) return;
     if (confirmedRef.current) return;
@@ -108,32 +105,22 @@ function Page() {
   }
 
   const isPix = order.payment.kind === "pix";
-  const isTerminal = phase === "success" || phase === "pix_expired";
-  const wide = isPix && !isTerminal;
 
   return (
-    <div className="min-h-screen bg-[color-mix(in_oklab,var(--primary)_4%,var(--background))]">
-      <main
-        className={`mx-auto flex min-h-screen flex-col px-4 py-6 sm:px-6 sm:py-10 ${
-          wide ? "max-w-6xl" : "max-w-md items-center justify-center"
-        }`}
-      >
+    <div className="min-h-screen bg-background">
+      <TopBar orderId={order.id} />
+      <main className="mx-auto flex w-full max-w-[440px] flex-col px-5 pb-10 pt-4 sm:px-6">
         {phase === "success" ? (
           <SuccessCard total={order.total} />
         ) : phase === "pix_expired" ? (
           <PixExpiredCard total={order.total} onRegenerate={regeneratePix} />
         ) : isPix ? (
-          <div className="grid w-full animate-fade-in gap-5 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] lg:gap-6">
-            <OrderSummaryAside order={order} />
-            <PixCard
-              key={pixCycle}
-              orderId={order.id}
-              shortId={order.short_id}
-              total={order.total}
-              onApproved={onPixApproved}
-              onExpired={() => setPhase("pix_expired")}
-            />
-          </div>
+          <PixView
+            key={pixCycle}
+            order={order}
+            onApproved={onPixApproved}
+            onExpired={() => setPhase("pix_expired")}
+          />
         ) : (
           <ProcessingCard method={order.payment.kind as "credit" | "debit" | "cash"} total={order.total} />
         )}
@@ -142,87 +129,24 @@ function Page() {
   );
 }
 
-function OrderSummaryAside({ order }: { order: OrderRow }) {
-  const itemsCount = order.items.reduce((n, i) => n + i.quantity, 0);
+function TopBar({ orderId }: { orderId: string }) {
   return (
-    <aside className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
-      <section className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-elevated)] sm:p-6">
-        <header className="flex items-center justify-between gap-3">
-          <h2 className="text-[15px] font-bold tracking-tight">Resumo do pedido</h2>
-          <span className="rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-semibold text-primary">
-            #{order.short_id}
-          </span>
-        </header>
-
-        <ul className="mt-4 space-y-2.5">
-          {order.items.slice(0, 4).map((it, idx) => (
-            <li
-              key={`${it.productId}-${idx}`}
-              className="flex items-start justify-between gap-3 text-[13px]"
-            >
-              <span className="min-w-0 flex-1 truncate text-foreground/80">
-                <span className="mr-1 font-semibold text-foreground">{it.quantity}×</span>
-                {it.name}
-              </span>
-              <span className="shrink-0 tabular-nums text-foreground/70">
-                {brl(it.unitPrice * it.quantity)}
-              </span>
-            </li>
-          ))}
-          {order.items.length > 4 && (
-            <li className="text-[12px] text-foreground/50">
-              +{order.items.length - 4} outro(s) item(ns)
-            </li>
-          )}
-        </ul>
-
-        <div className="mt-4 space-y-1.5 border-t border-border pt-4 text-[13px]">
-          <Row label={`Itens (${itemsCount})`} value={brl(order.subtotal)} />
-          {order.delivery_fee > 0 && (
-            <Row label="Taxa de entrega" value={brl(order.delivery_fee)} />
-          )}
-          {order.discount > 0 && (
-            <Row label="Desconto" value={`− ${brl(order.discount)}`} accent="text-success" />
-          )}
-        </div>
-
-        <div className="mt-4 flex items-baseline justify-between border-t border-border pt-4">
-          <span className="text-[13px] font-semibold text-foreground/70">Total</span>
-          <span className="text-xl font-bold tabular-nums text-primary">{brl(order.total)}</span>
-        </div>
-      </section>
-
-      <section className="hidden rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-elevated)] lg:block">
-        <div className="flex items-start gap-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
-            <ShieldCheck className="h-4 w-4" />
-          </span>
-          <div>
-            <p className="text-[13px] font-bold">Ambiente seguro</p>
-            <p className="mt-1 text-[12px] leading-relaxed text-foreground/60">
-              Seus dados e pagamentos são protegidos com criptografia de nível bancário.
-            </p>
-          </div>
-        </div>
-      </section>
-    </aside>
-  );
-}
-
-function Row({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: string;
-}) {
-  return (
-    <div className="flex items-baseline justify-between">
-      <span className="text-foreground/60">{label}</span>
-      <span className={`tabular-nums ${accent ?? "text-foreground/80"}`}>{value}</span>
-    </div>
+    <header className="sticky top-0 z-10 border-b border-border/60 bg-background/85 backdrop-blur">
+      <div className="mx-auto grid h-14 w-full max-w-[440px] grid-cols-[auto_1fr_auto] items-center px-3 sm:px-4">
+        <Link
+          to="/pedido/$id"
+          params={{ id: orderId }}
+          className="grid h-10 w-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-muted"
+          aria-label="Voltar"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </Link>
+        <h1 className="text-center text-[13px] font-semibold uppercase tracking-[0.18em] text-foreground/80">
+          Pagamento
+        </h1>
+        <div className="w-10" />
+      </div>
+    </header>
   );
 }
 
@@ -238,16 +162,12 @@ function PulseLoader({ label }: { label: string }) {
   );
 }
 
-function PixCard({
-  orderId,
-  shortId,
-  total,
+function PixView({
+  order,
   onApproved,
   onExpired,
 }: {
-  orderId: string;
-  shortId: string;
-  total: number;
+  order: OrderRow;
   onApproved: () => void;
   onExpired: () => void;
 }) {
@@ -261,17 +181,19 @@ function PixCard({
     | { phase: "ready"; paymentId: number; code: string; deadline: number }
   >({ phase: "creating" });
   const [remaining, setRemaining] = React.useState(5 * 60_000);
+  const [copied, setCopied] = React.useState(false);
+  const [howOpen, setHowOpen] = React.useState(false);
+  const [summaryOpen, setSummaryOpen] = React.useState(false);
 
-  // Criar cobrança uma vez
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const res = await createFn({
           data: {
-            amount: total,
-            description: `Pedido ${shortId}`,
-            externalReference: orderId,
+            amount: order.total,
+            description: `Pedido ${order.short_id}`,
+            externalReference: order.id,
             payerEmail: email,
             expirationMinutes: 5,
           },
@@ -298,7 +220,6 @@ function PixCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Contagem regressiva + expiração
   React.useEffect(() => {
     if (state.phase !== "ready") return;
     const tick = () => {
@@ -311,7 +232,6 @@ function PixCard({
     return () => window.clearInterval(t);
   }, [state, onExpired]);
 
-  // Polling do status
   React.useEffect(() => {
     if (state.phase !== "ready") return;
     let stopped = false;
@@ -342,7 +262,7 @@ function PixCard({
 
   if (state.phase === "creating") {
     return (
-      <div className="w-full animate-fade-in rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-elevated)]">
+      <div className="grid min-h-[70vh] place-items-center">
         <PulseLoader label="Gerando código Pix…" />
       </div>
     );
@@ -350,7 +270,7 @@ function PixCard({
 
   if (state.phase === "error") {
     return (
-      <div className="w-full animate-fade-in rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-elevated)]">
+      <div className="mt-10 rounded-3xl border border-border bg-card p-8 text-center">
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-destructive/15 text-destructive">
           <AlertCircle className="h-6 w-6" />
         </div>
@@ -369,189 +289,236 @@ function PixCard({
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(state.code);
-      toast.success("Código Pix copiado");
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error("Não foi possível copiar. Selecione e copie manualmente.");
     }
   };
 
-  const preview = state.code.length > 28 ? `${state.code.slice(0, 24)}…` : state.code;
+  const preview = state.code.length > 28 ? `${state.code.slice(0, 26)}…` : state.code;
 
   return (
-    <div className="w-full max-w-md animate-fade-in">
-      <PixHero />
+    <div className="flex flex-col items-center animate-fade-in">
+      <PixHeroIllustration />
 
-      <div className="mt-6 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-elevated)] sm:p-7">
-        <div className="text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/70" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
-            </span>
-            Aguardando pagamento
-          </span>
-          <h1 className="mt-4 text-[22px] font-bold leading-tight tracking-tight sm:text-2xl">
-            Pague com Pix em segundos
-          </h1>
-          <p className="mt-1.5 text-[13px] text-foreground/60">
-            Total <span className="font-semibold text-foreground">{brl(total)}</span> · confirmação automática
-          </p>
-        </div>
+      <h1 className="mt-6 text-center text-[22px] font-bold leading-snug tracking-tight text-foreground sm:text-[24px]">
+        Pedido aguardando pagamento
+      </h1>
+      <p className="mt-2 max-w-[36ch] text-center text-[14px] leading-relaxed text-foreground/60">
+        Copie o código abaixo e utilize o <span className="font-semibold text-foreground/80">Pix Copia e Cola</span> no app do seu banco.
+      </p>
 
-        <div className="mt-6">
-          <div className="flex items-center justify-between px-1 pb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/50">
-              Pix Copia e Cola
-            </span>
-            <button
-              onClick={copy}
-              className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline"
-            >
-              Copiar
-            </button>
-          </div>
-          <button
-            onClick={copy}
-            className="group flex w-full items-center gap-3 rounded-2xl border border-dashed border-primary/40 bg-primary-soft/40 px-4 py-3.5 text-left transition-colors hover:bg-primary-soft/70"
-            aria-label="Copiar código Pix"
+      <button
+        onClick={copy}
+        className="mt-6 flex w-full items-center gap-3 rounded-2xl border border-dashed border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/60 hover:bg-primary-soft/30"
+        aria-label="Copiar código Pix"
+      >
+        <span className="min-w-0 flex-1 truncate font-mono text-[14px] tracking-tight text-foreground/85">
+          {preview}
+        </span>
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-primary transition-transform active:scale-90">
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        </span>
+      </button>
+
+      <div className="mt-6 w-full">
+        <p className="text-[13px] text-foreground/60">O tempo para você pagar acaba em:</p>
+        <div className="mt-1.5 flex items-baseline justify-between">
+          <span
+            className={`text-[34px] font-bold tabular-nums leading-none tracking-tight transition-colors ${urgent ? "text-destructive" : "text-foreground"}`}
           >
-            <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-foreground/80">
-              {preview}
-            </span>
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition-transform group-active:scale-95">
-              <Copy className="h-4 w-4" />
-            </span>
-          </button>
+            {mm}:{ss}
+          </span>
+          <span className="text-[13px] font-semibold tabular-nums text-foreground/50">
+            {brl(order.total)}
+          </span>
         </div>
-
-        <div className="mt-5 rounded-2xl bg-surface p-4">
-          <div className="flex items-baseline justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/50">
-              Expira em
-            </span>
-            <span
-              className={`text-2xl font-bold tabular-nums transition-colors ${urgent ? "text-destructive" : "text-foreground"}`}
-            >
-              {mm}:{ss}
-            </span>
-          </div>
-          <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-border/60">
-            <div
-              className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${urgent ? "bg-destructive" : "bg-primary"}`}
-              style={{ width: `${progress * 100}%` }}
-            />
-          </div>
+        <div className="mt-3 h-[3px] w-full overflow-hidden rounded-full bg-border/70">
+          <div
+            className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${urgent ? "bg-destructive" : "bg-primary"}`}
+            style={{ width: `${progress * 100}%` }}
+          />
         </div>
-
-        <ol className="mt-5 space-y-2.5">
-          {[
-            "Abra o app do seu banco",
-            "Escolha Pix Copia e Cola e cole o código",
-            "Confirme o valor — pronto!",
-          ].map((step, i) => (
-            <li key={i} className="flex items-start gap-3 text-[13px] text-foreground/75">
-              <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
-                {i + 1}
-              </span>
-              <span>{step}</span>
-            </li>
-          ))}
-        </ol>
-
-        <button
-          onClick={copy}
-          className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
-        >
-          <Copy className="h-4 w-4" /> Copiar código Pix
-        </button>
       </div>
 
-      <p className="mt-4 text-center text-[11px] text-foreground/45">
+      <div className="mt-6 w-full divide-y divide-border/70 border-y border-border/70">
+        <Disclosure open={howOpen} onToggle={() => setHowOpen((v) => !v)} label="Como funciona">
+          <ol className="space-y-3 pb-4 text-[13.5px] leading-relaxed text-foreground/75">
+            {[
+              "Copie o código Pix acima.",
+              "Abra o app do seu banco e escolha Pix Copia e Cola.",
+              "Cole o código, confira o valor e confirme.",
+              "A confirmação é automática — você será redirecionado.",
+            ].map((step, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span className="mt-[2px] grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
+                  {i + 1}
+                </span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+        </Disclosure>
+        <Disclosure
+          open={summaryOpen}
+          onToggle={() => setSummaryOpen((v) => !v)}
+          label="Resumo do pedido"
+          hint={`#${order.short_id}`}
+        >
+          <OrderSummary order={order} />
+        </Disclosure>
+      </div>
+
+      <button
+        onClick={copy}
+        className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
+      >
+        {copied ? (
+          <>
+            <Check className="h-4 w-4" /> Código copiado
+          </>
+        ) : (
+          <>
+            <Copy className="h-4 w-4" /> Copiar código
+          </>
+        )}
+      </button>
+
+      <p className="mt-4 inline-flex items-center gap-1.5 text-[11px] text-foreground/45">
+        <ShieldCheck className="h-3.5 w-3.5" />
         Pagamento processado com segurança · Mercado Pago
       </p>
     </div>
   );
 }
 
-function PixHero() {
+function Disclosure({
+  open,
+  onToggle,
+  label,
+  hint,
+  children,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="relative mx-auto grid h-44 w-full place-items-center overflow-hidden sm:h-48">
-      <div className="pointer-events-none absolute inset-0 grid place-items-center">
-        <div className="h-56 w-56 rounded-full bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--primary)_22%,transparent),transparent_65%)]" />
-      </div>
-      <span className="pointer-events-none absolute h-28 w-28 rounded-full border border-primary/30 animate-[pixring_2.6s_ease-out_infinite]" />
-      <span
-        className="pointer-events-none absolute h-28 w-28 rounded-full border border-primary/25 animate-[pixring_2.6s_ease-out_infinite]"
-        style={{ animationDelay: "0.9s" }}
-      />
-      <span
-        className="pointer-events-none absolute h-28 w-28 rounded-full border border-primary/20 animate-[pixring_2.6s_ease-out_infinite]"
-        style={{ animationDelay: "1.8s" }}
-      />
-      <span className="pointer-events-none absolute left-[22%] top-[18%] h-1.5 w-1.5 rounded-full bg-primary/70 animate-[pixfloat_3.4s_ease-in-out_infinite]" />
-      <span
-        className="pointer-events-none absolute right-[20%] top-[30%] h-1 w-1 rounded-full bg-primary/60 animate-[pixfloat_4s_ease-in-out_infinite]"
-        style={{ animationDelay: "0.8s" }}
-      />
-      <span
-        className="pointer-events-none absolute right-[26%] bottom-[22%] h-2 w-2 rounded-full bg-primary/50 animate-[pixfloat_3.8s_ease-in-out_infinite]"
-        style={{ animationDelay: "1.4s" }}
-      />
-      <div className="relative grid h-24 w-24 place-items-center rounded-[28%] bg-gradient-to-br from-primary to-[color-mix(in_oklab,var(--primary)_55%,black)] shadow-[0_20px_50px_-15px_color-mix(in_oklab,var(--primary)_55%,transparent)] animate-[pixpop_600ms_cubic-bezier(.2,.9,.3,1.2)_both]">
-        <svg viewBox="0 0 64 64" className="h-11 w-11 text-primary-foreground">
-          <g
-            fill="currentColor"
-            style={{ transformOrigin: "32px 32px", animation: "pixspin 9s linear infinite" }}
+    <div>
+      <button
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-3 py-4 text-left"
+        aria-expanded={open}
+      >
+        <span className="text-[14px] font-semibold text-foreground">{label}</span>
+        <span className="flex items-center gap-2">
+          {hint && (
+            <span className="text-[12px] font-medium text-foreground/50">{hint}</span>
+          )}
+          <ChevronDown
+            className={`h-4 w-4 text-foreground/50 transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </span>
+      </button>
+      {open && <div className="animate-fade-in">{children}</div>}
+    </div>
+  );
+}
+
+function OrderSummary({ order }: { order: OrderRow }) {
+  const itemsCount = order.items.reduce((n, i) => n + i.quantity, 0);
+  return (
+    <div className="pb-4">
+      <ul className="space-y-2">
+        {order.items.map((it, idx) => (
+          <li
+            key={`${it.productId}-${idx}`}
+            className="flex items-start justify-between gap-3 text-[13px]"
           >
+            <span className="min-w-0 flex-1 truncate text-foreground/75">
+              <span className="mr-1 font-semibold text-foreground">{it.quantity}×</span>
+              {it.name}
+            </span>
+            <span className="shrink-0 tabular-nums text-foreground/65">
+              {brl(it.unitPrice * it.quantity)}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-4 space-y-1.5 border-t border-border/70 pt-3 text-[13px]">
+        <Row label={`Itens (${itemsCount})`} value={brl(order.subtotal)} />
+        {order.delivery_fee > 0 && <Row label="Taxa de entrega" value={brl(order.delivery_fee)} />}
+        {order.discount > 0 && (
+          <Row label="Desconto" value={`− ${brl(order.discount)}`} accent="text-success" />
+        )}
+        <div className="flex items-baseline justify-between pt-2 text-[14px] font-semibold">
+          <span className="text-foreground">Total</span>
+          <span className="tabular-nums text-foreground">{brl(order.total)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Row({ label, value, accent }: { label: string; value: string; accent?: string }) {
+  return (
+    <div className="flex items-baseline justify-between">
+      <span className="text-foreground/60">{label}</span>
+      <span className={`tabular-nums ${accent ?? "text-foreground/80"}`}>{value}</span>
+    </div>
+  );
+}
+
+function PixHeroIllustration() {
+  return (
+    <div className="relative mt-2 grid h-40 w-full place-items-center sm:h-44">
+      <div className="pointer-events-none absolute inset-0 grid place-items-center">
+        <div className="h-40 w-40 rounded-full bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--primary)_16%,transparent),transparent_70%)]" />
+      </div>
+      <span className="pointer-events-none absolute h-24 w-24 rounded-full border border-primary/25 animate-[pixring_2.8s_ease-out_infinite]" />
+      <span
+        className="pointer-events-none absolute h-24 w-24 rounded-full border border-primary/20 animate-[pixring_2.8s_ease-out_infinite]"
+        style={{ animationDelay: "1s" }}
+      />
+      <div className="relative grid h-[88px] w-[88px] place-items-center rounded-[26%] bg-gradient-to-br from-primary to-[color-mix(in_oklab,var(--primary)_55%,black)] shadow-[0_18px_40px_-14px_color-mix(in_oklab,var(--primary)_55%,transparent)] animate-[pixpop_500ms_cubic-bezier(.2,.9,.3,1.2)_both]">
+        <svg viewBox="0 0 64 64" className="h-10 w-10 text-primary-foreground">
+          <g fill="currentColor">
             <path d="M32 6 L46 20 L40 20 L32 12 L24 20 L18 20 Z" opacity="0.95" />
             <path d="M6 32 L20 18 L20 24 L12 32 L20 40 L20 46 Z" opacity="0.9" />
             <path d="M58 32 L44 46 L44 40 L52 32 L44 24 L44 18 Z" opacity="0.9" />
             <path d="M32 58 L18 44 L24 44 L32 52 L40 44 L46 44 Z" opacity="0.95" />
           </g>
-          <circle
-            cx="32"
-            cy="32"
-            r="4"
-            fill="currentColor"
-            style={{ animation: "pixpulse 1.6s ease-in-out infinite" }}
-          />
         </svg>
-        <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-[28%]">
-          <span className="absolute -inset-y-6 -left-1/2 w-1/2 rotate-12 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-[pixsweep_3.2s_ease-in-out_infinite]" />
+        <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-[26%]">
+          <span className="absolute -inset-y-6 -left-1/2 w-1/2 rotate-12 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-[pixsweep_3.4s_ease-in-out_infinite]" />
         </span>
       </div>
       <style>{`
-        @keyframes pixring { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(1.9); opacity: 0; } }
-        @keyframes pixfloat { 0%,100% { transform: translateY(0); opacity: 0.7; } 50% { transform: translateY(-10px); opacity: 1; } }
-        @keyframes pixpop { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes pixspin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes pixpulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.6; } }
+        @keyframes pixring { 0% { transform: scale(0.7); opacity: 0.8; } 100% { transform: scale(1.8); opacity: 0; } }
+        @keyframes pixpop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes pixsweep { 0% { transform: translateX(-40%) rotate(12deg); } 60%,100% { transform: translateX(320%) rotate(12deg); } }
       `}</style>
     </div>
   );
 }
 
-function PixExpiredCard({
-  total,
-  onRegenerate,
-}: {
-  total: number;
-  onRegenerate: () => void;
-}) {
+function PixExpiredCard({ total, onRegenerate }: { total: number; onRegenerate: () => void }) {
   return (
-    <div className="w-full animate-fade-in rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-elevated)]">
-      <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-warning/15 text-warning">
+    <div className="mt-10 flex flex-col items-center text-center animate-fade-in">
+      <div className="grid h-16 w-16 place-items-center rounded-full bg-warning/15 text-warning">
         <TimerOff className="h-7 w-7" />
       </div>
       <h1 className="mt-5 text-xl font-bold">Código Pix expirado</h1>
-      <p className="mt-2 text-sm text-foreground/60">
+      <p className="mt-2 max-w-[36ch] text-sm text-foreground/60">
         Este código não foi pago a tempo. Gere um novo para tentar novamente — nenhum valor foi cobrado.
       </p>
-      <p className="mt-4 text-2xl font-bold tabular-nums text-foreground">{brl(total)}</p>
+      <p className="mt-5 text-2xl font-bold tabular-nums text-foreground">{brl(total)}</p>
       <button
         onClick={onRegenerate}
-        className="mx-auto mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.02]"
+        className="mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.02]"
       >
         <RefreshCw className="h-4 w-4" /> Gerar novo código
       </button>
@@ -563,8 +530,8 @@ function ProcessingCard({ method, total }: { method: "credit" | "debit" | "cash"
   const label =
     method === "cash" ? "Registrando pagamento em dinheiro" : "Processando pagamento no cartão";
   return (
-    <div className="w-full animate-fade-in rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-elevated)]">
-      <div className="relative mx-auto h-20 w-20">
+    <div className="mt-12 flex flex-col items-center text-center animate-fade-in">
+      <div className="relative h-20 w-20">
         <span className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
         <span className="absolute inset-2 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
       </div>
@@ -577,8 +544,8 @@ function ProcessingCard({ method, total }: { method: "credit" | "debit" | "cash"
 
 function SuccessCard({ total }: { total: number }) {
   return (
-    <div className="w-full animate-scale-in rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-elevated)]">
-      <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-success/15 text-success">
+    <div className="mt-12 flex flex-col items-center text-center animate-scale-in">
+      <div className="grid h-20 w-20 place-items-center rounded-full bg-success/15 text-success">
         <CheckDraw />
       </div>
       <h1 className="mt-6 text-2xl font-bold">Pagamento confirmado</h1>
