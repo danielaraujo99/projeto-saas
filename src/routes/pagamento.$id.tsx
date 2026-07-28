@@ -352,14 +352,16 @@ function PixView({
       <div className="mt-auto pt-8">
         <button
           onClick={copy}
-          className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-[15px] font-bold text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
+          className="inline-flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-primary py-4 text-[13px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform active:scale-[0.98]"
         >
           {copied ? (
             <>
-              <Check className="h-5 w-5" strokeWidth={2.5} /> Código copiado
+              <Check className="h-4.5 w-4.5" strokeWidth={2.5} /> Código copiado
             </>
           ) : (
-            <>Copiar código</>
+            <>
+              <Copy className="h-4.5 w-4.5" strokeWidth={2} /> Copiar código
+            </>
           )}
         </button>
         <p className="mt-3 inline-flex w-full items-center justify-center gap-1.5 text-[11px] text-foreground/45">
