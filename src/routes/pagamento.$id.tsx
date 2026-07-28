@@ -36,8 +36,8 @@ export const Route = createFileRoute("/pagamento/$id")({
 
 type Phase = "loading" | "awaiting_pix" | "processing" | "success" | "pix_expired";
 
-const CARD_CONFIRM_MS = 2200;
-const POLL_INTERVAL_MS = 3000;
+const CARD_CONFIRM_MS = 1200;
+const POLL_INTERVAL_MS = 1500;
 
 function Page() {
   const { id } = useParams({ from: "/pagamento/$id" });
