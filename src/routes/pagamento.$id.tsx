@@ -302,7 +302,7 @@ function PixView({
     }
   };
 
-  const preview = state.code.length > 22 ? `${state.code.slice(0, 20)}…` : state.code;
+  const preview = state.code;
 
   return (
     <div className="flex flex-1 flex-col animate-fade-in pb-24 sm:pb-8">
