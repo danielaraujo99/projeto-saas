@@ -479,32 +479,78 @@ function Row({ label, value, accent }: { label: string; value: string; accent?: 
 
 function PixHeroIllustration() {
   return (
-    <div className="relative mt-2 grid h-40 w-full place-items-center sm:h-44">
-      <div className="pointer-events-none absolute inset-0 grid place-items-center">
-        <div className="h-40 w-40 rounded-full bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--primary)_16%,transparent),transparent_70%)]" />
-      </div>
-      <span className="pointer-events-none absolute h-24 w-24 rounded-full border border-primary/25 animate-[pixring_2.8s_ease-out_infinite]" />
+    <div className="relative mt-4 grid h-52 w-full place-items-center sm:h-56">
+      {/* soft tinted circle backdrop */}
+      <div className="absolute h-44 w-44 rounded-full bg-primary-soft/70 sm:h-48 sm:w-48" />
+      <div className="pointer-events-none absolute h-44 w-44 rounded-full bg-[radial-gradient(circle_at_30%_25%,color-mix(in_oklab,var(--primary)_18%,transparent),transparent_65%)] sm:h-48 sm:w-48" />
+
+      {/* subtle expanding rings */}
+      <span className="pointer-events-none absolute h-32 w-32 rounded-full border border-primary/20 animate-[pixring_3s_ease-out_infinite]" />
       <span
-        className="pointer-events-none absolute h-24 w-24 rounded-full border border-primary/20 animate-[pixring_2.8s_ease-out_infinite]"
-        style={{ animationDelay: "1s" }}
+        className="pointer-events-none absolute h-32 w-32 rounded-full border border-primary/15 animate-[pixring_3s_ease-out_infinite]"
+        style={{ animationDelay: "1.2s" }}
       />
-      <div className="relative grid h-[88px] w-[88px] place-items-center rounded-[26%] bg-gradient-to-br from-primary to-[color-mix(in_oklab,var(--primary)_55%,black)] shadow-[0_18px_40px_-14px_color-mix(in_oklab,var(--primary)_55%,transparent)] animate-[pixpop_500ms_cubic-bezier(.2,.9,.3,1.2)_both]">
-        <svg viewBox="0 0 64 64" className="h-10 w-10 text-primary-foreground">
-          <g fill="currentColor">
-            <path d="M32 6 L46 20 L40 20 L32 12 L24 20 L18 20 Z" opacity="0.95" />
-            <path d="M6 32 L20 18 L20 24 L12 32 L20 40 L20 46 Z" opacity="0.9" />
-            <path d="M58 32 L44 46 L44 40 L52 32 L44 24 L44 18 Z" opacity="0.9" />
-            <path d="M32 58 L18 44 L24 44 L32 52 L40 44 L46 44 Z" opacity="0.95" />
+
+      {/* stylized phone with Pix diamond */}
+      <svg
+        viewBox="0 0 200 200"
+        className="relative h-40 w-40 animate-[pixpop_600ms_cubic-bezier(.2,.9,.3,1.2)_both] sm:h-44 sm:w-44"
+      >
+        <defs>
+          <linearGradient id="phoneGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="color-mix(in oklab, var(--primary) 92%, black)" />
+            <stop offset="100%" stopColor="color-mix(in oklab, var(--primary) 65%, black)" />
+          </linearGradient>
+          <linearGradient id="screenGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="color-mix(in oklab, var(--primary) 30%, white)" />
+            <stop offset="100%" stopColor="white" />
+          </linearGradient>
+        </defs>
+
+        {/* phone body */}
+        <g style={{ transformOrigin: "100px 100px", animation: "pixtilt 5s ease-in-out infinite" }}>
+          <rect x="62" y="32" width="76" height="140" rx="16" fill="url(#phoneGrad)" />
+          <rect x="70" y="42" width="60" height="118" rx="8" fill="url(#screenGrad)" />
+          {/* speaker slit */}
+          <rect x="90" y="38" width="20" height="2.5" rx="1.25" fill="color-mix(in oklab, var(--primary) 40%, black)" opacity="0.5" />
+
+          {/* Pix diamond on screen */}
+          <g transform="translate(100 95)">
+            <g style={{ transformOrigin: "0 0", animation: "pixslowspin 12s linear infinite" }} fill="var(--primary)">
+              <path d="M0 -22 L14 -8 L10 -8 L0 -18 L-10 -8 L-14 -8 Z" opacity="0.95" />
+              <path d="M-22 0 L-8 -14 L-8 -10 L-18 0 L-8 10 L-8 14 Z" opacity="0.9" />
+              <path d="M22 0 L8 14 L8 10 L18 0 L8 -10 L8 -14 Z" opacity="0.9" />
+              <path d="M0 22 L-14 8 L-10 8 L0 18 L10 8 L14 8 Z" opacity="0.95" />
+            </g>
+            <circle cx="0" cy="0" r="3" fill="var(--primary)" style={{ animation: "pixdot 1.8s ease-in-out infinite" }} />
           </g>
-        </svg>
-        <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-[26%]">
-          <span className="absolute -inset-y-6 -left-1/2 w-1/2 rotate-12 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-[pixsweep_3.4s_ease-in-out_infinite]" />
-        </span>
-      </div>
+
+          {/* thin scan line */}
+          <rect x="72" y="120" width="56" height="1" fill="var(--primary)" opacity="0.35" />
+          <rect x="72" y="128" width="40" height="1" fill="var(--primary)" opacity="0.25" />
+          <rect x="72" y="136" width="48" height="1" fill="var(--primary)" opacity="0.2" />
+        </g>
+
+        {/* floating clock badge */}
+        <g style={{ transformOrigin: "156px 60px", animation: "pixfloat 3.6s ease-in-out infinite" }}>
+          <circle cx="156" cy="60" r="18" fill="white" stroke="var(--primary)" strokeWidth="2" />
+          <line x1="156" y1="60" x2="156" y2="50" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
+          <line x1="156" y1="60" x2="163" y2="60" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="156" cy="60" r="1.5" fill="var(--primary)" />
+        </g>
+
+        {/* small floating dot */}
+        <circle cx="44" cy="140" r="4" fill="var(--primary)" opacity="0.6" style={{ animation: "pixfloat 4.2s ease-in-out infinite", animationDelay: "0.6s" }} />
+        <circle cx="52" cy="60" r="2.5" fill="var(--primary)" opacity="0.5" style={{ animation: "pixfloat 3.8s ease-in-out infinite", animationDelay: "1.2s" }} />
+      </svg>
+
       <style>{`
-        @keyframes pixring { 0% { transform: scale(0.7); opacity: 0.8; } 100% { transform: scale(1.8); opacity: 0; } }
-        @keyframes pixpop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes pixsweep { 0% { transform: translateX(-40%) rotate(12deg); } 60%,100% { transform: translateX(320%) rotate(12deg); } }
+        @keyframes pixring { 0% { transform: scale(0.7); opacity: 0.7; } 100% { transform: scale(1.7); opacity: 0; } }
+        @keyframes pixpop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pixtilt { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+        @keyframes pixslowspin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pixdot { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.6); opacity: 0.5; } }
+        @keyframes pixfloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
       `}</style>
     </div>
   );
