@@ -1,7 +1,18 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bike, ChefHat, Check, CheckCircle2, Copy, PackageCheck, Receipt, RefreshCw, Star, TimerOff, WifiOff } from "lucide-react";
+import { toast } from "sonner";
+import {
+  Check,
+  CheckCircle2,
+  Copy,
+  Receipt,
+  RefreshCw,
+  ShoppingBag,
+  Star,
+  TimerOff,
+  WifiOff,
+} from "lucide-react";
 import {
   getPixSession,
   isPixExpired,
@@ -14,11 +25,12 @@ import {
 import { listMyOrders, type OrderRow } from "@/lib/orders-api";
 import { statusLabel, type OrderStatus, ACTIVE_STATUSES } from "@/lib/order-status";
 import { brl } from "@/lib/format";
+import { restaurant } from "@/data/restaurant";
+import { useCart } from "@/store/cart";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-
 
 export const Route = createFileRoute("/pedidos")({
   head: () => ({
@@ -32,13 +44,42 @@ export const Route = createFileRoute("/pedidos")({
   component: Page,
 });
 
-const icons: Record<OrderStatus, React.ComponentType<{ className?: string }>> = {
-  pending_payment: Receipt,
-  received: CheckCircle2,
-  preparing: ChefHat,
-  delivering: Bike,
-  delivered: PackageCheck,
-};
+/* ------------------------------------------------------------------ */
+/* Date grouping                                                       */
+/* ------------------------------------------------------------------ */
+
+const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+function dayKey(iso: string) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function dayLabel(iso: string) {
+  const d = new Date(iso);
+  const today = new Date();
+  const startOf = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diffDays = Math.round((startOf(today) - startOf(d)) / 86_400_000);
+  const date = d.toLocaleDateString("pt-BR");
+  if (diffDays === 0) return `Hoje · ${date}`;
+  if (diffDays === 1) return `Ontem · ${date}`;
+  return `${WEEKDAYS[d.getDay()]}, ${date}`;
+}
+
+function groupByDay(orders: OrderRow[]) {
+  const groups: Array<{ key: string; label: string; orders: OrderRow[] }> = [];
+  for (const o of orders) {
+    const key = dayKey(o.created_at);
+    const last = groups[groups.length - 1];
+    if (last && last.key === key) last.orders.push(o);
+    else groups.push({ key, label: dayLabel(o.created_at), orders: [o] });
+  }
+  return groups;
+}
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
 
 function Page() {
   const [tab, setTab] = React.useState<"active" | "past">("active");
@@ -49,13 +90,13 @@ function Page() {
     retry: 1,
   });
 
-
   const orders = data ?? [];
   const active = orders.filter(
     (o) => ACTIVE_STATUSES.includes(o.status as OrderStatus) || o.status === "pending_payment",
   );
   const past = orders.filter((o) => o.status === "delivered");
   const list = tab === "active" ? active : past;
+  const groups = React.useMemo(() => groupByDay(list), [list]);
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pt-20">
@@ -93,7 +134,6 @@ function Page() {
             }
           />
         ) : list.length === 0 ? (
-
           <EmptyState
             icon={<Receipt className="h-6 w-6" />}
             title={tab === "active" ? "Nenhum pedido em andamento" : "Você ainda não tem histórico"}
@@ -112,11 +152,20 @@ function Page() {
             }
           />
         ) : (
-          <ul className="space-y-3">
-            {list.map((o) => (
-              <OrderCard key={o.id} order={o} />
+          <div className="space-y-6">
+            {groups.map((g) => (
+              <section key={g.key}>
+                <h2 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-foreground/40">
+                  {g.label}
+                </h2>
+                <ul className="space-y-3">
+                  {g.orders.map((o) => (
+                    <OrderCard key={o.id} order={o} />
+                  ))}
+                </ul>
+              </section>
             ))}
-          </ul>
+          </div>
         )}
       </main>
     </div>
@@ -154,8 +203,13 @@ function usePixTick(active: boolean) {
   }, [active]);
 }
 
+/* ------------------------------------------------------------------ */
+/* Card                                                                */
+/* ------------------------------------------------------------------ */
+
 function OrderCard({ order }: { order: OrderRow }) {
   const nav = useNavigate();
+  const addItem = useCart((s) => s.addItem);
   const [session, setSession] = React.useState<PixSession | null>(null);
   const isPending = order.status === "pending_payment";
 
@@ -168,85 +222,121 @@ function OrderCard({ order }: { order: OrderRow }) {
 
   const expired = isPixExpired(session);
   const livePix = session && !expired ? session : null;
+  const delivered = order.status === "delivered";
 
-  const Icon = expired ? TimerOff : icons[order.status as OrderStatus];
-  const isActive =
-    !expired &&
-    order.status !== "delivered" &&
-    ACTIVE_STATUSES.concat("pending_payment").includes(order.status as OrderStatus);
   const target = isPending && !expired ? "/pagamento/$id" : "/pedido/$id";
-
-  const statusText = expired
-    ? "Pagamento expirado · Pedido cancelado"
-    : statusLabel[order.status as OrderStatus];
 
   const remaining = livePix ? pixRemainingMs(livePix) : 0;
   const progress = livePix ? remaining / pixTotalMs(livePix) : 0;
   const urgent = remaining <= 60_000;
 
+  const visible = order.items.slice(0, 3);
+  const extra = order.items.length - visible.length;
+  const thumbs = order.items.filter((i) => i.image).slice(0, 3);
+
+  const repeat = () => {
+    for (const it of order.items) {
+      addItem({
+        productId: it.productId,
+        name: it.name,
+        image: it.image,
+        basePrice: it.basePrice,
+        quantity: it.quantity,
+        note: it.note,
+        customizations: it.customizations ?? [],
+      });
+    }
+    toast.success("Itens adicionados à sacola");
+    nav({ to: "/carrinho" });
+  };
+
   return (
     <li>
-      <div
+      <article
         className={cn(
-          "w-full rounded-2xl border bg-card shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-elevated)]",
+          "overflow-hidden rounded-2xl border bg-card shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-elevated)]",
           expired ? "border-destructive/25" : "border-border",
         )}
       >
+        {/* header */}
         <button
           onClick={() => nav({ to: target, params: { id: order.id } })}
-          className="w-full p-4 text-left"
+          className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 pt-4 text-left"
         >
-          <div className="flex items-start gap-3">
-            <div
-              className={cn(
-                "grid h-11 w-11 shrink-0 place-items-center rounded-full",
-                expired
-                  ? "bg-destructive/12 text-destructive"
-                  : isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-success/15 text-success",
-              )}
-            >
-              <Icon className="h-5 w-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-sm font-bold text-foreground">Pedido {order.short_id}</div>
-                <div
-                  className={cn(
-                    "text-sm font-bold tabular-nums",
-                    expired ? "text-foreground/50 line-through" : "text-foreground",
-                  )}
-                >
-                  {brl(order.total)}
-                </div>
-              </div>
-              <div
+          <img
+            src={restaurant.logo}
+            alt=""
+            loading="lazy"
+            className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-border"
+          />
+          <div className="min-w-0">
+            <div className="truncate text-sm font-bold text-foreground">{restaurant.name}</div>
+            <div className="mt-0.5 flex items-center gap-1.5">
+              <StatusDot expired={expired} delivered={delivered} />
+              <span
                 className={cn(
-                  "mt-0.5 text-xs font-medium",
+                  "truncate text-xs font-medium",
                   expired
                     ? "text-destructive"
-                    : isActive
-                      ? "text-primary"
-                      : "text-foreground/60",
+                    : delivered
+                      ? "text-foreground/55"
+                      : "text-primary",
                 )}
               >
-                {statusText}
-              </div>
-              <div className="mt-1 line-clamp-1 text-xs text-foreground/55">
-                {order.items.map((i) => `${i.quantity}× ${i.name}`).join(" · ")}
-              </div>
-              {order.status === "delivered" && !order.rated ? (
-                <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-semibold text-primary">
-                  <Star className="h-3 w-3" /> Avaliar pedido
-                </div>
-              ) : null}
+                {expired
+                  ? "Pagamento não confirmado · cancelado"
+                  : statusLabel[order.status as OrderStatus]}
+              </span>
             </div>
+          </div>
+          <div className="shrink-0 text-right">
+            <div
+              className={cn(
+                "text-sm font-bold tabular-nums",
+                expired ? "text-foreground/45 line-through" : "text-foreground",
+              )}
+            >
+              {brl(order.total)}
+            </div>
+            <div className="text-[11px] text-foreground/45">{order.short_id}</div>
           </div>
         </button>
 
+        {/* items */}
+        <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 px-4">
+          <ul className="min-w-0 space-y-1.5">
+            {visible.map((it, idx) => (
+              <li key={idx} className="flex items-center gap-2">
+                <span className="grid h-6 min-w-[1.5rem] shrink-0 place-items-center rounded-md bg-surface px-1 text-[11px] font-bold tabular-nums text-foreground/70">
+                  {it.quantity}
+                </span>
+                <span className="min-w-0 truncate text-sm text-foreground/80">{it.name}</span>
+              </li>
+            ))}
+            {extra > 0 ? (
+              <li className="pl-[2.1rem] text-xs font-medium text-foreground/45">
+                + {extra} {extra === 1 ? "item" : "itens"}
+              </li>
+            ) : null}
+          </ul>
+          {thumbs.length ? (
+            <div className="flex shrink-0 -space-x-3">
+              {thumbs.map((it, idx) => (
+                <img
+                  key={idx}
+                  src={it.image}
+                  alt=""
+                  loading="lazy"
+                  className="h-11 w-11 rounded-full object-cover ring-2 ring-card"
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        {/* pix live block */}
         {livePix ? (
-          <div className="border-t border-border/70 px-4 py-3">
+          <div className="mx-4 mt-3 rounded-xl border border-border/70 bg-surface/50 p-3">
             <div className="flex items-center justify-between gap-3">
               <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground/50">
                 Pix aguardando pagamento
@@ -280,8 +370,52 @@ function OrderCard({ order }: { order: OrderRow }) {
             </div>
           </div>
         ) : null}
-      </div>
+
+        {/* rating row */}
+        {delivered && !order.rated ? (
+          <button
+            onClick={() => nav({ to: "/pedido/$id/avaliar", params: { id: order.id } })}
+            className="mt-3 flex w-full items-center justify-between gap-3 border-t border-border/60 px-4 py-3 text-left transition-colors hover:bg-surface/40"
+          >
+            <span className="flex items-center gap-1 text-foreground/35">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className="h-4 w-4" />
+              ))}
+            </span>
+            <span className="text-xs font-semibold text-primary">Avaliar seu pedido</span>
+          </button>
+        ) : null}
+
+        {/* actions */}
+        <div className="mt-3 grid grid-cols-2 divide-x divide-border/60 border-t border-border/60">
+          <Link
+            to={target}
+            params={{ id: order.id }}
+            className="py-3 text-center text-[13px] font-bold text-primary transition-colors hover:bg-primary-soft/40"
+          >
+            Ver detalhes
+          </Link>
+          <button
+            onClick={repeat}
+            className="inline-flex items-center justify-center gap-1.5 py-3 text-[13px] font-bold text-primary transition-colors hover:bg-primary-soft/40"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Pedir de novo
+          </button>
+        </div>
+      </article>
     </li>
+  );
+}
+
+function StatusDot({ expired, delivered }: { expired: boolean; delivered: boolean }) {
+  if (expired) return <TimerOff className="h-3.5 w-3.5 shrink-0 text-destructive" />;
+  if (delivered) return <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" />;
+  return (
+    <span className="relative flex h-2 w-2 shrink-0">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+      <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+    </span>
   );
 }
 
@@ -307,8 +441,6 @@ function CopyPixButton({ code }: { code: string }) {
   );
 }
 
-
-
 function OrdersSkeleton() {
   return (
     <ul className="space-y-3">
@@ -318,13 +450,13 @@ function OrdersSkeleton() {
           className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]"
         >
           <div className="flex items-start gap-3">
-            <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
+            <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
             <div className="min-w-0 flex-1 space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-36" />
                 <Skeleton className="h-4 w-16" />
               </div>
-              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-3 w-28" />
               <Skeleton className="h-3 w-full max-w-[240px]" />
             </div>
           </div>
