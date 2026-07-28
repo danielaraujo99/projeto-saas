@@ -94,12 +94,6 @@ function Page() {
     }
   }, [order, nav]);
 
-  const regeneratePix = () => {
-    confirmedRef.current = false;
-    setPhase("awaiting_pix");
-    setPixCycle((c) => c + 1);
-  };
-
   if (isLoading || !order) {
     return (
       <div className="grid min-h-screen place-items-center bg-background">
@@ -118,10 +112,9 @@ function Page() {
         {phase === "success" ? (
           <SuccessCard total={order.total} />
         ) : phase === "pix_expired" ? (
-          <PixExpiredCard total={order.total} onRegenerate={regeneratePix} />
+          <PixExpiredCard orderId={order.id} total={order.total} />
         ) : isPix ? (
           <PixView
-            key={pixCycle}
             order={order}
             onApproved={onPixApproved}
             onExpired={() => setPhase("pix_expired")}
@@ -129,6 +122,7 @@ function Page() {
         ) : (
           <ProcessingCard method={order.payment.kind as "credit" | "debit" | "cash"} total={order.total} />
         )}
+
       </main>
     </div>
   );
