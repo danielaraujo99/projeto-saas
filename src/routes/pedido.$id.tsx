@@ -19,7 +19,6 @@ import {
   Phone,
   RefreshCw,
   TimerOff,
-  Sparkles,
   Star,
   WifiOff,
 } from "lucide-react";
