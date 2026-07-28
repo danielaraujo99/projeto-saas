@@ -36,7 +36,12 @@ function AuthPage() {
   const [name, setName] = React.useState("");
   const [show, setShow] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
+  const [ready, setReady] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    setReady(true);
+  }, []);
+
   const login = useAuth((s) => s.login);
   const signup = useAuth((s) => s.signup);
   const user = useAuth((s) => s.user);
@@ -278,7 +283,7 @@ function AuthPage() {
             <Button
               type="submit"
               className="h-12 w-full rounded-full text-base font-semibold"
-              disabled={busy}
+              disabled={busy || !ready}
             >
               {busy ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -289,6 +294,8 @@ function AuthPage() {
               )}
               {busy
                 ? "Aguarde…"
+                : !ready
+                  ? "Carregando…"
                 : mode === "login"
                   ? "Entrar"
                   : "Criar conta e continuar"}
