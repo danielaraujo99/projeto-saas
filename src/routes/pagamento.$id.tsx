@@ -36,8 +36,8 @@ export const Route = createFileRoute("/pagamento/$id")({
 
 type Phase = "loading" | "awaiting_pix" | "processing" | "success" | "pix_expired";
 
-const CARD_CONFIRM_MS = 2200;
-const POLL_INTERVAL_MS = 3000;
+const CARD_CONFIRM_MS = 1200;
+const POLL_INTERVAL_MS = 1500;
 
 function Page() {
   const { id } = useParams({ from: "/pagamento/$id" });
@@ -70,7 +70,7 @@ function Page() {
         setPhase("success");
         window.setTimeout(() => {
           nav({ to: "/pedido/$id", params: { id: order.id }, replace: true });
-        }, 1600);
+        }, 800);
       } catch (e) {
         console.error(e);
         toast.error("Falha ao confirmar pagamento. Tente novamente.");
@@ -87,7 +87,7 @@ function Page() {
       setPhase("success");
       window.setTimeout(() => {
         nav({ to: "/pedido/$id", params: { id: order.id }, replace: true });
-      }, 1600);
+      }, 800);
     } catch (e) {
       console.error(e);
       toast.error("Falha ao confirmar pagamento.");
@@ -262,6 +262,7 @@ function PixView({
         console.warn("[pix poll]", e);
       }
     };
+    void poll();
     const t = window.setInterval(poll, POLL_INTERVAL_MS);
     return () => {
       stopped = true;
@@ -381,86 +382,61 @@ function PixView({
 
 function PixHeroIllustration() {
   return (
-    <div className="relative mt-4 grid h-52 w-full place-items-center sm:h-56">
-      {/* soft tinted circle backdrop */}
-      <div className="absolute h-44 w-44 rounded-full bg-primary-soft/70 sm:h-48 sm:w-48" />
-      <div className="pointer-events-none absolute h-44 w-44 rounded-full bg-[radial-gradient(circle_at_30%_25%,color-mix(in_oklab,var(--primary)_18%,transparent),transparent_65%)] sm:h-48 sm:w-48" />
+    <div className="relative mt-2 grid h-44 w-full place-items-center sm:h-48">
+      {/* halo suave, sem borda dura */}
+      <div className="pointer-events-none absolute h-52 w-52 rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--primary)_14%,transparent)_0%,transparent_68%)] blur-[2px] sm:h-56 sm:w-56" />
 
-      {/* subtle expanding rings */}
-      <span className="pointer-events-none absolute h-32 w-32 rounded-full border border-primary/20 animate-[pixring_3s_ease-out_infinite]" />
-      <span
-        className="pointer-events-none absolute h-32 w-32 rounded-full border border-primary/15 animate-[pixring_3s_ease-out_infinite]"
-        style={{ animationDelay: "1.2s" }}
-      />
+      {/* anel único, discreto */}
+      <span className="pointer-events-none absolute h-28 w-28 rounded-full border border-primary/12 animate-[pixring_4s_ease-out_infinite]" />
 
       <div
-        className="relative grid h-40 w-40 place-items-center sm:h-44 sm:w-44"
-        style={{ perspective: "700px" }}
+        className="relative grid h-32 w-32 place-items-center sm:h-36 sm:w-36"
+        style={{ perspective: "800px" }}
       >
-        <div className="pix3d-float">
-          <div className="pix3d-tilt">
-            <img
-              src={pixLogo.url}
-              alt="Pix"
-              className="h-24 w-24 select-none sm:h-28 sm:w-28"
-              draggable={false}
-              style={{
-                filter:
-                  "drop-shadow(0 18px 22px color-mix(in oklab, #00b39b 35%, transparent)) drop-shadow(0 2px 0 rgba(255,255,255,0.5))",
-              }}
-            />
-            <span className="pix3d-shine" aria-hidden />
-          </div>
-        </div>
         <span className="pix3d-shadow" aria-hidden />
+        <div className="pix3d-float">
+          <img
+            src={pixLogo.url}
+            alt="Pix"
+            className="pix3d-tilt h-20 w-20 select-none sm:h-24 sm:w-24"
+            draggable={false}
+          />
+        </div>
       </div>
 
       <style>{`
-        @keyframes pixring { 0% { transform: scale(0.7); opacity: 0.7; } 100% { transform: scale(1.7); opacity: 0; } }
-        @keyframes pix3dFloat { 0%,100% { transform: translateY(-6px); } 50% { transform: translateY(6px); } }
+        @keyframes pixring { 0% { transform: scale(0.85); opacity: 0.45; } 100% { transform: scale(1.6); opacity: 0; } }
+        @keyframes pix3dFloat { 0%,100% { transform: translateY(-4px); } 50% { transform: translateY(4px); } }
         @keyframes pix3dTilt {
-          0%   { transform: rotateY(-22deg) rotateX(10deg) rotate(0deg); }
-          50%  { transform: rotateY(22deg) rotateX(-8deg) rotate(0deg); }
-          100% { transform: rotateY(-22deg) rotateX(10deg) rotate(0deg); }
+          0%   { transform: rotateY(-14deg) rotateX(7deg); }
+          50%  { transform: rotateY(14deg) rotateX(-5deg); }
+          100% { transform: rotateY(-14deg) rotateX(7deg); }
         }
-        @keyframes pix3dPop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes pix3dShine { 0% { transform: translateX(-140%) rotate(18deg); } 55%,100% { transform: translateX(160%) rotate(18deg); } }
-        @keyframes pix3dShadow { 0%,100% { transform: scale(0.85); opacity: 0.22; } 50% { transform: scale(1.05); opacity: 0.12; } }
+        @keyframes pix3dPop { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pix3dShadow { 0%,100% { transform: scale(0.8); opacity: 0.16; } 50% { transform: scale(1); opacity: 0.09; } }
 
         .pix3d-float {
           transform-style: preserve-3d;
-          animation: pix3dPop 600ms cubic-bezier(.2,.9,.3,1.2) both, pix3dFloat 4.5s ease-in-out infinite 600ms;
+          animation: pix3dPop 550ms cubic-bezier(.2,.9,.3,1.15) both, pix3dFloat 5s ease-in-out infinite 550ms;
         }
         .pix3d-tilt {
-          position: relative;
-          display: grid;
-          place-items: center;
+          display: block;
           transform-style: preserve-3d;
-          animation: pix3dTilt 6s ease-in-out infinite;
-          overflow: hidden;
-          border-radius: 24px;
-        }
-        .pix3d-shine {
-          position: absolute;
-          inset: -30%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
-          width: 45%;
-          animation: pix3dShine 4.5s ease-in-out infinite;
-          pointer-events: none;
-          mix-blend-mode: overlay;
+          animation: pix3dTilt 7s ease-in-out infinite;
+          filter: drop-shadow(0 10px 16px color-mix(in oklab, #00b39b 28%, transparent));
         }
         .pix3d-shadow {
           position: absolute;
-          bottom: 10%;
-          height: 12px;
-          width: 60%;
+          bottom: 6%;
+          height: 10px;
+          width: 52%;
           border-radius: 9999px;
-          background: radial-gradient(ellipse at center, rgba(0,0,0,0.45), transparent 70%);
-          filter: blur(6px);
-          animation: pix3dShadow 4.5s ease-in-out infinite;
+          background: radial-gradient(ellipse at center, color-mix(in oklab, var(--foreground) 40%, transparent), transparent 70%);
+          filter: blur(7px);
+          animation: pix3dShadow 5s ease-in-out infinite;
         }
         @media (prefers-reduced-motion: reduce) {
-          .pix3d-float, .pix3d-tilt, .pix3d-shine, .pix3d-shadow { animation: none; }
+          .pix3d-float, .pix3d-tilt, .pix3d-shadow { animation: none; }
         }
       `}</style>
     </div>
