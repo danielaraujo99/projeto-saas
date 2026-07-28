@@ -184,8 +184,11 @@ function AuthPage() {
               void submit();
             }}
             action={`/auth?mode=${mode}${safeRedirect ? `&redirect=${encodeURIComponent(safeRedirect)}` : ""}`}
+            method="get"
             className="mt-5 space-y-4"
           >
+            <input type="hidden" name="mode" value={mode} />
+            {safeRedirect ? <input type="hidden" name="redirect" value={safeRedirect} /> : null}
             {mode === "signup" ? (
               <div className="space-y-1.5">
                 <Label htmlFor="name">Nome completo</Label>
