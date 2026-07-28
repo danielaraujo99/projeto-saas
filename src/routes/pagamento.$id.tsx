@@ -107,9 +107,10 @@ function Page() {
   const isPix = order.payment.kind === "pix";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background flex flex-col">
       <TopBar orderId={order.id} />
-      <main className="mx-auto flex w-full max-w-[440px] flex-col px-5 pb-10 pt-4 sm:px-6">
+      <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col px-5 pb-8 pt-6 sm:px-6">
+
         {phase === "success" ? (
           <SuccessCard total={order.total} />
         ) : phase === "pix_expired" ? (
