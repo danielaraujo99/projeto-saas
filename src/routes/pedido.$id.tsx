@@ -420,32 +420,6 @@ function Row({
   );
 }
 
-function DeliveredHero({ rated, onRate }: { rated: boolean; onRate: () => void }) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="relative grid h-12 w-12 place-items-center rounded-full bg-success/15 text-success">
-        <CheckCircle2 className="h-6 w-6" />
-        <Sparkles className="absolute -right-1 -top-1 h-4 w-4 animate-pulse text-success" />
-      </div>
-      <div>
-        <h2 className="text-lg font-bold">Pedido entregue</h2>
-        <p className="text-sm text-muted-foreground">
-          Esperamos que você tenha gostado! Que tal avaliar?
-        </p>
-        {!rated ? (
-          <button
-            onClick={onRate}
-            className="mt-3 inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground hover:opacity-95"
-          >
-            <Star className="h-4 w-4" /> Avaliar pedido
-          </button>
-        ) : (
-          <p className="mt-2 text-sm text-success">Obrigado pela avaliação!</p>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function ContextualPhase({ status }: { status: OrderStatus }) {
   if (status === "received") {
