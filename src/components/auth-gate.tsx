@@ -91,13 +91,14 @@ export function AuthGate({ open, onOpenChange, onSuccess }: Props) {
         <form onSubmit={submit} className="space-y-3">
           {mode === "signup" ? (
             <div>
-              <label className="mb-1 block text-sm font-medium">Nome completo</label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" />
+              <label htmlFor="auth-gate-name" className="mb-1 block text-sm font-medium">Nome completo</label>
+              <Input id="auth-gate-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" />
             </div>
           ) : null}
           <div>
-            <label className="mb-1 block text-sm font-medium">E-mail</label>
+            <label htmlFor="auth-gate-email" className="mb-1 block text-sm font-medium">E-mail</label>
             <Input
+              id="auth-gate-email"
               type="email"
               inputMode="email"
               value={email}
@@ -108,10 +109,11 @@ export function AuthGate({ open, onOpenChange, onSuccess }: Props) {
           </div>
           {mode === "signup" ? (
             <div>
-              <label className="mb-1 block text-sm font-medium">
+              <label htmlFor="auth-gate-phone" className="mb-1 block text-sm font-medium">
                 Telefone <span className="text-xs font-normal text-muted-foreground">(opcional)</span>
               </label>
               <Input
+                id="auth-gate-phone"
                 type="tel"
                 inputMode="tel"
                 value={phone}
@@ -123,8 +125,9 @@ export function AuthGate({ open, onOpenChange, onSuccess }: Props) {
             </div>
           ) : null}
           <div>
-            <label className="mb-1 block text-sm font-medium">Senha</label>
+            <label htmlFor="auth-gate-password" className="mb-1 block text-sm font-medium">Senha</label>
             <Input
+              id="auth-gate-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
