@@ -130,6 +130,12 @@ function Page() {
     );
   }
 
+  if (order.status === "pending_payment" && isPixExpired(getPixSession(order.id))) {
+    return <CanceledOrderView order={order} />;
+  }
+
+
+
   const currentIdx = TIMELINE.indexOf(order.status as OrderStatus);
   const paymentAt = order.payment_confirmed_at ? new Date(order.payment_confirmed_at) : null;
   const startAt = paymentAt?.getTime() ?? new Date(order.created_at).getTime();
