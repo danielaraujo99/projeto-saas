@@ -70,7 +70,7 @@ function Page() {
         setPhase("success");
         window.setTimeout(() => {
           nav({ to: "/pedido/$id", params: { id: order.id }, replace: true });
-        }, 1600);
+        }, 800);
       } catch (e) {
         console.error(e);
         toast.error("Falha ao confirmar pagamento. Tente novamente.");
@@ -87,7 +87,7 @@ function Page() {
       setPhase("success");
       window.setTimeout(() => {
         nav({ to: "/pedido/$id", params: { id: order.id }, replace: true });
-      }, 1600);
+      }, 800);
     } catch (e) {
       console.error(e);
       toast.error("Falha ao confirmar pagamento.");
