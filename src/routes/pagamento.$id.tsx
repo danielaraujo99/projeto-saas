@@ -188,8 +188,7 @@ function PixView({
   >({ phase: "creating" });
   const [remaining, setRemaining] = React.useState(5 * 60_000);
   const [copied, setCopied] = React.useState(false);
-  const [howOpen, setHowOpen] = React.useState(false);
-  const [summaryOpen, setSummaryOpen] = React.useState(false);
+
 
   React.useEffect(() => {
     let cancelled = false;
