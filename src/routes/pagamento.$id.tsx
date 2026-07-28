@@ -17,6 +17,8 @@ import { useAuth } from "@/store/auth";
 import { brl } from "@/lib/format";
 import { toast } from "sonner";
 import pixLogo from "@/assets/pix-logo.png.asset.json";
+import { getPixSession, savePixSession, isPixExpired } from "@/lib/pix-session";
+
 
 
 
