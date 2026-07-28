@@ -16,9 +16,9 @@ import { createPixCharge, getPixStatus } from "@/lib/mercadopago.functions";
 import { useAuth } from "@/store/auth";
 import { brl } from "@/lib/format";
 import { toast } from "sonner";
-import bankLottie from "@/assets/3d-bank-icon.lottie.asset.json";
+import pixLogo from "@/assets/pix-logo.png.asset.json";
 
-const { useState, useEffect } = React;
+
 
 
 
@@ -380,20 +380,6 @@ function PixView({
 
 
 function PixHeroIllustration() {
-  const [Player, setPlayer] = useState<null | React.ComponentType<any>>(null);
-
-  useEffect(() => {
-    let alive = true;
-    import("@lottiefiles/dotlottie-react")
-      .then((m) => {
-        if (alive) setPlayer(() => m.DotLottieReact);
-      })
-      .catch(() => {});
-    return () => {
-      alive = false;
-    };
-  }, []);
-
   return (
     <div className="relative mt-4 grid h-52 w-full place-items-center sm:h-56">
       {/* soft tinted circle backdrop */}
@@ -407,20 +393,75 @@ function PixHeroIllustration() {
         style={{ animationDelay: "1.2s" }}
       />
 
-      <div className="relative h-40 w-40 animate-[pixpop_600ms_cubic-bezier(.2,.9,.3,1.2)_both] sm:h-44 sm:w-44">
-        {Player ? (
-          <Player
-            src={bankLottie.url}
-            autoplay
-            loop
-            className="h-full w-full"
-          />
-        ) : null}
+      <div
+        className="relative grid h-40 w-40 place-items-center sm:h-44 sm:w-44"
+        style={{ perspective: "700px" }}
+      >
+        <div className="pix3d-float">
+          <div className="pix3d-tilt">
+            <img
+              src={pixLogo.url}
+              alt="Pix"
+              className="h-24 w-24 select-none sm:h-28 sm:w-28"
+              draggable={false}
+              style={{
+                filter:
+                  "drop-shadow(0 18px 22px color-mix(in oklab, #00b39b 35%, transparent)) drop-shadow(0 2px 0 rgba(255,255,255,0.5))",
+              }}
+            />
+            <span className="pix3d-shine" aria-hidden />
+          </div>
+        </div>
+        <span className="pix3d-shadow" aria-hidden />
       </div>
 
       <style>{`
         @keyframes pixring { 0% { transform: scale(0.7); opacity: 0.7; } 100% { transform: scale(1.7); opacity: 0; } }
-        @keyframes pixpop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pix3dFloat { 0%,100% { transform: translateY(-6px); } 50% { transform: translateY(6px); } }
+        @keyframes pix3dTilt {
+          0%   { transform: rotateY(-22deg) rotateX(10deg) rotate(0deg); }
+          50%  { transform: rotateY(22deg) rotateX(-8deg) rotate(0deg); }
+          100% { transform: rotateY(-22deg) rotateX(10deg) rotate(0deg); }
+        }
+        @keyframes pix3dPop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pix3dShine { 0% { transform: translateX(-140%) rotate(18deg); } 55%,100% { transform: translateX(160%) rotate(18deg); } }
+        @keyframes pix3dShadow { 0%,100% { transform: scale(0.85); opacity: 0.22; } 50% { transform: scale(1.05); opacity: 0.12; } }
+
+        .pix3d-float {
+          transform-style: preserve-3d;
+          animation: pix3dPop 600ms cubic-bezier(.2,.9,.3,1.2) both, pix3dFloat 4.5s ease-in-out infinite 600ms;
+        }
+        .pix3d-tilt {
+          position: relative;
+          display: grid;
+          place-items: center;
+          transform-style: preserve-3d;
+          animation: pix3dTilt 6s ease-in-out infinite;
+          overflow: hidden;
+          border-radius: 24px;
+        }
+        .pix3d-shine {
+          position: absolute;
+          inset: -30%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+          width: 45%;
+          animation: pix3dShine 4.5s ease-in-out infinite;
+          pointer-events: none;
+          mix-blend-mode: overlay;
+        }
+        .pix3d-shadow {
+          position: absolute;
+          bottom: 10%;
+          height: 12px;
+          width: 60%;
+          border-radius: 9999px;
+          background: radial-gradient(ellipse at center, rgba(0,0,0,0.45), transparent 70%);
+          filter: blur(6px);
+          animation: pix3dShadow 4.5s ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .pix3d-float, .pix3d-tilt, .pix3d-shine, .pix3d-shadow { animation: none; }
+        }
       `}</style>
     </div>
   );
