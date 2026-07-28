@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Copy,
+  RefreshCw,
+  TimerOff,
   AlertCircle,
   ChevronLeft,
   Check,
@@ -12,7 +14,9 @@ import {
 import { getOrderById, confirmPayment, type OrderRow } from "@/lib/orders-api";
 import { createPixCharge, getPixStatus } from "@/lib/mercadopago.functions";
 import { useAuth } from "@/store/auth";
+import { brl } from "@/lib/format";
 import { toast } from "sonner";
+
 
 
 export const Route = createFileRoute("/pagamento/$id")({
