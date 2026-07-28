@@ -28,6 +28,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const nav = useNavigate();
   const search = useSearch({ from: "/auth" });
+  const safeRedirect = search.redirect?.startsWith("/") ? search.redirect : undefined;
   const [mode, setMode] = React.useState<"login" | "signup">(search.mode ?? "login");
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
@@ -41,8 +42,8 @@ function AuthPage() {
   const user = useAuth((s) => s.user);
 
   React.useEffect(() => {
-    if (user) nav({ to: search.redirect || "/demo", replace: true });
-  }, [user, nav, search.redirect]);
+    if (user) nav({ to: safeRedirect || "/demo", replace: true });
+  }, [user, nav, safeRedirect]);
 
   function formatPhone(v: string) {
     const d = v.replace(/\D/g, "").slice(0, 11);
@@ -66,7 +67,7 @@ function AuthPage() {
       return;
     }
     toast.success(mode === "login" ? "Bem-vindo de volta!" : "Conta criada com sucesso!");
-    nav({ to: search.redirect || "/demo", replace: true });
+    nav({ to: safeRedirect || "/demo", replace: true });
   }
 
   return (
@@ -177,7 +178,11 @@ function AuthPage() {
             ))}
           </div>
 
-          <form onSubmit={submit} className="mt-5 space-y-4">
+          <form
+            onSubmit={submit}
+            action={`/auth?mode=${mode}${safeRedirect ? `&redirect=${encodeURIComponent(safeRedirect)}` : ""}`}
+            className="mt-5 space-y-4"
+          >
             {mode === "signup" ? (
               <div className="space-y-1.5">
                 <Label htmlFor="name">Nome completo</Label>
